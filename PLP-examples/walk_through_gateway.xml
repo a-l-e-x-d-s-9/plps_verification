@@ -62,21 +62,24 @@
       <field value="gateway" />
     </predicate_condition>
 
-    <formula_condition operator="=">
+    <formula_condition>
       <expression value="begin_Aspeed" />
+      <operator type="="/>
       <expression value="0" />
     </formula_condition>
 
-    <formula_condition operator="=">
+    <formula_condition>
       <expression value="begin_Lspeed" />
+      <operator type="="/>
       <expression value="0" />
     </formula_condition>
 
   </preconditions>
 
   <concurrency_conditions>
-    <formula_condition operator="=">
+    <formula_condition>
       <expression value="arm_moving" />
+      <operator type="="/>
       <expression value="FALSE" />
     </formula_condition>
   </concurrency_conditions>
@@ -101,13 +104,15 @@
   <progress_measures>
     <progress_measure frequency="1">
       <OR>
-        <formula_condition operator="=">
+        <formula_condition>
           <expression value="current_Aspeed" />
+          <operator type="="/>
           <expression value="angular_speed" />
         </formula_condition>
 
-        <formula_condition operator="=">
+        <formula_condition>
           <expression value="current_Lspeed" />
+          <operator type="="/>
           <expression value="linear_speed" />
         </formula_condition>
       </OR>
@@ -125,16 +130,18 @@
 
   <success_probability>
     <conditional_probability>
-      <formula_condition operator="=">
+      <formula_condition>
         <expression value="clear_path" />
+        <operator type="="/>
         <expression value="TRUE" />
       </formula_condition>
       <probability value="0.95" />
     </conditional_probability>
 
     <conditional_probability>
-      <formula_condition operator="=">
+      <formula_condition>
         <expression value="clear_path" />
+        <operator type="="/>
         <expression value="FALSE" />
       </formula_condition>
       <probability value="0" />
@@ -144,22 +151,25 @@
   <failure_modes>
 
     <failure_mode>
-      <formula_condition operator="=">
+      <formula_condition>
         <expression value="collision_alert" />
+        <operator type="="/>
         <expression value="TRUE" />
       </formula_condition>
 
       <conditional_probability>
-        <formula_condition operator="=">
+        <formula_condition>
           <expression value="clear_path" />
+          <operator type="="/>
           <expression value="TRUE" />
         </formula_condition>
         <probability value="0.01" />
       </conditional_probability>
 
       <conditional_probability>
-        <formula_condition operator="=">
+        <formula_condition>
           <expression value="clear_path" />
+          <operator type="="/>
           <expression value="FALSE" />
         </formula_condition>
         <probability value="1" />
@@ -175,12 +185,14 @@
 
       <conditional_probability>
         <AND>
-          <formula_condition operator="=">
+          <formula_condition>
             <expression value="floor_traction" />
+            <operator type="="/>
             <expression value="FALSE" />
           </formula_condition>
-          <formula_condition operator="=">
+          <formula_condition>
             <expression value="clear_path" />
+            <operator type="="/>
             <expression value="TRUE" />
           </formula_condition>
         </AND>
@@ -190,12 +202,14 @@
 
       <conditional_probability>
         <AND>
-          <formula_condition operator="=">
+          <formula_condition>
             <expression value="floor_traction" />
+            <operator type="="/>
             <expression value="TRUE" />
           </formula_condition>
-          <formula_condition operator="=">
+          <formula_condition>
             <expression value="clear_path" />
+            <operator type="="/>
             <expression value="TRUE" />
           </formula_condition>
         </AND>
@@ -209,16 +223,20 @@
   </general_failure_probability>
 
   <runtime_given_success>
-    <distribution type="Uniform">
-      <field value="(|gateway_location(gateway).angle|/angular_speed)+(gateway_location(gateway).distance/linear_speed)" />
-      <field value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
+    <distribution>
+      <uniform>
+        <lower_bound value="(|gateway_location(gateway).angle|/angular_speed)+(gateway_location(gateway).distance/linear_speed)" />
+        <upper_bound value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
+      </uniform>
     </distribution>
   </runtime_given_success>
 
   <runtime_given_failure>
-    <distribution type="Uniform">
-      <field value="0" />
-      <field value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
+    <distribution>
+      <uniform>
+        <lower_bound value="0" />
+        <upper_bound value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
+      </uniform>
     </distribution>
   </runtime_given_failure>
 
