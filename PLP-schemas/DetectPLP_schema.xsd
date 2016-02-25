@@ -1,0 +1,395 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+
+  <!-- MAIN ELEMENT AND TYPE-->
+  <xs:element name="detect_plp" type="detect_plp_type" />
+
+  <xs:complexType name="detect_plp_type">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+      <xs:element name="parameters" type="params_wrapper_type" />
+      <xs:element name="variables" type="vars_type" />
+      <xs:element name="constants" type="constants_type" />
+      <xs:element name="required_resources" type="required_resources_type" />
+      <xs:element name="preconditions" type="conditions_type" />
+      <xs:element name="concurrency_conditions" type="conditions_type" />
+      <xs:element name="concurrent_modules" type="concurrent_modules_type" />
+      <xs:element name="side_effects" type="side_effects_type" />
+      <xs:element name="progress_measures" type="progress_measures_type" />
+      <!-- SPECIFIC TO DETECT -->
+      <xs:element name="detection_goal" type="detection_goal_type" />
+      <xs:element name="success_given_condition" type="success_given_condition_type" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="version" type="xs:double" use="optional" />
+  </xs:complexType>
+  <!-- END MAIN ELEMENT AND TYPE -->
+
+  <xs:complexType name="params_wrapper_type">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+      <xs:element name="execution_parameters" type="params_type" />
+      <xs:element name="input_parameters" type="params_type" />
+      <xs:element name="output_parameters" type="params_type" />
+      <xs:element name="non_observable" type="params_type" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="params_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="param" type="param_type" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="param_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="field" type="field_type" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="read_frequency" type="xs:double" />
+    <xs:attribute name="error_param" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="param_base_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="field" type="field_type" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="field_type">
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="vars_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="var">
+        <xs:complexType>
+          <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:choice minOccurs="0" maxOccurs="1">
+              <xs:element name="possible_range">
+                <xs:complexType>
+                  <xs:attribute name="min_value" type="xs:string" />
+                  <xs:attribute name="max_value" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="possible_value">
+                <xs:complexType>
+                  <xs:attribute name="value" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute name="name" type="xs:string" use="required" />
+          <xs:attribute name="type" type="variable_types" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:simpleType name="variable_types">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="boolean" />
+      <xs:enumeration value="real" />
+      <xs:enumeration value="integer" />
+      <xs:enumeration value="string" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="constants_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="constant">
+        <xs:complexType>
+          <xs:attribute name="name" type="xs:string" use="required" />
+          <xs:attribute name="type" type="variable_types" />
+          <xs:attribute name="value" type="xs:string" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="required_resources_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="resource">
+        <xs:complexType>
+          <xs:sequence minOccurs="1" maxOccurs="1">
+            <xs:element name="status">
+              <xs:complexType>
+                <xs:attribute name="type" type="status_type_options" />
+                <xs:attribute name="frequency" type="xs:double" />
+                <xs:attribute name="duration" type="xs:double" />
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="name" type="xs:string" use="required" />
+          <xs:attribute name="quantity" type="xs:double" use="optional" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="status_type_options">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="exclusive" />
+      <xs:enumeration value="frequency" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="conditions_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice minOccurs="0" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="forall_condition" type="forall_condition_type" />
+        <xs:element name="exists_condition" type="exists_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="and_or_condition_type">
+    <xs:sequence minOccurs="2" maxOccurs="unbounded">
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="forall_condition" type="forall_condition_type" />
+        <xs:element name="exists_condition" type="exists_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="predicate_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="field" type="field_type" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="formula_condition_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element name="expression" type="simple_value_type" />
+      <xs:element name="operator">
+        <xs:complexType>
+          <xs:attribute name="type" type="operator_type" />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="expression" type="simple_value_type" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="simple_value_type">
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:simpleType name="operator_type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="=" />
+      <xs:enumeration value="!=" />
+      <xs:enumeration value="&#65308;" />
+      <xs:enumeration value="&#8804;" />
+      <xs:enumeration value="&#65310;" />
+      <xs:enumeration value="&#8805;" />
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:complexType name="not_condition_type">
+    <xs:choice minOccurs="1" maxOccurs="1">
+      <xs:element name="predicate_condition" type="predicate_type" />
+      <xs:element name="forall_condition" type="forall_condition_type" />
+      <xs:element name="exists_condition" type="exists_condition_type" />
+      <xs:element name="AND" type="and_or_condition_type" />
+      <xs:element name="OR" type="and_or_condition_type" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="forall_condition_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="param">
+          <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="exists_condition" type="exists_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="exists_condition_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="param">
+          <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="forall_condition" type="forall_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="concurrent_modules_type">
+    <xs:choice minOccurs="1" maxOccurs="1">
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="module">
+          <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="concurrency_type" type="concurrency_type" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:element name="complete_mutex" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:simpleType name="concurrency_type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="parallel" />
+      <xs:enumeration value="mutex" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="side_effects_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="conditional_effect" type="conditional_effect_type" />
+        <xs:element name="forall_effect" type="forall_effect_type" />
+        <xs:element name="not_effect" type="not_effect_type" />
+        <xs:element name="predicate_effect" type="predicate_type" />
+        <xs:element name="assignment_effect" type="assignment_effect_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="forall_effect_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="param">
+          <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_effect" type="predicate_type" />
+        <xs:element name="assignment_effect" type="assignment_effect_type" />
+        <xs:element name="not_effect" type="not_effect_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="assignment_effect_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element name="param" type="param_base_type" />
+      <xs:element name="expression" type="simple_value_type" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="not_effect_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element name="predicate_effect" type="predicate_type" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="conditional_effect_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="forall_condition" type="forall_condition_type" />
+        <xs:element name="exists_condition" type="exists_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="forall_effect" type="forall_effect_type" />
+        <xs:element name="not_effect" type="not_effect_type" />
+        <xs:element name="predicate_effect" type="predicate_type" />
+        <xs:element name="assignment_effect" type="assignment_effect_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="progress_measures_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="progress_measure">
+        <xs:complexType>
+          <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="predicate_condition" type="predicate_type" />
+            <xs:element name="formula_condition" type="formula_condition_type" />
+            <xs:element name="not_condition" type="not_condition_type" />
+            <xs:element name="forall_condition" type="forall_condition_type" />
+            <xs:element name="exists_condition" type="exists_condition_type" />
+            <xs:element name="AND" type="and_or_condition_type" />
+            <xs:element name="OR" type="and_or_condition_type" />
+          </xs:choice>
+          <xs:attribute name="frequency" type="xs:double" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- NEXT TYPES ARE SPECIFIC FOR DETECT -->
+
+  <xs:complexType name="detection_goal_type">
+    <xs:choice minOccurs="1" maxOccurs="1">
+      <xs:element name="predicate_condition" type="predicate_type" />
+      <xs:element name="formula_condition" type="formula_condition_type" />
+      <xs:element name="not_condition" type="not_condition_type" />
+      <xs:element name="forall_condition" type="forall_condition_type" />
+      <xs:element name="exists_condition" type="exists_condition_type" />
+      <xs:element name="AND" type="and_or_condition_type" />
+      <xs:element name="OR" type="and_or_condition_type" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="success_given_condition_type">
+    <xs:choice minOccurs="1" maxOccurs="1">
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="conditional_probability" type="conditional_probability_type" />
+      </xs:sequence>
+      <xs:element name="probability" type="simple_value_type" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="conditional_probability_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="forall_condition" type="forall_condition_type" />
+        <xs:element name="exists_condition" type="exists_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+      <xs:element name="probability" type="simple_value_type" />
+    </xs:sequence>
+  </xs:complexType>
+  
+</xs:schema>

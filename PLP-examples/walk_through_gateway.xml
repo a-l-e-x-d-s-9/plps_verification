@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<achieve_plp name="walk_through_gateway" version="1.0" xmlns="http://tempuri.org/XMLSchema.xsd">
+  <parameters>
+    <execution_parameters>
+      <param name="areaA" />
+      <param name="areaB" />
+      <param name="gateway" />
+    </execution_parameters>
+
+    <input_parameters>
+      <param name="gateway_location" >
+        <field value="gateway" />
+      </param>
+      <param name="laser_scan" read_frequency="5" />
+      <param name="odometry" read_frequency="5" />
+      <param name="arm_controller" read_frequency="1" />
+      <param name="begin_Aspeed" />
+      <param name="begin_Lspeed" />
+    </input_parameters>
+
+    <output_parameters>
+      <param name="result" />
+    </output_parameters>
+
+    <non_observable>
+      <param name="clear_path" />
+      <param name="floor_traction" />
+    </non_observable>
+  </parameters>
+
+  <variables>
+    <var name="collision_alert" type="boolean" />
+    <var name="arm_moving" type="boolean" />
+    <var name="current_Aspeed" type="real">
+      <possible_range min_value="0" max_value="angular_speed+1" />
+    </var>
+    <var name="current_Lspeed" type="real">
+      <possible_range min_value="0" max_value="linear_speed+1" />
+    </var>
+  </variables>
+
+  <constants>
+    <constant name="linear_speed" />
+    <constant name="angular_speed" />
+  </constants>
+
+  <required_resources>
+    <resource name="robot_wheels">
+      <status type="exclusive" />
+    </resource>
+  </required_resources>
+
+  <preconditions>
+
+    <predicate_condition name="at">
+      <field value="areaA" />
+    </predicate_condition>
+
+    <predicate_condition name="connected">
+      <field value="areaA" />
+      <field value="areaB" />
+      <field value="gateway" />
+    </predicate_condition>
+
+    <formula_condition operator="=">
+      <expression value="begin_Aspeed" />
+      <expression value="0" />
+    </formula_condition>
+
+    <formula_condition operator="=">
+      <expression value="begin_Lspeed" />
+      <expression value="0" />
+    </formula_condition>
+
+  </preconditions>
+
+  <concurrency_conditions>
+    <formula_condition operator="=">
+      <expression value="arm_moving" />
+      <expression value="FALSE" />
+    </formula_condition>
+  </concurrency_conditions>
+
+  <concurrent_modules>
+    <module name="observe_gateway" concurrency_type="mutex" />
+  </concurrent_modules>
+
+  <side_effects>
+	  <forall_effect>
+		<param name="gw" />
+		<assignment_effect>
+		  <param name="gateway_location" >
+			<field value="gw" />
+		  </param>
+		  <expression value="NULL" />
+		</assignment_effect>
+	  </forall_effect>
+
+  </side_effects>
+
+  <progress_measures>
+    <progress_measure frequency="1">
+      <OR>
+        <formula_condition operator="=">
+          <expression value="current_Aspeed" />
+          <expression value="angular_speed" />
+        </formula_condition>
+
+        <formula_condition operator="=">
+          <expression value="current_Lspeed" />
+          <expression value="linear_speed" />
+        </formula_condition>
+      </OR>
+    </progress_measure>
+
+  </progress_measures>
+
+  <!-- NEXT TAGS ARE SPECIFIC TO ACHIEVE -->
+
+  <achievement_goal>
+    <predicate_condition name="at">
+      <field value="areaB" />
+    </predicate_condition>
+  </achievement_goal>
+
+  <success_probability>
+    <conditional_probability>
+      <formula_condition operator="=">
+        <expression value="clear_path" />
+        <expression value="TRUE" />
+      </formula_condition>
+      <probability value="0.95" />
+    </conditional_probability>
+
+    <conditional_probability>
+      <formula_condition operator="=">
+        <expression value="clear_path" />
+        <expression value="FALSE" />
+      </formula_condition>
+      <probability value="0" />
+    </conditional_probability>
+  </success_probability>
+
+  <failure_modes>
+
+    <failure_mode>
+      <formula_condition operator="=">
+        <expression value="collision_alert" />
+        <expression value="TRUE" />
+      </formula_condition>
+
+      <conditional_probability>
+        <formula_condition operator="=">
+          <expression value="clear_path" />
+          <expression value="TRUE" />
+        </formula_condition>
+        <probability value="0.01" />
+      </conditional_probability>
+
+      <conditional_probability>
+        <formula_condition operator="=">
+          <expression value="clear_path" />
+          <expression value="FALSE" />
+        </formula_condition>
+        <probability value="1" />
+      </conditional_probability>
+    </failure_mode>
+
+    <failure_mode>
+      <not_condition>
+        <predicate_condition name="at">
+          <field value="areaB" />
+        </predicate_condition>
+      </not_condition>
+
+      <conditional_probability>
+        <AND>
+          <formula_condition operator="=">
+            <expression value="floor_traction" />
+            <expression value="FALSE" />
+          </formula_condition>
+          <formula_condition operator="=">
+            <expression value="clear_path" />
+            <expression value="TRUE" />
+          </formula_condition>
+        </AND>
+
+        <probability value="0.01" />
+      </conditional_probability>
+
+      <conditional_probability>
+        <AND>
+          <formula_condition operator="=">
+            <expression value="floor_traction" />
+            <expression value="TRUE" />
+          </formula_condition>
+          <formula_condition operator="=">
+            <expression value="clear_path" />
+            <expression value="TRUE" />
+          </formula_condition>
+        </AND>
+        <probability value="0.03" />
+      </conditional_probability>
+    </failure_mode>
+
+  </failure_modes>
+
+  <general_failure_probability>
+  </general_failure_probability>
+
+  <runtime_given_success>
+    <distribution type="Uniform">
+      <field value="(|gateway_location(gateway).angle|/angular_speed)+(gateway_location(gateway).distance/linear_speed)" />
+      <field value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
+    </distribution>
+  </runtime_given_success>
+
+  <runtime_given_failure>
+    <distribution type="Uniform">
+      <field value="0" />
+      <field value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
+    </distribution>
+  </runtime_given_failure>
+
+</achieve_plp>
