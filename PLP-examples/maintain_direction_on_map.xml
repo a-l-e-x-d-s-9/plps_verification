@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.1" encoding="utf-8"?>
 <maintain_plp name="maintain_direction_on_map" version="1.0" xmlns="http://tempuri.org/XMLSchema.xsd">
   <parameters>
     <execution_parameters>
@@ -23,10 +23,11 @@
 
   <variables>
     <var name="gas_consumed" type="real" />
-    <var name="current_path_direction" />
-    <var name="current_robot_direction" />
-    <var name="distance_to_goal" />
-    <var name="runtime_given_path_length" />
+    <var name="current_path_direction" type="real" />
+    <var name="current_robot_direction" type="real" />
+    <var name="distance_to_goal" type="real" />
+    <var name="runtime_given_path_length" type="real" />
+    <var name="vehicle_off_road" type="boolean" />
   </variables>
 
   <constants>
@@ -98,15 +99,9 @@
 
   <failure_termination_conditions>
     <formula_condition>
-      <expression value="distance_to_goal" />
-      <operator type="≥" />
-      <expression value="exception_distance" />
-    </formula_condition>
-
-    <formula_condition>
-      <expression value="distance_to_goal" />
+      <expression value="vehicle_off_road" />
       <operator type="=" />
-      <expression value="NULL" />
+      <expression value="TRUE" />
     </formula_condition>
   </failure_termination_conditions>
 
@@ -126,19 +121,11 @@
   <failure_modes>
     <failure_mode>
       <AND>
-        <OR>
-          <formula_condition>
-            <expression value="distance_to_goal" />
-            <operator type="≥" />
-            <expression value="exception_distance" />
-          </formula_condition>
-          <formula_condition>
-            <expression value="distance_to_goal" />
-            <operator type="=" />
-            <expression value="NULL" />
-          </formula_condition>
-        </OR>
-        
+        <formula_condition>
+          <expression value="vehicle_off_road" />
+          <operator type="=" />
+          <expression value="TRUE" />
+        </formula_condition>
         <not_condition>
           <predicate_condition name="damaged_vehicle" />
         </not_condition>
@@ -159,19 +146,11 @@
 
     <failure_mode>
       <AND>
-        <OR>
-          <formula_condition>
-            <expression value="distance_to_goal" />
-            <operator type="≥" />
-            <expression value="exception_distance" />
-          </formula_condition>
-          <formula_condition>
-            <expression value="distance_to_goal" />
-            <operator type="=" />
-            <expression value="NULL" />
-          </formula_condition>
-        </OR>
-        
+        <formula_condition>
+          <expression value="vehicle_off_road" />
+          <operator type="=" />
+          <expression value="TRUE" />
+        </formula_condition>
         <predicate_condition name="damaged_vehicle" />
       </AND>
 
