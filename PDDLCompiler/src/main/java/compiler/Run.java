@@ -1,11 +1,37 @@
 package compiler;
 
 
-import cs.bgu.maorash.plps.loader.PLPLoader;
+import loader.PLPLoader;
+
+import java.io.File;
+import java.io.PrintWriter;
 
 public class Run {
     public static void main(String[] args) {
 
+        if (args.length < 1) {
+            System.out.println("Usage: <dir path>");
+        }
+        else {
+            PLPLoader.loadFromDirectory(args[0]);
+            PLPLoader.getAchievePLPs().get(0).get
+            /*PDDLCompiler.setAchievePLPs(PLPLoader.getAchievePLPs());
+            PDDLCompiler.setObservePLPs(PLPLoader.getObservePLPs());
+            String compiledPDDL = PDDLCompiler.producePDDL();
+            PrintWriter writer = null;
+            try {
+                writer = new PrintWriter(args[0]+"\\pddl_actions.txt", "UTF-8");
+                writer.print(compiledPDDL);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            finally {
+                if (writer != null)
+                    writer.close();
+            }*/
+
+        }
 
         //System.out.println(PDDLCompiler.producePDDL(args[0]));
         /*System.out.println(walkThroughGateway.toString());

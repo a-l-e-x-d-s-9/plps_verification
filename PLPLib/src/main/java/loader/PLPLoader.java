@@ -493,9 +493,14 @@ public class PLPLoader {
         List<Effect> innerEffects = parseEffects(feEffectElement);
         ForAllEffect faEff = new ForAllEffect(innerEffects.get(0));
 
-        NodeList params = feEffectElement.getElementsByTagName("param");
-        for (int i = 0; i < params.getLength(); i++) {
-            faEff.addParam(((Element) params.item(i)).getAttribute("name"));
+        NodeList children = feEffectElement.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                Element childElement = (Element) children.item(i);
+                if (childElement.getNodeName().equals("param")) {
+                    faEff.addParam(childElement.getAttribute("name"));
+                }
+            }
         }
         return faEff;
     }
@@ -586,9 +591,14 @@ public class PLPLoader {
         List<Condition> innerConditions = parseConditions(faElement);
         QuantifiedCondition qCond = new QuantifiedCondition(innerConditions.get(0), q);
 
-        NodeList params = faElement.getElementsByTagName("param");
-        for (int i = 0; i < params.getLength(); i++) {
-            qCond.addParam(((Element) params.item(i)).getAttribute("name"));
+        NodeList children = faElement.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                Element childElement = (Element) children.item(i);
+                if (childElement.getNodeName().equals("param")) {
+                    qCond.addParam(childElement.getAttribute("name"));
+                }
+            }
         }
         return qCond;
     }

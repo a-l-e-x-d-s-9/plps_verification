@@ -1,13 +1,10 @@
 package compiler;
 
-import cs.bgu.maorash.plps.conditions.*;
-import cs.bgu.maorash.plps.effects.*;
-import cs.bgu.maorash.plps.etc.Predicate;
-import cs.bgu.maorash.plps.modules.AchievePLP;
-import cs.bgu.maorash.plps.modules.ObservePLP;
-import cs.bgu.maorash.plps.modules.PLP;
-import cs.bgu.maorash.plps.plpFields.ObservationGoal;
-import cs.bgu.maorash.plps.plpFields.PLPParameter;
+import conditions.*;
+import effects.*;
+import modules.*;
+import plpEtc.Predicate;
+import plpFields.*;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -27,8 +24,15 @@ public class PDDLCompiler {
     private static List<PLPParameter> observableValues;
     private static List<Effect> possibleEffects;
 
-    public static String producePDDL (String dirPath) {
-        loadPLPs(dirPath);
+    public static void setAchievePLPs(List<AchievePLP> achievePLPs) {
+        PDDLCompiler.achievePLPs = achievePLPs;
+    }
+
+    public static void setObservePLPs(List<ObservePLP> observePLPs) {
+        PDDLCompiler.observePLPs = observePLPs;
+    }
+
+    public static String producePDDL () {
 
         observableValues = new LinkedList<>();
         possibleEffects = new LinkedList<>();
@@ -332,16 +336,16 @@ public class PDDLCompiler {
         return "(and " + effectsSB.toString() + ")";
     }
 
-    public static void loadPLPs(String dirPath) {
+/*    public static void loadPLPs(String dirPath) {
 
-        /*try {
+        *//*try {
             Files.walk(Paths.get(dirPath)).forEach(filePath -> {
                 if (Files.isRegularFile(filePath)) {
                 }
             });
         } catch (IOException e) {
             System.out.println("Error loading directory\n"+e);
-        }*/
+        }*//*
 
         achievePLPs = new LinkedList<>();
         observePLPs = new LinkedList<>();
@@ -432,6 +436,6 @@ public class PDDLCompiler {
         System.out.println(walkThroughGateway.toString());
         System.out.println("------------------------");
 
-    }
+    }*/
 
 }
