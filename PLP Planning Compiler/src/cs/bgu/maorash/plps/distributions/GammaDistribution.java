@@ -4,7 +4,7 @@ package cs.bgu.maorash.plps.distributions;
  * Created by maorash
  * maorash@cs.bgu.ac.il
  */
-public class GammaDistribution {
+public class GammaDistribution implements Distribution {
     private String k_shape;
     private String alpha_shape;
 
@@ -19,5 +19,10 @@ public class GammaDistribution {
 
     public String getAlpha_shape() {
         return alpha_shape;
+    }
+
+    @Override
+    public String toString() {
+        return "Gamma("+k_shape+","+alpha_shape+")";
     }
 }

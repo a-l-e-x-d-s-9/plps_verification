@@ -1,8 +1,6 @@
 package cs.bgu.maorash.plps.distributions;
 
-import cs.bgu.maorash.plps.etc.Condition;
-
-import java.util.List;
+import cs.bgu.maorash.plps.conditions.Condition;
 
 /**
  * Created by maorash
@@ -25,15 +23,17 @@ public class ConditionalDist {
         return dist;
     }
 
-    public void setDist(Distribution dist) {
-        this.dist = dist;
-    }
-
     public Condition getCondition() {
         return condition;
     }
 
-    public void setCondition(Condition condition) {
-        this.condition = condition;
+    @Override
+    public String toString() {
+        if (condition == null) {
+            return dist.toString();
+        }
+        else {
+            return "["+dist.toString()+"|"+condition.toString()+"]";
+        }
     }
 }

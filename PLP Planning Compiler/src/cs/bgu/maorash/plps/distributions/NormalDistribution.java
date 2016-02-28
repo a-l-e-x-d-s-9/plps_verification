@@ -20,4 +20,9 @@ public class NormalDistribution implements Distribution {
     public String getVariance() {
         return variance;
     }
+
+    @Override
+    public String toString() {
+        return "Normal("+mean+","+variance+")";
+    }
 }

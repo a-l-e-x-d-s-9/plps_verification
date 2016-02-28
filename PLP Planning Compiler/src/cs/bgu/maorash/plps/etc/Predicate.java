@@ -1,65 +1,62 @@
 package cs.bgu.maorash.plps.etc;
 
-import cs.bgu.maorash.compiler.PDDLCompiler;
-import cs.bgu.maorash.plps.plpFields.PLPParameter;
+import cs.bgu.maorash.plps.conditions.Condition;
+import cs.bgu.maorash.plps.effects.Effect;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Predicate implements Condition {
+public class Predicate implements Condition, Effect {
 
     private String name;
-    private List<PLPParameter> values;
+    private List<String> values;
 
     public Predicate(String name) {
         this.name = name;
         this.values = new LinkedList<>();
     }
 
-    public void addValue(PLPParameter value) {
-        this.values.add(value);
-    }
     public void addValue(String value) {
-        this.values.add(new PLPParameter(value));
+        this.values.add(value);
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<PLPParameter> getValues() {
+    public List<String> getValues() {
         return values;
     }
 
     @Override
-    public boolean containsParam(PLPParameter param) {
-        for (PLPParameter p : values) {
-            if (p.getName().equals(param.getName()))
+    public boolean containsParam(String paramName) {
+        for (String val : values) {
+            if (val.equals(paramName))
                 return true;
         }
         return false;
-
     }
 
     @Override
-    public boolean sharesParams(Condition c) {
-        if (c.getClass().isAssignableFrom(Predicate.class)) {
-            return name.equals(((Predicate) c).getName());
+    public boolean sharesParams(ParamHolder ph) {
+        if (ph.getClass().isAssignableFrom(Predicate.class)) {
+            return name.equals(((Predicate) ph).getName());
         }
-        if (c.getClass().isAssignableFrom(Equality.class)) {
+        for (String val : values) {
+            if (ph.containsParam(val))
+                return true;
+        }
+        return false;
+        /*if (c.getClass().isAssignableFrom(Formula.class)) {
             for (PLPParameter p : values) {
-                if (p.getName().equals(((Equality) c).getLeftExpr().getName())
-                        || p.getName().equals(((Equality) c).getRightExpr()))
+                if (p.getName().equals(((Formula) c).getLeftExpr().getName())
+                        || p.getName().equals(((Formula) c).getRightExpr()))
                     return true;
             }
             return false;
         }
-        return c.sharesParams(this);
+        return c.sharesParams(this);*/
     }
 
     public String toString() {
@@ -69,7 +66,7 @@ public class Predicate implements Condition {
     }
 
     @Override
-    public String toPDDL() {
-        return PDDLCompiler.compile(this);
+    public Effect createProperEffect() {
+        return this;
     }
 }

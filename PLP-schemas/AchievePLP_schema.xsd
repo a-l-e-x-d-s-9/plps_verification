@@ -76,13 +76,15 @@
             <xs:choice minOccurs="0" maxOccurs="1">
               <xs:element name="possible_range">
                 <xs:complexType>
-                  <xs:attribute name="min_value" type="xs:string" />
-                  <xs:attribute name="max_value" type="xs:string" />
+                  <xs:attribute name="min_value" type="xs:string" use="required" />
+				  <xs:attribute name="min_inclusive" type="xs:boolean" use="required" />
+                  <xs:attribute name="max_value" type="xs:string" use="required" />
+                  <xs:attribute name="max_inclusive" type="xs:boolean" use="required" />
                 </xs:complexType>
               </xs:element>
               <xs:element name="possible_value">
                 <xs:complexType>
-                  <xs:attribute name="value" type="xs:string" />
+                  <xs:attribute name="value" type="xs:string" use="required" />
                 </xs:complexType>
               </xs:element>
             </xs:choice>
@@ -123,7 +125,7 @@
           <xs:sequence minOccurs="1" maxOccurs="1">
             <xs:element name="status">
               <xs:complexType>
-                <xs:attribute name="type" type="status_type_options" />
+                <xs:attribute name="type" type="status_type_options" use="required" />
                 <xs:attribute name="frequency" type="xs:double" />
                 <xs:attribute name="duration" type="xs:double" />
               </xs:complexType>
@@ -262,7 +264,7 @@
         <xs:element name="module">
             <xs:complexType>
               <xs:attribute name="name" type="xs:string" use="required" />
-              <xs:attribute name="concurrency_type" type="concurrency_type" />
+              <xs:attribute name="concurrency_type" type="concurrency_type" use="required" />
             </xs:complexType>
         </xs:element>
       </xs:sequence>
@@ -469,14 +471,14 @@
         <xs:complexType>
           <xs:sequence minOccurs="1" maxOccurs="1">
             <xs:element name="k-shape" type="simple_value_type" />
-            <xs:element name="&#920;-scale" type="simple_value_type" />
+            <xs:element name="alpha-shape" type="simple_value_type" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
       <xs:element name="exp">
         <xs:complexType>
           <xs:sequence minOccurs="1" maxOccurs="1">
-            <xs:element name="&#955;-rate" type="simple_value_type" />
+            <xs:element name="lambda-rate" type="simple_value_type" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>

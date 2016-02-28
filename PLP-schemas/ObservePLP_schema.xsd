@@ -91,7 +91,9 @@
               <xs:element name="possible_range">
                 <xs:complexType>
                   <xs:attribute name="min_value" type="xs:string" />
+				  <xs:attribute name="min_inclusive" type="xs:boolean" />
                   <xs:attribute name="max_value" type="xs:string" />
+                  <xs:attribute name="max_inclusive" type="xs:boolean" />
                 </xs:complexType>
               </xs:element>
               <xs:element name="possible_value">

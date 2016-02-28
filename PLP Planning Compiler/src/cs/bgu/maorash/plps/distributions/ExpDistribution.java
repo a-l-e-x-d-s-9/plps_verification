@@ -4,7 +4,7 @@ package cs.bgu.maorash.plps.distributions;
  * Created by maorash
  * maorash@cs.bgu.ac.il
  */
-public class ExpDistribution {
+public class ExpDistribution implements Distribution {
     private String lambda;
 
     public ExpDistribution(String lambda) {
@@ -13,5 +13,10 @@ public class ExpDistribution {
 
     public String getLambda() {
         return lambda;
+    }
+
+    @Override
+    public String toString() {
+        return "Exp("+lambda+")";
     }
 }

@@ -20,4 +20,9 @@ public class UniformDistribution implements Distribution {
     public String getUpperBound() {
         return upperBound;
     }
+
+    @Override
+    public String toString() {
+        return "Uniform("+lowerBound+","+upperBound+")";
+    }
 }

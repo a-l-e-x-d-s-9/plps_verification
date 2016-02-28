@@ -22,7 +22,7 @@
       <xs:element name="progress_measures" type="progress_measures_type" />
       <!-- SPECIFIC TO DETECT -->
       <xs:element name="detection_goal" type="detection_goal_type" />
-      <xs:element name="success_given_condition" type="success_given_condition_type" />
+      <xs:element name="success_prob_given_condition" type="success_given_condition_type" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="version" type="xs:double" use="optional" />
@@ -73,7 +73,9 @@
               <xs:element name="possible_range">
                 <xs:complexType>
                   <xs:attribute name="min_value" type="xs:string" />
+				  <xs:attribute name="min_inclusive" type="xs:boolean" />
                   <xs:attribute name="max_value" type="xs:string" />
+                  <xs:attribute name="max_inclusive" type="xs:boolean" />
                 </xs:complexType>
               </xs:element>
               <xs:element name="possible_value">

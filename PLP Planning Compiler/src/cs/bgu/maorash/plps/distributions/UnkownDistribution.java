@@ -4,7 +4,7 @@ package cs.bgu.maorash.plps.distributions;
  * Created by maorash
  * maorash@cs.bgu.ac.il
  */
-public class UnkownDistribution {
+public class UnkownDistribution implements Distribution {
     private String description;
 
     public UnkownDistribution(String description) {
@@ -13,5 +13,10 @@ public class UnkownDistribution {
 
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String toString() {
+        return "(unknown): "+description;
     }
 }

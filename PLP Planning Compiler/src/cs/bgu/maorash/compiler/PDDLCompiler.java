@@ -1,6 +1,8 @@
 package cs.bgu.maorash.compiler;
 
-import cs.bgu.maorash.plps.etc.*;
+import cs.bgu.maorash.plps.conditions.*;
+import cs.bgu.maorash.plps.effects.*;
+import cs.bgu.maorash.plps.etc.Predicate;
 import cs.bgu.maorash.plps.modules.AchievePLP;
 import cs.bgu.maorash.plps.modules.ObservePLP;
 import cs.bgu.maorash.plps.modules.PLP;
@@ -11,6 +13,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by maorash
@@ -21,7 +25,7 @@ public class PDDLCompiler {
     private static List<AchievePLP> achievePLPs;
     private static List<ObservePLP> observePLPs;
     private static List<PLPParameter> observableValues;
-    private static List<Condition> possibleEffects;
+    private static List<Effect> possibleEffects;
 
     public static String producePDDL (String dirPath) {
         loadPLPs(dirPath);
@@ -37,7 +41,7 @@ public class PDDLCompiler {
         }
 
         for (AchievePLP aPLP : achievePLPs) {
-            possibleEffects.addAll(aPLP.getGoals());
+            possibleEffects.add(aPLP.getGoal().createProperEffect());
             possibleEffects.addAll(aPLP.getSideEffects());
         }
 
@@ -60,24 +64,34 @@ public class PDDLCompiler {
 
         compileHeader(oPLP,sb);
 
-        sb.append(":effect (and ");
+        sb.append(":effect ");
+        int numEffects = 0;
+        StringBuilder effectsSB = new StringBuilder();
 
         if (oPLP.getGoal().getClass().isAssignableFrom(PLPParameter.class)) {
             PLPParameter goal = ((PLPParameter)oPLP.getGoal());
-            sb.append("(K_").append(goal.getName().toUpperCase()).append(" ");
+            effectsSB.append("(K_").append(goal.getName().toUpperCase()).append(" ");
             for (String field : goal.getParamFieldValues()) {
-                sb.append(field).append(" ");
+                effectsSB.append(field).append(" ");
             }
-            sb.deleteCharAt(sb.length()-1);
-            sb.append(") ");
+            effectsSB.deleteCharAt(effectsSB.length()-1);
+            effectsSB.append(") ");
+            numEffects++;
         }
 
-        for (Condition se: oPLP.getSideEffects()){
-            sb.append(se.toPDDL()).append(" ");
+        for (Effect se: oPLP.getSideEffects()){
+            String compiledSE = compile(se);
+            if (!compiledSE.equals("")) numEffects++;
+            effectsSB.append(compiledSE).append(" "); // TODO: FIX
         }
+
+
+        if (numEffects > 1) sb.append("(and ");
+        sb.append(effectsSB.toString());
 
         sb.deleteCharAt(sb.length()-1);
-        sb.append(")").append("\n");
+        if (numEffects > 1) sb.append(")");
+        sb.append("\n");
         //TODO: change goals into one goal with AND
 
         sb.append(")");
@@ -90,17 +104,26 @@ public class PDDLCompiler {
 
         compileHeader(aPLP,sb);
 
-        sb.append(":effect (and ");
-        for (Condition c: aPLP.getGoals()) {
-            sb.append(c.toPDDL()).append(" ");
-        }
-        for (Condition se: aPLP.getSideEffects()){
-            sb.append(se.toPDDL()).append(" ");
+        sb.append(":effect ");
+
+        int numEffects = 0;
+        StringBuilder effectSB = new StringBuilder();
+        String goalEffect = compile(aPLP.getGoal().createProperEffect());
+        effectSB.append(goalEffect).append(" "); // TODO: FIX
+        if (!goalEffect.equals("")) numEffects++;
+        for (Effect se: aPLP.getSideEffects()){
+            String eff = compile(se);
+            if (!goalEffect.equals("")) numEffects++;
+            effectSB.append(eff).append(" "); // TODO: FIX
         }
 
+        if (numEffects > 1) sb.append("(and ");
+        sb.append(effectSB.toString());
+
         sb.deleteCharAt(sb.length()-1);
-        sb.append(")").append("\n");
-        //TODO: change goals into one goal with AND
+        if (numEffects > 1) sb.append(")");
+        sb.append("\n");
+        //TODO: check if AND works fine
 
         sb.append(")");
         return sb.toString();
@@ -109,7 +132,7 @@ public class PDDLCompiler {
     private static StringBuilder compileHeader(PLP aPLP, StringBuilder sb) {
         sb.append(":parameters (");
 
-        Iterator<PLPParameter> execParamIterator = aPLP.getInputExecParams().iterator();
+        Iterator<PLPParameter> execParamIterator = aPLP.getExecParams().iterator();
         while (execParamIterator.hasNext()) {
             sb.append("?").append(execParamIterator.next());
             if (execParamIterator.hasNext()) sb.append(" ");
@@ -119,8 +142,8 @@ public class PDDLCompiler {
         sb.append(":precondition (and ");
 
         Iterator<Condition> preCondIterator = aPLP.getPreConditions().iterator();
-        execParamIterator = aPLP.getInputExecParams().iterator();
-        Iterator<Condition> effectsIterator;
+        execParamIterator = aPLP.getExecParams().iterator();
+        Iterator<Effect> effectsIterator;
         boolean hasPreCond = false;
 
         while (preCondIterator.hasNext()) {
@@ -129,8 +152,8 @@ public class PDDLCompiler {
             boolean containsExecParam = false;
             while (execParamIterator.hasNext()) {
                 PLPParameter param = execParamIterator.next();
-                if (preCond.containsParam(param)) {
-                    sb.append(preCond.toPDDL()).append(" ");
+                if (preCond.containsParam(param.getName())) {
+                    sb.append(compile(preCond)).append(" "); // TODO: FIX
                     containsExecParam = true;
                     hasPreCond = true;
                     break;
@@ -141,7 +164,7 @@ public class PDDLCompiler {
                 effectsIterator = possibleEffects.iterator();
                 while (effectsIterator.hasNext()) {
                     if (preCond.sharesParams(effectsIterator.next())) {
-                        sb.append(preCond.toPDDL()).append(" ");
+                        sb.append(compile(preCond)).append(" "); // TODO: FIX
                         hasPreCond = true;
                         break;
                     }
@@ -151,7 +174,7 @@ public class PDDLCompiler {
 
         for (PLPParameter param : aPLP.getInputParams()) {
             for (ObservationGoal og : observableValues) {
-                if (og.getClass().isAssignableFrom(PLPParameter.class) && og.containsParam(param)) {
+                if (og.getClass().isAssignableFrom(PLPParameter.class) && og.containsParam(param.getName())) {
                     PLPParameter goal = ((PLPParameter) og);
                     sb.append("(K_").append(goal.getName().toUpperCase()).append(" ");
                     for (String field : goal.getParamFieldValues()) {
@@ -165,7 +188,7 @@ public class PDDLCompiler {
                 }
             }
         }
-        /*for (PLPParameter param : aPLP.getInputExecParams()) {
+        /*for (PLPParameter param : aPLP.getExecParams()) {
             for (ObservationGoal og : observableValues) {
                 if (og.getClass().isAssignableFrom(PLPParameter.class) && og.containsParam(param)) {
                     sb.append("(K_").append(param.getName().toUpperCase()).append(") ");
@@ -182,25 +205,42 @@ public class PDDLCompiler {
         return sb;
     }
 
+    public static String compile(Formula formula) {
+        if (formula.getOperator().equals("=") &&
+                formula.getRightExpr().toUpperCase().equals("NULL")&&
+                formula.getLeftExpr().matches(PLPParameter.PLPParameterRegex)) {
 
-    public static String compile(Equality equality) {
-        if (equality.getRightExpr().toUpperCase().equals("NULL")
-                && equality.getLeftExpr().getClass().isAssignableFrom(PLPParameter.class)) {
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("(not (K_").append(equality.getLeftExpr().getName().toUpperCase()).append(" ");
-            for (String field : equality.getLeftExpr().getParamFieldValues()) {
-                sb.append(field).append(" ");
+            for (PLPParameter param : observableValues) {
+                if (param.containsParam(formula.getLeftExpr()))
+                    return generateInformationLoss(formula.getLeftExpr());
             }
-            sb.deleteCharAt(sb.length()-1);
-            sb.append("))");
-            return sb.toString();
+
         }
-        return "(" + equality.getLeftExpr() + " = " + equality.getRightExpr() + ")";
+        //if (!formula.getOperator().equals("=")) {
+            // TODO: inform the user of unsupported formula
+        //}
+        return "(" + formula.getLeftExpr() + " " + formula.getOperator() + " " + formula.getRightExpr() + ")";
+    }
+
+    public static String generateInformationLoss(String parameter) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(not (K_");//.append(equality.getLeftExpr().toUpperCase()).append(" ");
+
+        Pattern p = Pattern.compile("[_a-zA-Z]\\w*");
+        Matcher matcher = p.matcher(parameter);
+        boolean isFirstMatch = true;
+        while (matcher.find()) {
+            sb.append((isFirstMatch ? matcher.group().toUpperCase() : matcher.group())).append(" ");
+            isFirstMatch = false;
+        }
+
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append("))");
+        return sb.toString();
     }
 
     public static String compile(NotCondition nCond) {
-        return "(not " + nCond.getCondition().toPDDL() + ")";
+        return "(not " + compile(nCond.getCondition()) + ")"; // TODO: FIX for a more generic case or throw error
     }
 
     public static String compile(Predicate predicate) {
@@ -212,10 +252,84 @@ public class PDDLCompiler {
                 ")";
     }
 
-    public static String compile(ForAllCondition faCond) {
-        int stringLength = Arrays.toString(faCond.getForAllParams().toArray()).length();
-        return "(forall (" + Arrays.toString(faCond.getForAllParams().toArray()).substring(1, stringLength - 1) +
-                ") " + faCond.getCondition().toPDDL() + ")";
+    public static String compile(QuantifiedCondition qCond) {
+        boolean isForall = (qCond.getQuantifier() == QuantifiedCondition.Quantifier.FORALL);
+        String paramsString = Arrays.toString(qCond.getParams().toArray());
+        return (isForall ? "(forall (" : "(exists (") +
+                paramsString.substring(1, paramsString.length() - 1) +
+                ") " + compile(qCond.getCondition()) + ")"; // TODO: FIX
+    }
+
+    public static String compile(Condition c) {
+        if (c.getClass().isAssignableFrom(Formula.class)) {
+            return compile((Formula) c);
+        }
+        else if (c.getClass().isAssignableFrom(Predicate.class)) {
+            return compile((Predicate) c);
+        }
+        else if (c.getClass().isAssignableFrom(QuantifiedCondition.class)) {
+            return compile((QuantifiedCondition) c);
+        }
+        else if (c.getClass().isAssignableFrom(NotCondition.class)) {
+            return compile((NotCondition) c);
+        }
+        else {
+            throw new UnsupportedOperationException("Unsupported condition " + c + " of type " + c.getClass());
+        } // TODO: add the new conditions
+    }
+
+    public static String compile(Effect e) {
+        if (e.getClass().isAssignableFrom(Predicate.class)) {
+            return compile((Predicate) e);
+        }
+        else if (e.getClass().isAssignableFrom(AssignmentEffect.class)) {
+            return compile((AssignmentEffect) e);
+        }
+        else if (e.getClass().isAssignableFrom(ForAllEffect.class)) {
+            return compile((ForAllEffect) e);
+        }
+        else if (e.getClass().isAssignableFrom(NotEffect.class)) {
+            return compile((NotEffect) e);
+        }
+        else if (e.getClass().isAssignableFrom(AndEffect.class)) {
+            return compile((AndEffect) e);
+        }
+        else {
+            throw new UnsupportedOperationException("Unsupported effect " + e + " of type " + e.getClass());
+        } // TODO: add the new conditions
+    }
+
+    public static String compile(AssignmentEffect aEffect) {
+        if (aEffect.getExpression().toUpperCase().equals("NULL")) {
+            for (PLPParameter param : observableValues) {
+                if (param.containsParam(aEffect.getParam().getName())) {
+                    return generateInformationLoss(aEffect.getParam().toString());
+                }
+            }
+        }
+        //if (!formula.getOperator().equals("=")) {
+        // TODO: inform the user of unsupported formula
+        //}
+        return "(" + aEffect.getParam() + " = " + aEffect.getExpression() + ")";
+    }
+
+    public static String compile(NotEffect nEffect) {
+        return "(not " + compile(nEffect.getEffect()) + ")"; // TODO: FIX for a more generic case or throw error
+    }
+
+    public static String compile(ForAllEffect faEffect) {
+        String paramsString = Arrays.toString(faEffect.getParams().toArray());
+        return "(forall (" + paramsString.substring(1, paramsString.length() - 1) +
+                ") " + compile(faEffect.getEffect()) + ")"; // TODO: FIX
+    }
+
+    public static String compile(AndEffect aEffect) {
+        StringBuilder effectsSB = new StringBuilder();
+        for (Effect e : aEffect.getEffects()) {
+            effectsSB.append(compile(e)).append(" "); // TODO: fix
+        }
+        effectsSB.deleteCharAt(effectsSB.length()-1);
+        return "(and " + effectsSB.toString() + ")";
     }
 
     public static void loadPLPs(String dirPath) {
@@ -233,9 +347,9 @@ public class PDDLCompiler {
         observePLPs = new LinkedList<>();
 
         AchievePLP walkThroughGateway = new AchievePLP("walk_through_gateway");
-        walkThroughGateway.addInputExecParam("areaA");
-        walkThroughGateway.addInputExecParam("areaB");
-        walkThroughGateway.addInputExecParam("gateway");
+        walkThroughGateway.addExecParam("areaA");
+        walkThroughGateway.addExecParam("areaB");
+        walkThroughGateway.addExecParam("gateway");
 
         PLPParameter gatewayloc = new PLPParameter("gateway_location");
         gatewayloc.addParamFieldValue("gateway");
@@ -254,8 +368,8 @@ public class PDDLCompiler {
         pre1.addValue("areaA");
         Predicate pre2 = new Predicate("connected");
         pre2.addValue("areaA"); pre2.addValue("areaB"); pre2.addValue("gateway");
-        Equality pre3 = new Equality("current_Aspeed", "0");
-        Equality pre4 = new Equality("current_Lspeed", "0");
+        Formula pre3 = new Formula("current_Aspeed", "0", "=");
+        Formula pre4 = new Formula("current_Lspeed", "0", "=");
         walkThroughGateway.addPreCondition(pre1);
         walkThroughGateway.addPreCondition(pre2);
         walkThroughGateway.addPreCondition(pre3);
@@ -264,25 +378,27 @@ public class PDDLCompiler {
         NotCondition conC = new NotCondition(new Predicate("arm_moving"));
         walkThroughGateway.addConcurrencyCondition(conC);
 
-        PLPParameter gatewaylocforall = new PLPParameter("gateway_location");
-        gatewaylocforall.addParamFieldValue("gw");
-        Equality temp = new Equality(gatewaylocforall,"Null");
-        ForAllCondition sideE = new ForAllCondition(temp);
+        //PLPParameter gatewaylocforall = new PLPParameter("gateway_location");
+        //gatewaylocforall.addParamFieldValue("gw");
+        PLPParameter np = new PLPParameter("gateway_location");
+        np.addParamFieldValue("gw");
+        Effect temp = new AssignmentEffect(np,"Null");
+        ForAllEffect sideE = new ForAllEffect(temp);
         sideE.addParam("gw");
         walkThroughGateway.addSideEffect(sideE);
         Predicate sideE2 = new Predicate("at");
         sideE2.addValue("areaA");
-        walkThroughGateway.addSideEffect(new NotCondition(sideE2));
+        walkThroughGateway.addSideEffect(new NotEffect(sideE2));
 
         Predicate goal = new Predicate("at");
         goal.addValue("areaB");
-        walkThroughGateway.addGoal(goal);
+        walkThroughGateway.setGoal(goal);
 
         ObservePLP observeGateway = new ObservePLP("gatewayAB");
 
-        observeGateway.addInputExecParam("areaA");
-        observeGateway.addInputExecParam("areaB");
-        observeGateway.addInputExecParam("gateway");
+        observeGateway.addExecParam("areaA");
+        observeGateway.addExecParam("areaB");
+        observeGateway.addExecParam("gateway");
 
         observeGateway.addInputParam("rgb_image");
         observeGateway.addInputParam("depth_image");
@@ -296,8 +412,8 @@ public class PDDLCompiler {
         pre5.addValue("areaA");
         Predicate pre6 = new Predicate("connected");
         pre6.addValue("areaA"); pre6.addValue("areaB"); pre6.addValue("gateway");
-        Equality pre7 = new Equality("current_Aspeed", "0");
-        Equality pre8 = new Equality("current_Lspeed", "0");
+        Formula pre7 = new Formula("current_Aspeed", "0", "=");
+        Formula pre8 = new Formula("current_Lspeed", "0", "=");
         observeGateway.addPreCondition(pre5);
         observeGateway.addPreCondition(pre6);
         observeGateway.addPreCondition(pre7);

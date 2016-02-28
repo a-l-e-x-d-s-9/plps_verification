@@ -1,12 +1,12 @@
 package cs.bgu.maorash.plps.modules;
 
 import cs.bgu.maorash.plps.distributions.ConditionalDist;
-import cs.bgu.maorash.plps.etc.Condition;
-import cs.bgu.maorash.plps.etc.ConditionalProb;
-import cs.bgu.maorash.plps.plpFields.ObservationGoal;
+import cs.bgu.maorash.plps.conditions.Condition;
+import cs.bgu.maorash.plps.etc.Predicate;
+import cs.bgu.maorash.plps.plpFields.ConditionalProb;
+import cs.bgu.maorash.plps.plpFields.FailureMode;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,71 +16,72 @@ import java.util.List;
  */
 public class AchievePLP extends PLP {
 
-    private List<Condition> goals;
-    // probabilities
+    private Condition goal;
 
     private List<ConditionalProb> successProb;
-    private HashMap<String,List<ConditionalProb>> failuresProb;
+
+    private List<FailureMode> failureModes;
+    private List<ConditionalProb> generalFailureProb;
 
     private List<ConditionalDist> successRuntime;
-    private HashMap<String,List<ConditionalDist>> failuresRuntime;
+    private List<ConditionalDist> failRuntime;
 
     public AchievePLP(String baseName) {
         super(baseName);
-
-        goals = new LinkedList<>();
-
         this.successProb = new LinkedList<>();
-        this.failuresProb = new HashMap<>();
+        this.failureModes = new LinkedList<>();
+        this.generalFailureProb = new LinkedList<>();
         this.successRuntime = new LinkedList<>();
-        this.failuresRuntime = new HashMap<>();
-
+        this.failRuntime = new LinkedList<>();
+        this.goal = new Predicate("empty-goal");
     }
 
-    public List<Condition> getGoals() {
-        return goals;
+    public void addSuccessProb(ConditionalProb prob) {
+        successProb.add(prob);
+    }
+
+    public void addFailureMode(FailureMode fm) {
+        failureModes.add(fm);
+    }
+
+    public void addGeneralFailureProb(ConditionalProb prob) {
+        generalFailureProb.add(prob);
+    }
+
+    public void addSuccessRuntime(ConditionalDist dist) {
+        successRuntime.add(dist);
+    }
+
+    public void addFailureRuntime(ConditionalDist dist) {
+        failRuntime.add(dist);
+    }
+
+    public Condition getGoal() {
+        return goal;
+    }
+
+    public void setGoal(Condition c) {
+        this.goal = c;
     }
 
     public List<ConditionalProb> getSuccessProb() {
         return successProb;
     }
 
-    public HashMap<String, List<ConditionalProb>> getFailuresProb() {
-        return failuresProb;
+    public List<FailureMode> getFailureModes() {
+        return failureModes;
+    }
+
+    public List<ConditionalProb> getGeneralFailureProb() {
+        return generalFailureProb;
     }
 
     public List<ConditionalDist> getSuccessRuntime() {
         return successRuntime;
     }
 
-    public HashMap<String, List<ConditionalDist>> getFailuresRuntime() {
-        return failuresRuntime;
-    }
-
-    public void addGoal(Condition c) {
-        goals.add(c);
-    }
-
-    public void addSuccessProb(ConditionalProb cp) {
-        successProb.add(cp);
-    }
-
-    public void addFailuresProb(String c, ConditionalProb cp) {
-        if (!failuresProb.containsKey(c)){
-            failuresProb.put(c,new LinkedList<>());
-        }
-        failuresProb.get(c).add(cp);
-    }
-
-    public void addSuccessRuntime(ConditionalDist cd){
-        successRuntime.add(cd);
-    }
-
-    public void addFailuresRuntime(String c,ConditionalDist cd) {
-        if (!failuresRuntime.containsKey(c)){
-            failuresRuntime.put(c,new LinkedList<>());
-        }
-        failuresRuntime.get(c).add(cd);
+    public List<ConditionalDist> getFailRuntime() {
+        return failRuntime;
     }
 
     public String getName() {
@@ -90,11 +91,11 @@ public class AchievePLP extends PLP {
     @Override
     public String toString() {
         return super.toString()  + "\n" +
-        " - Achievement Goals: " + Arrays.toString(goals.toArray()) + "\n" +
-                " - successProb: " + "\n" +
-                " - failuresProb: " + "\n" +
-                " - successRuntime: " + "\n" +
-                " - failuresRuntime: " ;
+        " - Achievement Goal: " + goal.toString() + "\n" +
+                " - Success Prob: " + Arrays.toString(successProb.toArray()) + "\n" +
+                " - Failure Modes: " + Arrays.toString(failureModes.toArray()) + "\n" +
+                (failureModes.isEmpty() ? " - Failure Prob: " + Arrays.toString(generalFailureProb.toArray()) + "\n" : "") +
+                " - Success Runtime: " + Arrays.toString(successRuntime.toArray()) + "\n" +
+                " - Failure Runtime: " + Arrays.toString(failRuntime.toArray()) ;
     }
-
 }

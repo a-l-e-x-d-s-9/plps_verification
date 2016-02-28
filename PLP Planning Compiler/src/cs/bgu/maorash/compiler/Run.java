@@ -1,10 +1,13 @@
 package cs.bgu.maorash.compiler;
 
 
+import cs.bgu.maorash.plps.loader.PLPLoader;
+
 public class Run {
     public static void main(String[] args) {
 
-        System.out.println(PDDLCompiler.producePDDL(args[0]));
+
+        //System.out.println(PDDLCompiler.producePDDL(args[0]));
         /*System.out.println(walkThroughGateway.toString());
 
         System.out.println("--------------------------------------------");

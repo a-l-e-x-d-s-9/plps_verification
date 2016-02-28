@@ -58,8 +58,8 @@
     </AND>
   </detection_goal>
 
-  <success_given_condition>
+  <success_prob_given_condition>
     <probability value="0.95" />
-  </success_given_condition>
+  </success_prob_given_condition>
   
 </detect_plp>
