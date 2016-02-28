@@ -12,7 +12,7 @@
         <repository>
             <id>git-maorash</id>
             <name>Git based repo</name>
-            <url>https://github.com/maorash/PLP-repo/raw/master/maven-repo</url>
+            <url>https://github.com/maorash/PLP-repo/tree/master/maven-repo</url>
         </repository>
     </repositories>
 
