@@ -16,6 +16,7 @@
         </repository>
     </repositories>
 
+    <!--
     <dependencies>
         <dependency>
             <groupId>il.ac.bgu.cs.plps</groupId>
@@ -29,5 +30,6 @@
             </exclusions>
         </dependency>
     </dependencies>
+    -->
 
 </project>

@@ -1,7 +1,7 @@
 (:action achieve_walk_through_gateway
 :parameters (?areaA ?areaB ?gateway)
 :precondition (and (at areaA) (connected areaA areaB gateway) (K_GATEWAY_LOCATION gateway))
-:effect (and (at areaB) (forall (gw, gateway_location) (not (K_GATEWAY_LOCATION gw))))
+:effect (and (at areaB) (forall (gw) (not (K_GATEWAY_LOCATION gw))))
 )
 (:action observe_observe_gateway
 :parameters (?areaA ?areaB ?gateway)
