@@ -44,6 +44,9 @@ public class PLPLoader {
         return maintainPLPs;
     }
 
+    public static void main(String[] args) {
+    }
+
     public static void loadFromDirectory(String dir) {
         achievePLPs = new LinkedList<>();
         observePLPs = new LinkedList<>();
