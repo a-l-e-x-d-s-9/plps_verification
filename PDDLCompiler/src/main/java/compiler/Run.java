@@ -14,8 +14,7 @@ public class Run {
         }
         else {
             PLPLoader.loadFromDirectory(args[0]);
-            System.out.println(PLPLoader.getAchievePLPs().get(0).toString());
-            /*PDDLCompiler.setAchievePLPs(PLPLoader.getAchievePLPs());
+            PDDLCompiler.setAchievePLPs(PLPLoader.getAchievePLPs());
             PDDLCompiler.setObservePLPs(PLPLoader.getObservePLPs());
             String compiledPDDL = PDDLCompiler.producePDDL();
             PrintWriter writer = null;
@@ -29,7 +28,7 @@ public class Run {
             finally {
                 if (writer != null)
                     writer.close();
-            }*/
+            }
 
         }
 
