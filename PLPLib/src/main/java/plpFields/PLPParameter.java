@@ -65,4 +65,13 @@ public class PLPParameter implements ObservationGoal {
         return sb.toString();
     }
 
+    public String simpleString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(name);
+        for (String s : paramFieldValues) {
+            sb.append("_").append(s);
+        }
+        return sb.toString();
+    }
+
 }

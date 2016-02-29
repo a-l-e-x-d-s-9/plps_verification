@@ -22,11 +22,11 @@
         <sourceTestOutputDir name="target\generated-test-sources\test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="PDDLCompiler" />
+        <module name="CodeGenerator" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
-      <module name="PDDLCompiler" target="1.8" />
+      <module name="CodeGenerator" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

@@ -14,8 +14,8 @@
       <param name="laser_scan" read_frequency="5" />
       <param name="odometry" read_frequency="5" />
       <param name="arm_controller" read_frequency="1" />
-      <param name="begin_Aspeed" />
-      <param name="begin_Lspeed" />
+      <param name="current_Aspeed" />
+      <param name="current_Lspeed" />
     </input_parameters>
 
     <output_parameters>
@@ -31,12 +31,6 @@
   <variables>
     <var name="collision_alert" type="boolean" />
     <var name="arm_moving" type="boolean" />
-    <var name="current_Aspeed" type="real">
-      <possible_range min_value="0" max_value="angular_speed+1" />
-    </var>
-    <var name="current_Lspeed" type="real">
-      <possible_range min_value="0" max_value="linear_speed+1" />
-    </var>
   </variables>
 
   <constants>
