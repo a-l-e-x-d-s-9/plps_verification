@@ -19,6 +19,8 @@ public class ConditionalDist {
         this.condition = condition;
     }
 
+    public boolean isConditional() { return condition != null; }
+
     public Distribution getDist() {
         return dist;
     }

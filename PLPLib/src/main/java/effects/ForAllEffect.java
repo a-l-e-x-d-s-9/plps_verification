@@ -45,4 +45,15 @@ public class ForAllEffect implements Effect {
         return "[forall " + Arrays.toString(params.toArray()) +
                 "->" + effect.toString() + "]";
     }
+
+    @Override
+    public String simpleString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("forall");
+        for (String s : params) {
+            sb.append("_").append(s);
+        }
+        sb.append("_").append(effect.simpleString());
+        return sb.toString();
+    }
 }

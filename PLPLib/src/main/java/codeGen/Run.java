@@ -12,6 +12,8 @@ public class Run {
         }
         else {
             PLPLoader.loadFromDirectory(args[0]);
+           /* System.out.println(PLPLoader.getAchievePLPs().get(0).toString());
+            System.out.println(PLPLoader.getAchievePLPs().get(1).toString());*/
             String path = args[0];
             for (AchievePLP aPLP : PLPLoader.getAchievePLPs()) {
                 CodeGenerator.GenerateAchieveScripts(aPLP, path);

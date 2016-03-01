@@ -25,7 +25,7 @@ public class ConditionalProb implements Probability {
         return condition;
     }
 
-    public boolean isConditional() { return condition == null; }
+    public boolean isConditional() { return condition != null; }
 
     @Override
     public String toString() {

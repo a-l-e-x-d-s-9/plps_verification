@@ -53,4 +53,15 @@ public class AndEffect implements Effect{
         }
         return false;
     }
+
+    @Override
+    public String simpleString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<effects.size(); i++) {
+            sb.append(effects.get(i).simpleString());
+            if (i < effects.size()-1)
+                sb.append(".AND.");
+        }
+        return sb.toString();
+    }
 }

@@ -22,6 +22,10 @@ public class PLPClassesGenerator {
         for (PLPParameter p : plp.getInputParams()) {
             generator.writeLine(String.format("self.%s = None", p.simpleString()));
         }
+        generator.writeLine("# Input Parameters");
+        for (PLPParameter p : plp.getOutputParams()) {
+            generator.writeLine(String.format("self.%s = None", p.simpleString()));
+        }
         generator.newLine();
         generator.dendent();
 

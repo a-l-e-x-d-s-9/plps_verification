@@ -63,7 +63,35 @@ public class Predicate implements Condition, Effect {
         return "(" + name + " " +Arrays.toString(values.toArray()).substring(1,stringLength-1).replaceAll(",","")+ ")";
     }
 
+    public String simpleString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(name);
+        for (String s : values) {
+            sb.append("_").append(s);
+        }
+        return sb.toString();
+    }
+
     public Effect createProperEffect() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this.getClass().isInstance(obj)) {
+            Predicate pobj = (Predicate) obj;
+            if (name.equals(pobj.name) && values.size() == pobj.values.size()) {
+                for (int i=0;i<values.size();i++)
+                    if (!values.get(i).equals(pobj.values.get(i)))
+                        return false;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return "predicate".concat(name).hashCode();
     }
 }

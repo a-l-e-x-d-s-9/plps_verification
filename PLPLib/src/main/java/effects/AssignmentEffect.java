@@ -15,6 +15,7 @@ public class AssignmentEffect implements Effect {
 
     private PLPParameter param;
     private String expression;
+    private String key_desc;
 
     public AssignmentEffect(PLPParameter param, String expression) {
         this.param = param;
@@ -29,6 +30,13 @@ public class AssignmentEffect implements Effect {
         return expression;
     }
 
+    public void setDescription(String desc) {
+        this.key_desc = desc;
+    }
+
+    public String getKeyDesc() {
+        return key_desc;
+    }
 
     public boolean containsParam(String paramName) {
         if (paramName.equals(this.param)){
@@ -57,4 +65,8 @@ public class AssignmentEffect implements Effect {
         return "[" + param.toString() + " = " + expression + "]";
     }
 
+    @Override
+    public String simpleString() {
+        return key_desc;
+    }
 }

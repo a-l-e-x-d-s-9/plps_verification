@@ -74,14 +74,7 @@
         <xs:complexType>
           <xs:sequence minOccurs="0" maxOccurs="unbounded">
             <xs:choice minOccurs="0" maxOccurs="1">
-              <xs:element name="possible_range">
-                <xs:complexType>
-                  <xs:attribute name="min_value" type="xs:string" use="required" />
-				  <xs:attribute name="min_inclusive" type="xs:boolean" use="required" />
-                  <xs:attribute name="max_value" type="xs:string" use="required" />
-                  <xs:attribute name="max_inclusive" type="xs:boolean" use="required" />
-                </xs:complexType>
-              </xs:element>
+              <xs:element name="possible_range" type="range_type" />
               <xs:element name="possible_value">
                 <xs:complexType>
                   <xs:attribute name="value" type="xs:string" use="required" />
@@ -96,7 +89,13 @@
     </xs:sequence>
   </xs:complexType>
 
-
+  <xs:complexType name="range_type">
+    <xs:attribute name="min_value" type="xs:string" use="required" />
+    <xs:attribute name="min_inclusive" type="xs:boolean" use="required" />
+    <xs:attribute name="max_value" type="xs:string" use="required" />
+    <xs:attribute name="max_inclusive" type="xs:boolean" use="required" />
+  </xs:complexType>
+  
   <xs:simpleType name="variable_types">
     <xs:restriction base="xs:string">
       <xs:enumeration value="boolean" />
@@ -183,13 +182,27 @@
   <xs:complexType name="formula_condition_type">
     <xs:sequence minOccurs="1" maxOccurs="1">
       <xs:element name="expression" type="simple_value_type" />
-      <xs:element name="operator">
-        <xs:complexType>
-          <xs:attribute name="type" type="operator_type" />
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="expression" type="simple_value_type" />
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:sequence minOccurs="1" maxOccurs="1">
+          <xs:element name="operator">
+            <xs:complexType>
+              <xs:attribute name="type" type="operator_type" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="expression" type="simple_value_type" />
+        </xs:sequence>
+        <xs:sequence minOccurs="1" maxOccurs="1">
+          <xs:element name="inside_range">
+            <xs:complexType>
+              <xs:sequence minOccurs="1" maxOccurs="1">
+                <xs:element name="range" type="range_type" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence> 
+      </xs:choice>
     </xs:sequence>
+    <xs:attribute name="key_description" type="xs:string" use="required" />
   </xs:complexType>
 
   <xs:complexType name="simple_value_type">
@@ -200,13 +213,12 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="=" />
       <xs:enumeration value="!=" />
-      <xs:enumeration value="&#65308;" />
-      <xs:enumeration value="&#8804;" />
-      <xs:enumeration value="&#65310;" />
-      <xs:enumeration value="&#8805;" />
+      <xs:enumeration value="less" />
+      <xs:enumeration value="less_equal" />
+      <xs:enumeration value="greater" />
+      <xs:enumeration value="greater_equal" />
     </xs:restriction>
   </xs:simpleType>
-
 
   <xs:complexType name="not_condition_type">
     <xs:choice minOccurs="1" maxOccurs="1">
@@ -313,6 +325,7 @@
       <xs:element name="param" type="param_base_type" />
       <xs:element name="expression" type="simple_value_type" />
     </xs:sequence>
+    <xs:attribute name="key_description" type="xs:string" use="required" />
   </xs:complexType>
 
   <xs:complexType name="not_effect_type">

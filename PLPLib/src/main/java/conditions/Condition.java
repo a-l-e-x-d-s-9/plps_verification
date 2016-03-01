@@ -7,4 +7,5 @@ import plpFields.ObservationGoal;
 
 public interface Condition extends ObservationGoal, ParamHolder {
     Effect createProperEffect();
+    String simpleString();
 }

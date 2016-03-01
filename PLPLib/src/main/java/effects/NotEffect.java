@@ -31,4 +31,8 @@ public class NotEffect implements Effect {
         return "[Not " + effect.toString() + "]";
     }
 
+    @Override
+    public String simpleString() {
+        return "not_".concat(effect.simpleString());
+    }
 }

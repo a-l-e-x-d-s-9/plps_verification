@@ -24,6 +24,11 @@ public class BitwiseOperation implements Condition {
         this.operation = op;
     }
 
+    public BitwiseOperation(Operation op, List<Condition> conditions) {
+        this.conditions = conditions;
+        this.operation = op;
+    }
+
     public void addCondition(Condition c) {
         conditions.add(c);
     }
@@ -72,5 +77,31 @@ public class BitwiseOperation implements Condition {
             andEffect.addEffect(c.createProperEffect());
         }
         return andEffect;
+    }
+
+    @Override
+    public String simpleString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<conditions.size(); i++) {
+            sb.append(conditions.get(i).simpleString());
+            if (i < conditions.size()-1)
+                sb.append(operation);
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this.getClass().isInstance(obj)) {
+            BitwiseOperation bObj = (BitwiseOperation) obj;
+            if (operation == bObj.operation && conditions.size() == bObj.conditions.size()) {
+                for (int i=0; i<conditions.size(); i++) {
+                    if (!conditions.get(i).equals(bObj.conditions.get(i)))
+                        return false;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 }

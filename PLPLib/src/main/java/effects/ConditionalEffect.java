@@ -26,6 +26,9 @@ public class ConditionalEffect implements Effect {
         return effect;
     }
 
+    public boolean isConditional() {
+        return condition != null;
+    }
 
     public boolean sharesParams(ParamHolder ph) {
         return effect.sharesParams(ph);
@@ -40,5 +43,10 @@ public class ConditionalEffect implements Effect {
     @Override
     public String toString() {
         return "[" + effect.toString() + "|" + condition.toString() + "]";
+    }
+
+    @Override
+    public String simpleString() {
+        return condition.simpleString()+"_"+effect.simpleString();
     }
 }

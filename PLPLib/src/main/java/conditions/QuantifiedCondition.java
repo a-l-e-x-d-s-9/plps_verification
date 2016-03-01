@@ -45,6 +45,16 @@ public class QuantifiedCondition implements Condition {
                 "->" + condition.toString() + "]";
     }
 
+    public String simpleString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(quantifier.toString().toLowerCase());
+        for (String s : params) {
+            sb.append("_").append(s);
+        }
+        sb.append("_").append(condition.simpleString());
+        return sb.toString();
+    }
+
     public List<String> getParams() {
         return params;
     }
@@ -68,4 +78,25 @@ public class QuantifiedCondition implements Condition {
         return feEffect;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this.getClass().isInstance(obj)) {
+            QuantifiedCondition qObj = (QuantifiedCondition) obj;
+            if (quantifier == qObj.quantifier && condition.equals(qObj.condition)
+                    && params.size() == qObj.params.size()) {
+                for (int i=0; i<params.size(); i++) {
+                    if (!params.get(i).equals(qObj.params.get(i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return (quantifier.toString() + "_" + condition.hashCode()).hashCode();
+    }
 }

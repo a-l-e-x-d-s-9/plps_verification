@@ -38,4 +38,15 @@ public class Range {
         return (minInclusive ? "[" : "(") + minValue + ", " +
                 maxValue + (maxInclusive ? "]" : ")");
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this.getClass().isInstance(obj)) {
+            Range robj = (Range) obj;
+            return (minValue.replaceAll("\\s+","").equalsIgnoreCase(robj.minValue.replaceAll("\\s+",""))
+            && maxValue.replaceAll("\\s+","").equalsIgnoreCase(robj.maxValue.replaceAll("\\s+",""))
+            && maxInclusive == robj.maxInclusive && minInclusive == robj.minInclusive);
+        }
+        return false;
+    }
 }

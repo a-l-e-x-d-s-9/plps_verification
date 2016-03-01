@@ -40,4 +40,17 @@ public class NotCondition implements Condition {
         return new NotEffect((Predicate) condition);
 
     }
+
+    @Override
+    public String simpleString() {
+        return "not_".concat(condition.simpleString());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this.getClass().isInstance(obj)) {
+            return condition.equals(((NotCondition) obj).condition);
+        }
+        return false;
+    }
 }

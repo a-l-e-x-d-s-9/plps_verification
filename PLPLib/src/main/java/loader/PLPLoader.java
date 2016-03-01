@@ -423,7 +423,7 @@ public class PLPLoader {
         NodeList measures = measuresElement.getElementsByTagName("progress_measure");
         for (int i=0;i<measures.getLength();i++) {
             if (measures.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element pmElement = (Element) measures.item(0);
+                Element pmElement = (Element) measures.item(i);
                 String frequency = pmElement.getAttribute("frequency");
                 List<Condition> innerCond = parseConditions(pmElement);
                 ProgressMeasure pm = new ProgressMeasure(Double.parseDouble(frequency), innerCond.get(0));
@@ -479,8 +479,9 @@ public class PLPLoader {
                 plpParam.addParamFieldValue(((Element) paramFields.item(j)).getAttribute("value"));
             }
         }
-
-        return new AssignmentEffect(plpParam, expressionElement.getAttribute("value"));
+        AssignmentEffect ae = new AssignmentEffect(plpParam, expressionElement.getAttribute("value"));
+        ae.setDescription(assignmentElement.getAttribute("key_description"));
+        return ae;
     }
 
     private static Effect parseNotEffect(Element nEffectElement) {
@@ -607,13 +608,27 @@ public class PLPLoader {
         return new NotCondition(innerConditions.get(0));
     }
 
-    private static Condition parseFormula(Element formulaElement) {
+    private static Condition parseFormula(Element formulaElement) { // TODO: check end cases
         NodeList expressions = formulaElement.getElementsByTagName("expression");
+        NodeList ranges = formulaElement.getElementsByTagName("inside_range");
         String leftExp = ((Element) expressions.item(0)).getAttribute("value");
-        String rightExp = ((Element) expressions.item(1)).getAttribute("value");
-        NodeList operators = formulaElement.getElementsByTagName("operator");
-        String operator = ((Element) operators.item(0)).getAttribute("type");
-        return new Formula(leftExp,rightExp,operator);
+        Formula f;
+        if (ranges.getLength() > 0) {
+            Range range = parseRangesList((Element) ranges.item(0),"range").get(0);
+            f = new Formula(leftExp,range);
+        }
+        else {
+            String rightExp = ((Element) expressions.item(1)).getAttribute("value");
+            NodeList operators = formulaElement.getElementsByTagName("operator");
+            String operator = ((Element) operators.item(0)).getAttribute("type");
+            operator = operator.replace("less","<");
+            operator = operator.replace("greater",">");
+            operator = operator.replace("less_equal","<=");
+            operator = operator.replace("greater_equal",">=");
+            f = new Formula(leftExp,rightExp,operator);
+        }
+        f.setDescription(formulaElement.getAttribute("key_description"));
+        return f;
     }
 
     private static Predicate parsePredicate(Element predElement) {
@@ -690,16 +705,9 @@ public class PLPLoader {
 
                 Variable plpVar = new Variable(currVar.getAttribute("name"),type);
 
-                NodeList possible_ranges = currVar.getElementsByTagName("possible_range");
-                for (int j = 0; j < possible_ranges.getLength(); j++) {
-                    if (possible_ranges.item(j).getNodeType() == Node.ELEMENT_NODE) {
-                        Element re = (Element) possible_ranges.item(j);
-                        Range range = new Range(re.getAttribute("min_value"),
-                                                    Boolean.parseBoolean(re.getAttribute("min_inclusive")),
-                                                    re.getAttribute("max_value"),
-                                                    Boolean.parseBoolean(re.getAttribute("max_inclusive")));
-                        plpVar.addRange(range);
-                    }
+                List<Range> ranges = parseRangesList(currVar,"possible_range");
+                for (Range range : ranges) {
+                    plpVar.addRange(range);
                 }
 
                 NodeList possible_values = currVar.getElementsByTagName("possible_value");
@@ -712,6 +720,22 @@ public class PLPLoader {
                 plp.addVariable(plpVar);
             }
         }
+    }
+
+    private static List<Range> parseRangesList(Element rootElement, String rangeTagName) {
+        List<Range> ranges = new LinkedList<>();
+        NodeList possible_ranges = rootElement.getElementsByTagName(rangeTagName);
+        for (int j = 0; j < possible_ranges.getLength(); j++) {
+            if (possible_ranges.item(j).getNodeType() == Node.ELEMENT_NODE) {
+                Element re = (Element) possible_ranges.item(j);
+                Range range = new Range(re.getAttribute("min_value"),
+                                            Boolean.parseBoolean(re.getAttribute("min_inclusive")),
+                                            re.getAttribute("max_value"),
+                                            Boolean.parseBoolean(re.getAttribute("max_inclusive")));
+                ranges.add(range);
+            }
+        }
+        return ranges;
     }
 
     private static FieldType getFieldTypeFromString(String stringType) {

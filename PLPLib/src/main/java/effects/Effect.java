@@ -7,4 +7,5 @@ import plpEtc.ParamHolder;
  * maorash@cs.bgu.ac.il
  */
 public interface Effect extends ParamHolder {
+    String simpleString();
 }
