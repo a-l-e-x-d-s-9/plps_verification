@@ -64,7 +64,7 @@ public class PDDLCompiler {
 
     private static String compile(ObservePLP oPLP) {
         StringBuilder sb = new StringBuilder();
-        sb.append("(:action ").append("observe_").append(oPLP.getBaseName()).append("\n");
+        sb.append("(:action ").append(oPLP.getBaseName()).append("\n");
 
         compileHeader(oPLP,sb);
 
@@ -104,7 +104,7 @@ public class PDDLCompiler {
 
     public static String compile(AchievePLP aPLP) {
         StringBuilder sb = new StringBuilder();
-        sb.append("(:action ").append("achieve_").append(aPLP.getBaseName()).append("\n");
+        sb.append("(:action ").append(aPLP.getBaseName()).append("\n");
 
         compileHeader(aPLP,sb);
 

@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+
+  <xs:element name="code_generator_glue">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:choice>
+          <xs:element name="import">
+            <xs:complexType>
+              <xs:sequence minOccurs="1" maxOccurs="unbounded">
+                <xs:element name="python_class" type="xs:string" />
+              </xs:sequence>
+              <xs:attribute name="from" type="xs:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="parameter_location">
+            <xs:complexType>
+              <xs:sequence minOccurs="1" maxOccurs="1">
+                <xs:element name="param" type="param_base_type" />
+                <xs:element name="ROS_topic">
+                  <xs:complexType>
+                    <xs:attribute name="name" type="xs:string" />
+                    <xs:attribute name="message_type" type="xs:string" />
+                    <xs:attribute name="field_in_message" type="xs:string" />
+                  </xs:complexType>
+                </xs:element>
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="param_base_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="field" type="field_type" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="field_type">
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+
+</xs:schema>
+

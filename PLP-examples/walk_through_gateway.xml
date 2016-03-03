@@ -36,6 +36,8 @@
   <constants>
     <constant name="linear_speed" />
     <constant name="angular_speed" />
+    <constant name="aspeed_offset" />
+    <constant name="lspeed_offset" />
   </constants>
 
   <required_resources>
@@ -56,13 +58,13 @@
       <field value="gateway" />
     </predicate_condition>
 
-    <formula_condition>
+    <formula_condition key_description="no_angular_speed">
       <expression value="begin_Aspeed" />
       <operator type="="/>
       <expression value="0" />
     </formula_condition>
 
-    <formula_condition>
+    <formula_condition key_description="no_linear_speed">
       <expression value="begin_Lspeed" />
       <operator type="="/>
       <expression value="0" />
@@ -71,7 +73,7 @@
   </preconditions>
 
   <concurrency_conditions>
-    <formula_condition>
+    <formula_condition key_description="arm_not_moving">
       <expression value="arm_moving" />
       <operator type="="/>
       <expression value="FALSE" />
@@ -85,7 +87,7 @@
   <side_effects>
 	  <forall_effect>
 		<param name="gw" />
-		<assignment_effect>
+		<assignment_effect key_description="losing_observed_locations">
 		  <param name="gateway_location" >
 			<field value="gw" />
 		  </param>
@@ -98,16 +100,18 @@
   <progress_measures>
     <progress_measure frequency="1">
       <OR>
-        <formula_condition>
+        <formula_condition key_description="angular_speed_in_range">
           <expression value="current_Aspeed" />
-          <operator type="="/>
-          <expression value="angular_speed" />
+          <inside_range>
+            <range min_value="angular_speed-aspeed_offset" min_inclusive="true" max_value="angular_speed+aspeed_offset" max_inclusive="true" />
+          </inside_range>
         </formula_condition>
 
-        <formula_condition>
+        <formula_condition key_description="linear_speed_in_range">
           <expression value="current_Lspeed" />
-          <operator type="="/>
-          <expression value="linear_speed" />
+          <inside_range>
+            <range min_value="linear_speed-lspeed_offset" min_inclusive="true" max_value="linear_speed+lspeed_offset" max_inclusive="true" />
+          </inside_range>
         </formula_condition>
       </OR>
     </progress_measure>
@@ -124,7 +128,7 @@
 
   <success_probability>
     <conditional_probability>
-      <formula_condition>
+      <formula_condition key_description="path_clear">
         <expression value="clear_path" />
         <operator type="="/>
         <expression value="TRUE" />
@@ -133,7 +137,7 @@
     </conditional_probability>
 
     <conditional_probability>
-      <formula_condition>
+      <formula_condition key_description="not_path_clear">
         <expression value="clear_path" />
         <operator type="="/>
         <expression value="FALSE" />
@@ -142,17 +146,25 @@
     </conditional_probability>
   </success_probability>
 
+  <runtime_given_success>
+    <distribution>
+      <uniform>
+        <lower_bound value="(|gateway_location(gateway).angle|/angular_speed)+(gateway_location(gateway).distance/linear_speed)" />
+        <upper_bound value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
+      </uniform>
+    </distribution>
+  </runtime_given_success>
+  
   <failure_modes>
-
     <failure_mode>
-      <formula_condition>
+      <formula_condition key_description="collision">
         <expression value="collision_alert" />
         <operator type="="/>
         <expression value="TRUE" />
       </formula_condition>
 
       <conditional_probability>
-        <formula_condition>
+        <formula_condition key_description="path_clear">
           <expression value="clear_path" />
           <operator type="="/>
           <expression value="TRUE" />
@@ -161,7 +173,7 @@
       </conditional_probability>
 
       <conditional_probability>
-        <formula_condition>
+        <formula_condition key_description="not_clear_path">
           <expression value="clear_path" />
           <operator type="="/>
           <expression value="FALSE" />
@@ -179,12 +191,12 @@
 
       <conditional_probability>
         <AND>
-          <formula_condition>
+          <formula_condition key_description="no_floor_traction">
             <expression value="floor_traction" />
             <operator type="="/>
             <expression value="FALSE" />
           </formula_condition>
-          <formula_condition>
+          <formula_condition key_description="path_clear">
             <expression value="clear_path" />
             <operator type="="/>
             <expression value="TRUE" />
@@ -196,12 +208,12 @@
 
       <conditional_probability>
         <AND>
-          <formula_condition>
+          <formula_condition key_description="floor_traction">
             <expression value="floor_traction" />
             <operator type="="/>
             <expression value="TRUE" />
           </formula_condition>
-          <formula_condition>
+          <formula_condition key_description="path_clear">
             <expression value="clear_path" />
             <operator type="="/>
             <expression value="TRUE" />
@@ -212,18 +224,6 @@
     </failure_mode>
 
   </failure_modes>
-
-  <general_failure_probability>
-  </general_failure_probability>
-
-  <runtime_given_success>
-    <distribution>
-      <uniform>
-        <lower_bound value="(|gateway_location(gateway).angle|/angular_speed)+(gateway_location(gateway).distance/linear_speed)" />
-        <upper_bound value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
-      </uniform>
-    </distribution>
-  </runtime_given_success>
 
   <runtime_given_failure>
     <distribution>

@@ -19,7 +19,7 @@ public class Run {
             String compiledPDDL = PDDLCompiler.producePDDL();
             PrintWriter writer = null;
             try {
-                writer = new PrintWriter(args[0]+"\\pddl_actions.txt", "UTF-8");
+                writer = new PrintWriter(args[0]+"\\domain.txt", "UTF-8");
                 writer.print(compiledPDDL);
             }
             catch (Exception e) {

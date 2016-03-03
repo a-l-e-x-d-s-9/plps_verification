@@ -10,9 +10,7 @@ import modules.PLP;
 import plpEtc.Predicate;
 import plpFields.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PLPModuleGenerator {
 
@@ -21,7 +19,6 @@ public class PLPModuleGenerator {
     public static String GeneratePLPModule(PLP plp) {
         conditionMethods = new HashMap<>();
         PythonWriter generator = new PythonWriter();
-        System.out.println(PLPModuleGenerator.class.getResource("/PLPModuleHead.txt").getPath());
 
         generator.writeLine("from PlpAchieveClasses import *");
         generator.writeLine(String.format("from Plp%sClasses import *",plp.getBaseName()));
@@ -71,19 +68,68 @@ public class PLPModuleGenerator {
         generator.newLine();
         generator.writeLine("def monitor_conditions(self):");
         generator.indent();
-        if (plp.getConcurrencyConditions().size() > 1) {
+        for (Condition c : plp.getConcurrencyConditions()) {
+            generator.writeLine("if not "+generateIFcondition(c)+":");
+            generator.indent();
+            generator.writeLine("self.callback.plp_monitor_message(PlpMonitorMessage(\"" + c.toString() + "\", False, \"Concurrency condition doesn't hold\"))");
+            generator.dendent();
+        }
+        /*if (plp.getConcurrencyConditions().size() > 1) {
             BitwiseOperation concurrencyConditions = new BitwiseOperation(BitwiseOperation.Operation.AND, plp.getConcurrencyConditions());
             generator.writeLine("return " + generateIFcondition(concurrencyConditions));
         }
         else if (plp.getConcurrencyConditions().size() == 1) {
             generator.writeLine("return " + generateIFcondition(plp.getConcurrencyConditions().get(0)));
-        }
+        }*/
         generator.dendent();
         generator.newLine();
         //
 
+        //progress measures
+        for (ProgressMeasure pm : plp.getProgressMeasures()) {
+            generator.writeLine(String.format("def monitor_progress_%s(self):",pm.getCondition().simpleString()));
+            generator.indent();
+            if (pm.getCondition().getClass().isInstance(BitwiseOperation.class) &&
+                    ((BitwiseOperation) pm.getCondition()).getOperation().equals(BitwiseOperation.Operation.AND)) {
+                for (Condition c : ((BitwiseOperation) pm.getCondition()).getConditions()) {
+                    generator.writeLine("if not " + generateIFcondition(c) + ":");
+                    generator.indent();
+                    generator.writeLine("self.callback.plp_monitor_message(PlpMonitorMessage(\"" + c.toString() + "\", False, \"Progress measure doesn't hold\"))");
+                    generator.dendent();
+                }
+            }
+            else {
+                generator.writeLine("if not " + generateIFcondition(pm.getCondition()) + ":");
+                generator.indent();
+                generator.writeLine("self.callback.plp_monitor_message(PlpMonitorMessage(\"" + pm.getCondition().toString() + "\", False, \"Progress measure doesn't hold\"))");
+                generator.dendent();
+            }
+            generator.dendent();
+            generator.newLine();
+        }
+        //
+
         // variables
         generator.writeIndentedBlock(generateVariablesFunctions(plp, generator.getCurrentTabLevel()));
+        generator.newLine();
+        //
+
+        // parameters updated callback
+        generator.writeLine("def parameters_updated(self):");
+        generator.indent();
+        generator.writeLine("# Called when parameters where updated (might effect variables)");
+        generator.writeLine("# Triggers estimation and monitoring. You can uncomment one if you're not interested in it");
+        generator.writeLine("termination = self.detect_termination()");
+        generator.writeLine("if termination is None:");
+        generator.indent();
+        generator.writeLine("self.request_estimation()");
+        generator.writeLine("self.monitor_conditions()");
+        generator.dendent();
+        generator.writeLine("else:");
+        generator.indent();
+        generator.writeLine("self.callback.plp_terminated(termination)");
+        generator.dendent();
+        generator.dendent();
         //
 
         generator.setIndent(0);
@@ -254,7 +300,7 @@ public class PLPModuleGenerator {
             generator.newLine();
 
             for (FailureMode fm : aplp.getFailureModes()) {
-                generator.writeLine(String.format("def self.estimate_%s_failure()",
+                generator.writeLine(String.format("def estimate_%s_failure()",
                         fm.getCondition().simpleString()));
                 generator.indent();
                 generator.writeLine("result = \"\"");

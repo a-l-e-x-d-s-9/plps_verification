@@ -139,6 +139,15 @@
     </conditional_probability>
   </success_probability>
 
+  <runtime_given_success>
+    <distribution>
+      <uniform>
+        <lower_bound value="(linear_distance/req_linear_speed) + (angular_distance/req_angular_speed) - timeOffset"/>
+        <upper_bound value="(linear_distance/req_linear_speed) + (angular_distance/req_angular_speed) + timeOffset"/>
+      </uniform>
+    </distribution>
+  </runtime_given_success>
+
   <failure_modes>  
     <failure_mode>
       <formula_condition key_description="has_collision">
@@ -175,18 +184,6 @@
       <probability value="0.05" />
     </failure_mode>
   </failure_modes>
-
-  <general_failure_probability>
-  </general_failure_probability>
-
-  <runtime_given_success>
-	  <distribution>
-		<uniform>
-		  <lower_bound value="(linear_distance/req_linear_speed) + (angular_distance/req_angular_speed) - timeOffset"/>
-		  <upper_bound value="(linear_distance/req_linear_speed) + (angular_distance/req_angular_speed) + timeOffset"/>
-		</uniform>
-	  </distribution>
-  </runtime_given_success>
 
   <runtime_given_failure>
     <distribution>

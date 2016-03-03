@@ -23,13 +23,16 @@
       <!-- SPECIFIC TO ACHEIVE -->
       <xs:element name="achievement_goal" type="achieve_goal_type" />
       <xs:element name="success_probability" type="success_fail_probability_type" />
-      <xs:element name="failure_modes" type="failure_modes_type" />
-      <xs:element name="general_failure_probability" type="success_fail_probability_type" />
       <xs:element name="runtime_given_success" type="runtimes_type" />
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="failure_modes" type="failure_modes_type" />
+        <xs:element name="general_failure_probability" type="success_fail_probability_type" />
+      </xs:choice>
       <xs:element name="runtime_given_failure" type="runtimes_type" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="version" type="xs:double" use="optional" />
+    <xs:attribute name="glue_file_location" type="xs:string" use="optional" />
   </xs:complexType>
   <!-- END MAIN ELEMENT AND TYPE -->
 
@@ -426,7 +429,7 @@
               <xs:element name="OR" type="and_or_condition_type" />
               <xs:element name="description" type="simple_value_type" />
             </xs:choice>
-            <xs:choice>
+            <xs:choice minOccurs="1" maxOccurs="1">
               <xs:sequence minOccurs="1" maxOccurs="unbounded">
                 <xs:element name="conditional_probability" type="conditional_probability_type" />
               </xs:sequence>

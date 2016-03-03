@@ -11,6 +11,8 @@ import java.util.List;
 public class PLP {
 
     protected String name;
+    protected double version;
+    protected String glueFile;
 
     protected List<PLPParameter> inputParams;
     protected List<PLPParameter> execParams;
@@ -48,6 +50,22 @@ public class PLP {
         this.concurrentModules = new LinkedList<>();
         this.sideEffects = new LinkedList<>();
         this.progressMeasures = new LinkedList<>();
+    }
+
+    public String getGlueFile() {
+        return glueFile;
+    }
+
+    public double getVersion() {
+        return version;
+    }
+
+    public void setGlueFile(String glueFile) {
+        this.glueFile = glueFile;
+    }
+
+    public void setVersion(double version) {
+        this.version = version;
     }
 
     public String getBaseName() {

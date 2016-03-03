@@ -23,9 +23,9 @@
   </required_resources>
 
   <preconditions>
-    <formula_condition>
+    <formula_condition key_description="wall_far_away">
       <expression value="initial_distance_to_wall" />
-      <operator type="＞" />
+      <operator type="greater" />
       <expression value="lower_bound" />
     </formula_condition>
   </preconditions>
@@ -44,18 +44,11 @@
   </progress_measures>
 
   <detection_goal>
-    <AND>
-      <formula_condition>
-        <expression value="distance_to_wall" />
-        <operator type="≥" />
-        <expression value="lower_bound" />
-      </formula_condition>
-      <formula_condition>
-        <expression value="distance_to_wall" />
-        <operator type="≤" />
-        <expression value="upper_bound" />
-      </formula_condition>
-    </AND>
+    <formula_condition key_description="close_to_wall">
+      <expression value="distance_to_wall" />
+      <operator type="less_equal" />
+      <expression value="upper_bound" />
+    </formula_condition>
   </detection_goal>
 
   <success_prob_given_condition>

@@ -53,7 +53,7 @@ public class PLPLoader {
         detectPLPs = new LinkedList<>();
         maintainPLPs = new LinkedList<>();
 
-        if (!dir.endsWith("/")) { dir = dir.concat("/"); }
+        if (!dir.endsWith("\\")) { dir = dir.concat("\\"); }
 
         File folder = new File(dir);
         if (!folder.isDirectory()) {
@@ -84,6 +84,7 @@ public class PLPLoader {
             String PLPname = rootElement.getAttribute("name");
 
             PLP plp;
+
             switch (rootElement.getNodeName()) {
                 case "achieve_plp":
                     plp = new AchievePLP(PLPname);
@@ -106,8 +107,14 @@ public class PLPLoader {
                     LoadDetectFields(rootElement, (DetectPLP) plp);
                     break;
                 default:
-                    throw new UnsupportedOperationException("Invalid PLP tag in XML file");
+                    return;
             }
+
+            String version = rootElement.getAttribute("version");
+            String glueFile = rootElement.getAttribute("glue_file_location");
+
+            if (version != null) plp.setVersion(Double.parseDouble(version));
+            if (glueFile != null) plp.setGlueFile(glueFile);
 
             Node currentNode = rootElement.getElementsByTagName("parameters").item(0);
             if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {

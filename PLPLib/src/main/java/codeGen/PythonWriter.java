@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class PythonWriter {
     StringBuilder codeBuilder;
@@ -48,14 +49,20 @@ public class PythonWriter {
         codeBuilder.append(block);
     }
 
-    public void writeFileContent(String path) {
+    public void writeFileContent(String path, String... formatParams) {
         try {
             FileReader fileReader = new FileReader(path);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String line;
+            StringBuilder text = new StringBuilder();
             while((line = bufferedReader.readLine()) != null) {
-                writeLine(line);
+                text.append(line).append("\n");
+                //writeLine(String.format(line);
             }
+            if (formatParams.length > 0)
+                writeIndentedBlock(String.format(text.toString(),formatParams));
+            else
+                writeIndentedBlock(text.toString());
             bufferedReader.close();
         }
         catch(FileNotFoundException ex) {

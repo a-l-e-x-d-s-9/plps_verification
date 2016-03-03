@@ -54,13 +54,13 @@
       <field value="gateway" />
     </predicate_condition>
 
-    <formula_condition>
+    <formula_condition key_description="no_angular_speed">
       <expression value="begin_Aspeed" />
       <operator type="="/>
       <expression value="0" />
     </formula_condition>
 
-    <formula_condition>
+    <formula_condition key_description="no_linear_speed">
       <expression value="begin_Lspeed" />
       <operator type="="/>
       <expression value="0" />
@@ -68,7 +68,7 @@
   </preconditions>
 
   <concurrency_conditions>
-    <formula_condition>
+    <formula_condition key_description="arm_not_moving">
       <expression value="arm_moving" />
       <operator type="="/>
       <expression value="FALSE" />
@@ -94,12 +94,12 @@
   <failure_to_observe_probability>
     <conditional_probability>
       <OR>
-        <formula_condition>
+        <formula_condition key_description="blocked_gateway">
           <expression value="gateway_blocked "/>
           <operator type="="/>
           <expression value="TRUE" />
         </formula_condition>
-        <formula_condition>
+        <formula_condition key_description="path_not_clear">
           <expression value="clear_path" />
           <operator type="="/>
           <expression value="FALSE" />
@@ -110,12 +110,12 @@
 
     <conditional_probability>
       <AND>
-        <formula_condition>
+        <formula_condition key_description="blocked_gateway">
           <expression value="gateway_blocked" />
           <operator type="="/>
           <expression value="FALSE" />
         </formula_condition>
-        <formula_condition>
+        <formula_condition key_description="path_clear">
           <expression value="clear_path" />
           <operator type="="/>
           <expression value="TRUE" />
