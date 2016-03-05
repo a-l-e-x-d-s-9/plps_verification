@@ -1,0 +1,24 @@
+        # Setup internal PLP objects.
+        self.plp = None
+        self.plp_params = PlpWaypointParameters()
+
+        # Parse arguments. decide on trigger mode: Capture, Run PLP, or both.
+        self.capture = False
+        self.monitor = False
+        self.capture_filename = ""
+        start_args = rospy.myargv(argv=sys.argv)
+        for arg in start_args[1:]:
+            print(arg)
+            if arg == "-capture":
+                self.capture = True
+            elif arg == "-monitor":
+                self.monitor = True
+            elif self.capture:
+                self.capture_filename = arg
+
+        # default: just use the PLP.
+        if not (self.capture or self.monitor):
+            self.monitor = True
+
+        if self.capture and self.capture_filename == "":
+            self.capture_filename = "capture-file"

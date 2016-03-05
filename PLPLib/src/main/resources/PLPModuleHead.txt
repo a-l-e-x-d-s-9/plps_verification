@@ -1,13 +1,3 @@
-class PLPWaypoint(object):
-
-    def __init__(self, constant_map, parameters, callback):
-        """
-        called from plp harness
-        :param constant_map: constants used in the calculation. 
-        :param parameters: parameters object for this PLP. Not copied! used by reference.
-        :param callback: progress monitoring and PLP status calls are sent to this object.
-        :return: a new PlpWaypoint object
-        """
         # constants and fields
         self.constants = constant_map
         self.callback = callback

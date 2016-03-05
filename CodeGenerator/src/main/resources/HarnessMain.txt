@@ -1,0 +1,90 @@
+        self.triggered = False
+
+        if self.monitor:
+            rospy.loginfo("<PLP:%1$s> Trigger action: Monitoring")
+        if self.capture:
+            rospy.loginfo("<PLP:%1$s> Trigger action: Capturing (filename: " + self.capture_filename + ")")
+
+        rospy.loginfo("<PLP:%1$s> Harness - Started")
+
+    def node_setup(self):
+        """
+         Custom node initialization code here
+        """
+        return
+
+    def consider_trigger(self):
+        """
+        Tests whether or not to trigger the plp, based on the check_trigger function
+        """
+
+        if self.monitor and not self.triggered:
+            if self.check_trigger():
+                self.triggered = True
+                self.trigger_plp_task()
+        if self.capture:
+            if self.check_trigger():
+                self.triggered = True
+                self.capture_params()
+
+
+    # PLP Callback methods
+    def plp_terminated(self, plp_termination):
+        """
+        The PLP detected that one of its termination conditions have occurred.
+        Deletes the current PLP, resets the harness.
+        :param plp_termination: The termination message sent from the PLP.
+        """
+        rospy.loginfo("<PLP:%1$s> terminated")
+
+        if plp_termination.is_success():
+            msg = "<PLP:%1$s> Success"
+        else:
+            msg = "<PLP:%1$s> Failure occurred " + plp_termination.get_message()
+
+        self.publisher.publish(
+            PlpMessage(None, "%1$s", "%2$s", msg))
+        self.reset_harness_data()
+
+    def plp_no_preconditions(self):
+        """
+        Called when the PLP is active and would have given an estimation, but the preconditions don't hold
+        """
+        self.publisher.publish(
+            PlpMessage(None, "%1$s", "info", "<PLP:%1$s> triggered, but its preconditions don't hold"))
+
+    def plp_missing_data(self):
+        """
+        Called by the PLP when it should have delivered an estimation, but there is not enough data (missing parameter)
+        """
+        self.publisher.publish(PlpMessage(None, "%1$s", "info", "<PLP:%1$s> triggered, but its missing some data"))
+
+    def plp_monitor_message(self, message):
+        self.publisher.publish(
+            PlpMessage(None, "%1$s", "monitor",
+                       repr(message)))
+
+    def plp_estimation(self, plp_est):
+        """
+        The PLP is active, and gives an estimation.
+        """
+        self.publisher.publish(
+            PlpMessage(None, "%1$s", "estimation",
+                       repr(plp_est)))
+
+    def reset_harness_data(self):
+        self.plp = None
+        self.plp_params.callback = None
+        self.plp_params = Plp%1$sParameters()
+        self.trigger_local_path_published = False
+        self.trigger_nav_task_active = False
+        self.triggered = False
+
+    def trigger_plp_task(self):
+        """
+        Creates a PLP and starts the monitoring, if there's no PLP yet.
+        """
+        rospy.loginfo("<PLP:%1$s> activating")
+        self.plp = PLP%1$s(self.plp_constants, self.plp_params, self)
+        self.plp_params.callback = self.plp
+        self.plp.request_estimation()

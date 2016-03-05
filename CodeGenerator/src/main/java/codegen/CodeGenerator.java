@@ -1,7 +1,7 @@
-package codeGen;
+package codegen;
 
 import loader.PLPLoader;
-import modules.AchievePLP;
+import modules.*;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -34,13 +34,18 @@ public class CodeGenerator {
             File msg = new File(path+"plp_package\\msg");
             msg.mkdir();
 
-            boolean hadAchieve = false;
+            copyResourceFile("PLPClasses.py",path+"plp_package\\scripts\\");
             for (AchievePLP aPLP : PLPLoader.getAchievePLPs()) {
-                CodeGenerator.GenerateAchieveScripts(aPLP, path);
-                if (!hadAchieve) {
-                    copyResourceFile("PLPClasses.py",path+"plp_package\\scripts\\");
-                    hadAchieve = true;
-                }
+                CodeGenerator.GenerateScripts(aPLP, path);
+            }
+            for (MaintainPLP mPLP : PLPLoader.getMaintainPLPs()) {
+                CodeGenerator.GenerateScripts(mPLP, path);
+            }
+            for (ObservePLP oPLP : PLPLoader.getObservePLPs()) {
+                CodeGenerator.GenerateScripts(oPLP, path);
+            }
+            for (DetectPLP dPLP : PLPLoader.getDetectPLPs()) {
+                CodeGenerator.GenerateScripts(dPLP, path);
             }
 
             generateCMakeLists(path+"\\plp_package");
@@ -49,19 +54,19 @@ public class CodeGenerator {
         }
     }
 
-    public static void GenerateAchieveScripts(AchievePLP aPLP, String path) {
-        String PLPClasses = PLPClassesGenerator.GeneratePLPClasses(aPLP);
-        String PLPModule = PLPModuleGenerator.GeneratePLPModule(aPLP);
-        String PLPHarness = PLPHarnessGenerator.GeneratePLPHarness(aPLP, path);
+    public static void GenerateScripts(PLP plp, String path) {
+        String PLPClasses = PLPClassesGenerator.GeneratePLPClasses(plp);
+        String PLPModule = PLPModuleGenerator.GeneratePLPModule(plp);
+        String PLPHarness = PLPHarnessGenerator.GeneratePLPHarness(plp, path);
         PrintWriter writer = null;
         try {
-            writer = new PrintWriter(path+"\\plp_package\\scripts\\PLP"+aPLP.getBaseName()+"Classes.py", "UTF-8");
+            writer = new PrintWriter(path+"\\plp_package\\scripts\\PLP"+plp.getBaseName()+"Classes.py", "UTF-8");
             writer.print(PLPClasses);
             writer.close();
-            writer = new PrintWriter(path+"\\plp_package\\scripts\\PLP"+aPLP.getBaseName()+".py", "UTF-8");
+            writer = new PrintWriter(path+"\\plp_package\\scripts\\PLP"+plp.getBaseName()+".py", "UTF-8");
             writer.print(PLPModule);
             writer.close();
-            writer = new PrintWriter(path+"\\plp_package\\scripts\\PLP"+aPLP.getBaseName()+"RosHarness.py", "UTF-8");
+            writer = new PrintWriter(path+"\\plp_package\\scripts\\PLP"+plp.getBaseName()+"RosHarness.py", "UTF-8");
             writer.print(PLPHarness);
             writer.close();
         }

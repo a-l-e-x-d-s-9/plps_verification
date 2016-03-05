@@ -1,4 +1,4 @@
-package codeGen;
+package codegen;
 
 import conditions.*;
 import distributions.ConditionalDist;
@@ -10,7 +10,6 @@ import modules.MaintainPLP;
 import modules.PLP;
 import plpEtc.Predicate;
 import plpFields.*;
-import sun.applet.Main;
 
 import java.util.*;
 
@@ -30,11 +29,15 @@ public class PLPModuleGenerator {
         generator.newLine();
         generator.writeLine(String.format("class PLP%s(object):",plp.getBaseName()));
         generator.newLine();
+        generator.indent();
         generator.writeLine("def __init__(self, constant_map, parameters, callback):");
         generator.newLine();
-        if (plp.getClass().isInstance(MaintainPLP.class)) {
+        generator.indent();
+        if (plp.getClass().isAssignableFrom(MaintainPLP.class)) {
             generator.writeLine("self.maintained_condition_true = " + (((MaintainPLP) plp).isInitiallyTrue() ? "True" : "False"));
         }
+        generator.dendent();
+        generator.dendent();
         generator.writeFileContent(PLPModuleGenerator.class.getResource("/PLPModuleHead.txt").getPath());
         generator.newLine();
         generator.indent();
@@ -95,11 +98,11 @@ public class PLPModuleGenerator {
         //
 
         // Maintain: maintained condition
-        if (plp.getClass().isInstance(MaintainPLP.class)) {
+        if (plp.getClass().isAssignableFrom(MaintainPLP.class)) {
             generator.newLine();
             generator.writeLine("def monitor_maintained_condition(self):");
             generator.indent();
-            generator.writeFileContent("if not self.maintained_condition_true:");
+            generator.writeLine("if not self.maintained_condition_true:");
             generator.indent();
             generator.writeLine("if " + generateIFcondition(((MaintainPLP) plp).getMaintainedCondition()) + ":");
             generator.indent();
@@ -113,6 +116,8 @@ public class PLPModuleGenerator {
             generator.writeLine("self.callback.plp_monitor_message(PLPMonitorMessage(\"" + ((MaintainPLP) plp).getMaintainedCondition().toString() + "\", False, \"Maintain condition doesn't hold\"))");
             generator.dendent();
             generator.dendent();
+            generator.dendent();
+            generator.newLine();
         }
         //
 
@@ -120,7 +125,7 @@ public class PLPModuleGenerator {
         for (ProgressMeasure pm : plp.getProgressMeasures()) {
             generator.writeLine(String.format("def monitor_progress_%s(self):",pm.getCondition().simpleString()));
             generator.indent();
-            if (pm.getCondition().getClass().isInstance(BitwiseOperation.class) &&
+            if (pm.getCondition().getClass().isAssignableFrom(BitwiseOperation.class) &&
                     ((BitwiseOperation) pm.getCondition()).getOperation().equals(BitwiseOperation.Operation.AND)) {
                 for (Condition c : ((BitwiseOperation) pm.getCondition()).getConditions()) {
                     generator.writeLine("if not " + generateIFcondition(c) + ":");
@@ -155,7 +160,7 @@ public class PLPModuleGenerator {
         generator.indent();
         generator.writeLine("self.request_estimation()");
         generator.writeLine("self.monitor_conditions()");
-        if (plp.getClass().isInstance(MaintainPLP.class)) {
+        if (plp.getClass().isAssignableFrom(MaintainPLP.class)) {
             generator.writeLine("self.monitor_maintained_condition()");
         }
         generator.dendent();
@@ -223,27 +228,37 @@ public class PLPModuleGenerator {
 
         generator.writeLine("def detect_success(self):");
         generator.indent();
-        if (plp.getClass().isInstance(AchievePLP.class)) {
+        if (plp.getClass().isAssignableFrom(AchievePLP.class)) {
             generator.writeLine("if "+generateIFcondition(((AchievePLP) plp).getGoal())+":");
             generator.indent();
             generator.writeLine("return PLPTermination(True, \" Achieved: " +((AchievePLP) plp).getGoal().toString() + "\")");
+            generator.dendent();
+            generator.dendent();
+            generator.writeLine("else:");
+            generator.indent();
+            generator.writeLine("return None");
         }
-        else if (plp.getClass().isInstance(MaintainPLP.class)) {
+        else if (plp.getClass().isAssignableFrom(MaintainPLP.class)) {
             generator.writeLine("if "+generateIFcondition(((MaintainPLP) plp).getSuccessTerminationCondition())+":");
             generator.indent();
             generator.writeLine("return PLPTermination(True, \" Achieved: " +((MaintainPLP) plp).getSuccessTerminationCondition().toString() + "\")");
+            generator.dendent();
+            generator.dendent();
+            generator.writeLine("else:");
+            generator.indent();
+            generator.writeLine("return None");
         }
-        generator.dendent();
-        generator.writeLine("else:");
-        generator.indent();
-        generator.writeLine("return None");
+        else {
+            generator.writeLine("# TODO"); // TODO
+        }
         generator.dendent();
         generator.dendent();
         generator.newLine();
 
+        generator.indent();
         generator.writeLine("def detect_failures(self):");
         generator.indent();
-        if (plp.getClass().isInstance(MaintainPLP.class)) {
+        if (plp.getClass().isAssignableFrom(MaintainPLP.class)) {
             List<Condition> failureConditions = ((MaintainPLP) plp).getFailureTerminationConditions();
             for (Condition c: failureConditions) {
                 generator.writeLine("if " + generateIFcondition(c) + ":");
@@ -252,8 +267,9 @@ public class PLPModuleGenerator {
                 generator.dendent();
                 // TODO: fix with failure modes
             }
+            generator.writeLine("return None");
         }
-        else if (plp.getClass().isInstance(AchievePLP.class)) {
+        else if (plp.getClass().isAssignableFrom(AchievePLP.class)) {
             for (FailureMode fm : ((AchievePLP) plp).getFailureModes()) {
                 Condition failCond = fm.getCondition();
                 generator.writeLine("if " + generateIFcondition(failCond) + ":");
@@ -261,8 +277,11 @@ public class PLPModuleGenerator {
                 generator.writeLine("return PLPTermination(False, \" Failed by condition: " + failCond.toString() + "\")");
                 generator.dendent();
             }
+            generator.writeLine("return None");
         }
-        generator.writeLine("return None");
+        else {
+            generator.writeLine("# TODO"); // TODO
+        }
         generator.dendent();
 
         generator.setIndent(0);
@@ -650,6 +669,42 @@ public class PLPModuleGenerator {
                     addBaseConditionToMap(plp, cDist.getCondition());
             }
             for (ConditionalDist cDist : aplp.getFailRuntime()) {
+                if (cDist.isConditional())
+                    addBaseConditionToMap(plp, cDist.getCondition());
+            }
+        }
+        // SPECIFIC CONDITIONS FOR MAINTAIN
+        if (MaintainPLP.class.isInstance(plp)) {
+            MaintainPLP mplp = (MaintainPLP) plp;
+
+            addBaseConditionToMap(plp, mplp.getMaintainedCondition());
+            addBaseConditionToMap(plp, mplp.getSuccessTerminationCondition());
+
+            for (Condition c : mplp.getFailureTerminationConditions()) {
+                addBaseConditionToMap(plp, c);
+            }
+            for (ConditionalProb cProb : mplp.getSuccessProb()) {
+                if (cProb.isConditional())
+                    addBaseConditionToMap(plp, cProb.getCondition());
+            }
+
+            for (FailureMode fm : mplp.getFailureModes()) {
+                addBaseConditionToMap(plp, fm.getCondition());
+                for (ConditionalProb cProb : fm.getProbList()) {
+                    if (cProb.isConditional())
+                        addBaseConditionToMap(plp, cProb.getCondition());
+                }
+            }
+
+            for (ConditionalProb cProb : mplp.getGeneralFailureProb()) {
+                if (cProb.isConditional())
+                    addBaseConditionToMap(plp, cProb.getCondition());
+            }
+            for (ConditionalDist cDist : mplp.getSuccessRuntime()) {
+                if (cDist.isConditional())
+                    addBaseConditionToMap(plp, cDist.getCondition());
+            }
+            for (ConditionalDist cDist : mplp.getFailRuntime()) {
                 if (cDist.isConditional())
                     addBaseConditionToMap(plp, cDist.getCondition());
             }
