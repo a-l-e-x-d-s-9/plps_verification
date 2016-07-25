@@ -187,7 +187,7 @@ public class PLPHarnessGenerator {
     }
 
     /**
-     * Writed the required imports into the given PythonWriter and saves all the parameter mapping for later code generation
+     * Write the required imports into the given PythonWriter and saves all the parameter mapping for later code generation
      * @param generator the PythonWriter that will print the imports
      * @param plp the PLP for which the glue file is handled
      * @param gluePath the path to the glue file
@@ -199,6 +199,7 @@ public class PLPHarnessGenerator {
 
         File glueFile = new File(gluePath);
         if (!glueFile.isFile() || !glueFile.getName().substring(glueFile.getName().lastIndexOf(".") + 1).equalsIgnoreCase("xml")) {
+
             throw new IllegalArgumentException("path for glue file " + gluePath + " is not a legal xml");
         }
         try {

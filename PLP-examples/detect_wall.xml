@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<detect_plp name="detect_wall" version="1.0" xmlns="http://tempuri.org/XMLSchema.xsd">
+<detect_plp name="detect_wall" version="1.0" glue_file_location="detect_wall_glue.xml" xmlns="http://tempuri.org/XMLSchema.xsd">
   <parameters>
     <execution_parameters></execution_parameters>
     <input_parameters>

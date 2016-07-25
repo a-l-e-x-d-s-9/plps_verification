@@ -1,0 +1,14 @@
+(:action walk_given_distance
+:parameters (?linear_distance ?angular_distance)
+:effect (and (robot_at_target = TRUE) (energy_level = energy_level - energy_consumed))
+)
+(:action walk_through_gateway
+:parameters (?areaA ?areaB ?gateway)
+:precondition (and (at areaA) (connected areaA areaB gateway) (K_GATEWAY_LOCATION gateway))
+:effect (and (at areaB) (forall (gw) (not (K_GATEWAY_LOCATION gw))))
+)
+(:action observe_gateway
+:parameters (?areaA ?areaB ?gateway)
+:precondition (and (at areaA) (connected areaA areaB gateway))
+:effect (K_GATEWAY_LOCATION gateway)
+)

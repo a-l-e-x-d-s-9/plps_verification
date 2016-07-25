@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<achieve_plp name="walk_given_distance" version="1.0" xmlns="http://tempuri.org/XMLSchema.xsd">
+<achieve_plp name="walk_given_distance" version="1.0" glue_file_location="walk_given_distance_glue.xml" xmlns="http://tempuri.org/XMLSchema.xsd">
 
   <parameters>
     <execution_parameters>

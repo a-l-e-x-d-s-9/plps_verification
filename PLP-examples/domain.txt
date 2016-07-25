@@ -1,0 +1,32 @@
+(define (domain plpdomain)
+(:requirements)
+(:types 
+)
+(:action walk_given_distance
+:parameters (linear_distance - OBJECT angular_distance - OBJECT)
+:precondition 
+  
+:effect 
+  (and (= robot_at_target true)
+  (= energy_level energy_level - energy_consumed))
+)
+(:action walk_through_gateway
+:parameters (areaa - OBJECT areab - OBJECT gateway - OBJECT)
+:precondition 
+  (and (at areaa)
+  (connected areaa areab gateway)
+  (kv_gateway_location gateway))
+:effect 
+  (and (at areab)
+   (forall (gw - OBJECT)
+      (not (kv_gateway_location gw))))
+)
+(:action observe_gateway
+:parameters (areaa - OBJECT areab - OBJECT gateway - OBJECT)
+:precondition 
+  (and (at areaa)
+  (connected areaa areab gateway))
+:effect 
+  ((kv_gateway_location gateway)
+)
+)
