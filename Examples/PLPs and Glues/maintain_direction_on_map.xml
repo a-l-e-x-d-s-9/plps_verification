@@ -1,0 +1,185 @@
+﻿<?xml version="1.1" encoding="utf-8"?>
+<maintain_plp name="maintain_direction_on_map" version="1.0" glue_file_location="maintain_direction_on_map_glue.xml" xmlns="http://tempuri.org/XMLSchema.xsd">
+  <parameters>
+    <execution_parameters>
+      <param name="map" />
+      <param name="goal_location" />
+      <param name="max_change_rate_path_tangent" />
+      <param name="gas_level" />
+      <param name="linear_speed" />
+      <param name="odometry" />
+    </execution_parameters>
+
+    <input_parameters>
+    </input_parameters>
+    
+    <output_parameters>
+    </output_parameters>
+    
+    <non_observable>
+      <param name="path_free" />
+    </non_observable>
+  </parameters>
+
+  <variables>
+    <var name="gas_consumed" type="real" />
+    <var name="current_path_direction" type="real" />
+    <var name="current_robot_direction" type="real" />
+    <var name="distance_to_goal" type="real" />
+    <var name="runtime_given_path_length" type="real" />
+    <var name="vehicle_off_road" type="boolean" />
+  </variables>
+
+  <constants>
+    <constant name="max_allowed_change_rate" type="real" />
+    <constant name="required_distance" type="real" />
+    <constant name="exception_distance" type="real" />
+    <constant name="path_offset" type="real" />
+  </constants>
+
+  <required_resources>
+    <resource name="fuel">
+      <status type="exclusive"/>
+    </resource>
+    <resource name="steering_wheel">
+      <status type="exclusive"/>
+    </resource>
+  </required_resources>
+
+  <preconditions>
+    <formula_condition key_description="allowed_change_rate">
+      <expression value="max_change_rate_path_tangent" />
+      <operator type="less_equal" />
+      <expression value="max_allowed_change_rate" />
+    </formula_condition>
+  </preconditions>
+
+  <concurrency_conditions>
+    <formula_condition key_description="free_path">
+      <expression value="path_free" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </concurrency_conditions>
+
+  <concurrent_modules>
+  </concurrent_modules>
+
+  <side_effects>
+    <assignment_effect key_description="gas_down">
+      <param name="gas_level" />
+      <expression value="gas_level-gas_consumed" />
+    </assignment_effect>
+  </side_effects>
+
+  <progress_measures>
+    <progress_measure frequency="1">
+      <formula_condition key_description="moving">
+        <expression value="linear_speed" />
+        <operator type="greater" />
+        <expression value="0" />
+      </formula_condition>
+    </progress_measure>
+  </progress_measures>
+
+  <maintained_condition initially_true="true">
+    <formula_condition key_description="correct_path">
+      <expression value="current_path_direction" />
+      <inside_range>
+        <range min_value="current_robot_direction-path_offset" min_inclusive="true" max_value="current_robot_direction+path_offset" max_inclusive="true" />
+      </inside_range>
+    </formula_condition>
+  </maintained_condition>
+
+  <success_termination_condition>
+    <formula_condition key_description="at_goal">
+      <expression value="distance_to_goal" />
+      <operator type="less_equal" />
+      <expression value="required_distance" />
+    </formula_condition>
+  </success_termination_condition>
+
+  <failure_termination_conditions>
+    <formula_condition key_description="off_road">
+      <expression value="vehicle_off_road" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </failure_termination_conditions>
+
+  <success_probability>
+    <conditional_probability>
+      <predicate_condition name="wet_path" />
+      <probability value="0.8"/>
+    </conditional_probability>
+    <conditional_probability>
+      <not_condition>
+        <predicate_condition name="wet_path" />
+      </not_condition>
+      <probability value="0.95"/>
+    </conditional_probability>
+  </success_probability>
+
+  <runtime_given_success>
+    <distribution>
+      <uniform>
+        <lower_bound value="runtime_given_path_length" />
+        <upper_bound value="runtime_given_path_length" />
+      </uniform>
+    </distribution>
+  </runtime_given_success>
+    
+  <failure_modes>
+    <failure_mode>
+      <AND>
+        <formula_condition key_description="off_road">
+          <expression value="vehicle_off_road" />
+          <operator type="=" />
+          <expression value="TRUE" />
+        </formula_condition>
+        <not_condition>
+          <predicate_condition name="damaged_vehicle" />
+        </not_condition>
+      </AND>
+
+      <conditional_probability>
+        <predicate_condition name="wet_path" />
+        <probability value="0.15"/>
+      </conditional_probability>
+      
+      <conditional_probability>
+        <not_condition>
+          <predicate_condition name="wet_path" />
+        </not_condition>
+        <probability value="0.045"/>
+      </conditional_probability>
+    </failure_mode>
+
+    <failure_mode>
+      <AND>
+        <formula_condition key_description="off_road">
+          <expression value="vehicle_off_road" />
+          <operator type="=" />
+          <expression value="TRUE" />
+        </formula_condition>
+        <predicate_condition name="damaged_vehicle" />
+      </AND>
+
+      <conditional_probability>
+        <predicate_condition name="wet_path" />
+        <probability value="0.05"/>
+      </conditional_probability>
+
+      <conditional_probability>
+        <not_condition>
+          <predicate_condition name="wet_path" />
+        </not_condition>
+        <probability value="0.005"/>
+      </conditional_probability>
+    </failure_mode>
+  </failure_modes>
+
+  <runtime_given_failure>
+  </runtime_given_failure>
+  
+</maintain_plp>
