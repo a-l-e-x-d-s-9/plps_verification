@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<achieve_plp name="walk_through_gateway" version="1.0" xmlns="http://tempuri.org/XMLSchema.xsd">
+<plps:achieve_plp name="walk_through_gateway" version="1.0" 
+	glue_file_location="walk_through_gateway_glue.xml"
+	xmlns:plps="PLP-schemas"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="PLP-schemas AchievePLP_schema.xsd">
+	
   <parameters>
     <execution_parameters>
       <param name="areaA" />
@@ -14,8 +19,6 @@
       <param name="laser_scan" read_frequency="5" />
       <param name="odometry" read_frequency="5" />
       <param name="arm_controller" read_frequency="1" />
-      <param name="current_Aspeed" />
-      <param name="current_Lspeed" />
     </input_parameters>
 
     <output_parameters>
@@ -29,6 +32,8 @@
   </parameters>
 
   <variables>
+    <var name="current_Aspeed" type="real" />
+    <var name="current_Lspeed" type="real" />
     <var name="collision_alert" type="boolean" />
     <var name="arm_moving" type="boolean" />
   </variables>
@@ -125,6 +130,14 @@
       <field value="areaB" />
     </predicate_condition>
   </achievement_goal>
+  
+  <success_termination_condition>
+  	<formula_condition key_description="result_is_success">
+  		<expression value="result"/>
+  		<operator type="="/>
+  		<expression value="success"/>
+  	</formula_condition>
+  </success_termination_condition>
 
   <success_probability>
     <conditional_probability>
@@ -183,12 +196,27 @@
     </failure_mode>
 
     <failure_mode>
+    
+    <AND>
       <not_condition>
         <predicate_condition name="at">
           <field value="areaB" />
         </predicate_condition>
       </not_condition>
-
+      
+      <formula_condition key_description="no_angular_speed">
+	      <expression value="begin_Aspeed" />
+	      <operator type="="/>
+	      <expression value="0" />
+	    </formula_condition>
+	  
+	  <formula_condition key_description="no_linear_speed">
+      	<expression value="begin_Lspeed" />
+      	<operator type="="/>
+      	<expression value="0" />
+      </formula_condition>
+	</AND>
+	
       <conditional_probability>
         <AND>
           <formula_condition key_description="no_floor_traction">
@@ -224,6 +252,14 @@
     </failure_mode>
 
   </failure_modes>
+  
+  <failure_termination_condition>
+  	<formula_condition key_description="result_is_false">
+  		<expression value="result"/>
+  		<operator type="="/>
+  		<expression value="failed"/>
+  	</formula_condition>
+  </failure_termination_condition>
 
   <runtime_given_failure>
     <distribution>
@@ -234,4 +270,4 @@
     </distribution>
   </runtime_given_failure>
 
-</achieve_plp>
+</plps:achieve_plp>

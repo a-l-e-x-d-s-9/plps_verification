@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
-    elementFormDefault="qualified"
-    xmlns="http://tempuri.org/XMLSchema.xsd"
-    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+<xs:schema targetNamespace="PLP-schemas"
+    xmlns="PLP-schemas"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
 
@@ -22,11 +20,17 @@
       <xs:element name="progress_measures" type="progress_measures_type" />
       <!-- SPECIFIC TO ACHEIVE -->
       <xs:element name="achievement_goal" type="achieve_goal_type" />
+      <xs:choice minOccurs="0" maxOccurs="1">
+      	<xs:element name="success_termination_condition" type="conditions_type" />
+      </xs:choice>
       <xs:element name="success_probability" type="success_fail_probability_type" />
       <xs:element name="runtime_given_success" type="runtimes_type" />
       <xs:choice minOccurs="1" maxOccurs="1">
         <xs:element name="failure_modes" type="failure_modes_type" />
         <xs:element name="general_failure_probability" type="success_fail_probability_type" />
+      </xs:choice>
+      <xs:choice minOccurs="0" maxOccurs="1">
+      	<xs:element name="failure_termination_condition" type="conditions_type" />
       </xs:choice>
       <xs:element name="runtime_given_failure" type="runtimes_type" />
     </xs:sequence>

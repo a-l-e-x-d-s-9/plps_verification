@@ -9,7 +9,6 @@
         Manually trigger estimation attempt.
         Typical client code use is from the harness,
         immediately after instantiating the PLP object.
-        Another use case is when estimating a plan, offline.
         """
         if self.can_estimate():
             res = self.get_estimation()

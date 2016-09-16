@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
-    elementFormDefault="qualified"
-    xmlns="http://tempuri.org/XMLSchema.xsd"
-    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+<xs:schema targetNamespace="PLP-schemas"
+    xmlns="PLP-schemas"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
 
@@ -24,9 +22,16 @@
                 <xs:element name="param" type="param_base_type" />
                 <xs:element name="ROS_topic">
                   <xs:complexType>
-                    <xs:attribute name="name" type="xs:string" />
-                    <xs:attribute name="message_type" type="xs:string" />
-                    <xs:attribute name="field_in_message" type="xs:string" />
+                  	<xs:sequence minOccurs="0" maxOccurs="1">
+	                  	<xs:element name="field_in_message">
+	                    	<xs:complexType>
+	                    		<xs:attribute name="field_name" type="xs:string" use="required" />
+	                    		<xs:attribute name="field_type" type="xs:string" use="required" />
+	                    	</xs:complexType>
+	                    </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="name" type="xs:string" use="required" />
+                    <xs:attribute name="message_type" type="xs:string" use="required" />
                   </xs:complexType>
                 </xs:element>
               </xs:sequence>

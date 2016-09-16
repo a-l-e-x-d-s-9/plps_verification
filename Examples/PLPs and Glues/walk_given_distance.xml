@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<achieve_plp name="walk_given_distance" version="1.0" glue_file_location="walk_given_distance_glue.xml" xmlns="http://tempuri.org/XMLSchema.xsd">
+<plps:achieve_plp name="walk_given_distance" version="1.0" glue_file_location="walk_given_distance_glue.xml"
+	xmlns:plps="PLP-schemas"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="PLP-schemas AchievePLP_schema.xsd">
 
   <parameters>
     <execution_parameters>
@@ -9,10 +12,7 @@
 
     <input_parameters>
       <param name="laser_scan" read_frequency="5" />
-      <param name="current_angle" />
-      <param name="current_position" />
-      <param name="current_linear_speed" />
-      <param name="current_angular_speed" />
+      <param name="odometry" read_frequency="5" />
       <param name="energy_level" />
     </input_parameters>
 
@@ -27,8 +27,14 @@
   </parameters>
 
   <variables>
+    <var name="current_angle" type="real" />
+    <var name="current_position" type="real" />
+    <var name="current_linear_speed" type="real" />
+    <var name="current_angular_speed" type="real" />
+      
     <var name="begin_point_angle" type="real" />
     <var name="begin_point_position" type="real" />
+    
     <var name="collision_alert" type="boolean" />
     <var name="arm_moving" type="boolean" />
     <var name="energy_consumed" type="real" />
@@ -118,6 +124,10 @@
       <expression value="TRUE"/>
     </formula_condition>
   </achievement_goal>
+  
+  <success_termination_condition>
+  	<predicate_condition name="finished_true" />
+  </success_termination_condition>
 
   <success_probability>
     <conditional_probability>
@@ -184,6 +194,10 @@
       <probability value="0.05" />
     </failure_mode>
   </failure_modes>
+  
+  <failure_termination_condition>
+  	<predicate_condition name="finished_false" />
+  </failure_termination_condition>
 
   <runtime_given_failure>
     <distribution>
@@ -193,4 +207,4 @@
       </uniform>
     </distribution>
   </runtime_given_failure>
-</achieve_plp>
+</plps:achieve_plp>

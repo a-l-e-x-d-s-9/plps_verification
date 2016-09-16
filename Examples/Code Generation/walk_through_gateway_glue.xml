@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plps:code_generator_glue xmlns:plps="PLP-schemas"
+							xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+							xsi:schemaLocation="PLP-schemas GlueFile_schema.xsd">
+
+  <import from="nav_msgs.msg">
+    <python_class>Odometry</python_class>
+  </import>
+  <import from="service_robot_msgs.msg">
+    <python_class>WalkGWcmd</python_class>
+  </import>
+  <import from="sensor_msgs.msg">
+    <python_class>LaserScan</python_class>
+  </import>
+  <import from="dynamixel_msgs.msg">
+  	<python_class>MotorStateList</python_class>
+  </import>
+
+  <parameter_location>
+    <param name="gateway" />
+    <ROS_topic name="/walk_through_gateway_cmd" message_type="WalkGWcmd">
+    	<field_in_message field_name="gateway" field_type="String"/>
+    </ROS_topic>
+  </parameter_location>
+  
+  <parameter_location>
+    <param name="areaA" />
+    <ROS_topic name="/walk_through_gateway_cmd" message_type="WalkGWcmd">
+    	<field_in_message field_name="areaA" field_type="String"/>
+    </ROS_topic>
+  </parameter_location>
+  
+  <parameter_location>
+    <param name="areaB" />
+    <ROS_topic name="/walk_through_gateway_cmd" message_type="WalkGWcmd">
+    	<field_in_message field_name="areaB" field_type="String"/>
+    </ROS_topic>
+  </parameter_location>
+
+  <parameter_location>
+    <param name="laser_scan" />
+    <ROS_topic name="/komodo_1/scan" message_type="LaserScan" />
+  </parameter_location>
+
+  <parameter_location>
+    <param name="odometry" />
+    <ROS_topic name="/komodo_1/odom_pub" message_type="Odometry" /> 
+  </parameter_location>
+
+<parameter_location>
+    <param name="arm_controller" />
+    <ROS_topic name="/komodo_1/motor_states/arm_port" message_type="MotorStateList" /> 
+  </parameter_location>
+
+  <parameter_location>
+    <param name="result" />
+    <ROS_topic name="/walk_through_gateway_res" message_type="String" />
+  </parameter_location>
+  
+</plps:code_generator_glue>

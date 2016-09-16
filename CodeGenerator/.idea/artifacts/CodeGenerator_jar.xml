@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="CodeGenerator:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/CodeGenerator_jar</output-path>
+    <root id="archive" name="CodeGenerator.jar">
+      <element id="module-output" name="CodeGenerator" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../PLPLib/out/artifacts/PLPLib_jar/PLPLib.jar" path-in-jar="/" />
+      <element id="directory" name="META-INF">
+        <element id="dir-copy" path="$PROJECT_DIR$/src/main/java/META-INF" />
+      </element>
+      <element id="extracted-dir" path="$PROJECT_DIR$/pddl4j-3.1.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

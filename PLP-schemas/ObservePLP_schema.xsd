@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
-    elementFormDefault="qualified"
-    xmlns="http://tempuri.org/XMLSchema.xsd"
-    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+<xs:schema targetNamespace="PLP-schemas"
+    xmlns="PLP-schemas"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
 
@@ -25,6 +23,9 @@
         <xs:sequence minOccurs="1" maxOccurs="1">
           <xs:element name="observation_goal_condition" type="goal_condition_type" />
           <xs:element name="failure_to_observe_probability" type="probabilities_type" />
+          <xs:choice minOccurs="0" maxOccurs="1">
+	      	<xs:element name="failure_termination_condition" type="conditions_type" />
+	      </xs:choice>
           <xs:element name="correct_condition_observation_probability" type="probabilities_type" />
         </xs:sequence>
         <xs:sequence minOccurs="1" maxOccurs="1">
@@ -36,6 +37,9 @@
             </xs:complexType>
           </xs:element>
           <xs:element name="failure_to_observe_probability" type="probabilities_type" />
+          <xs:choice minOccurs="0" maxOccurs="1">
+	      	<xs:element name="failure_termination_condition" type="conditions_type" />
+	      </xs:choice>
           <xs:element name="correct_param_observation_probability" type="correct_continuous_type" />
         </xs:sequence>
       </xs:choice>
@@ -400,6 +404,7 @@
       <xs:element name="AND" type="and_or_condition_type" />
       <xs:element name="OR" type="and_or_condition_type" />
     </xs:choice>
+    <xs:attribute name="result_parameter_name" type="xs:string" use="required" />
   </xs:complexType>
 
   <xs:complexType name="probabilities_type">

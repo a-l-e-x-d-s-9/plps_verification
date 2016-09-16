@@ -26,6 +26,12 @@ public class AchievePLP extends PLP {
     private List<ConditionalDist> successRuntime;
     private List<ConditionalDist> failRuntime;
 
+    // If the goal includes an unobservable parameter, in order to detect success, the user can specify:
+    private Condition successTerminationCond;
+
+    // If the failure modes include an unobservable parameter, in order to detect failure, the user can specify:
+    private Condition failTerminationCond;
+
     public AchievePLP(String baseName) {
         super(baseName);
         this.successProb = new LinkedList<>();
@@ -88,6 +94,26 @@ public class AchievePLP extends PLP {
         return "Achieve '"+name+"'";
     }
 
+    public Condition getFailTerminationCond() {
+        return failTerminationCond;
+    }
+
+    public void setFailTerminationCond(Condition failTerminationCond) {
+        this.failTerminationCond = failTerminationCond;
+    }
+
+    public Condition getSuccessTerminationCond() {
+        return successTerminationCond;
+    }
+
+    public void setSuccessTerminationCond(Condition successTerminationCond) {
+        this.successTerminationCond = successTerminationCond;
+    }
+
+    public boolean hasSuccessTerminationCond() { return successTerminationCond != null; }
+
+    public boolean hasFailTerminationCond() { return failTerminationCond != null; }
+
     @Override
     public String toString() {
         return super.toString()  + "\n" +
@@ -96,6 +122,8 @@ public class AchievePLP extends PLP {
                 " - Failure Modes: " + Arrays.toString(failureModes.toArray()) + "\n" +
                 (failureModes.isEmpty() ? " - Failure Prob: " + Arrays.toString(generalFailureProb.toArray()) + "\n" : "") +
                 " - Success Runtime: " + Arrays.toString(successRuntime.toArray()) + "\n" +
-                " - Failure Runtime: " + Arrays.toString(failRuntime.toArray()) ;
+                " - Failure Runtime: " + Arrays.toString(failRuntime.toArray()) +
+                (successTerminationCond == null ? "" : "\n - Success Termination Condition: " + successTerminationCond.toString()) +
+                (failTerminationCond == null ? "" : "\n - Fail Termination Condition: " + failTerminationCond.toString());
     }
 }

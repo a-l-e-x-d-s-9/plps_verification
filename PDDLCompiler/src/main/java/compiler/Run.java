@@ -13,13 +13,14 @@ public class Run {
             System.out.println("Usage: <dir path>");
         }
         else {
+
             PLPLoader.loadFromDirectory(args[0]);
             PDDLCompiler.setAchievePLPs(PLPLoader.getAchievePLPs());
             PDDLCompiler.setObservePLPs(PLPLoader.getObservePLPs());
             String compiledPDDL = PDDLCompiler.producePDDL();
             PrintWriter writer = null;
             try {
-                writer = new PrintWriter(args[0]+"\\domain.txt", "UTF-8");
+                writer = new PrintWriter(args[0]+"/domain.pddl", "UTF-8");
                 writer.print(compiledPDDL);
             }
             catch (Exception e) {
@@ -46,4 +47,5 @@ public class Run {
         System.out.println("--------------------------------------------");
         System.out.println(observeGateway.toPDDL());*/
     }
+
 }

@@ -1,5 +1,6 @@
 package modules;
 
+import conditions.Condition;
 import distributions.ConditionalDist;
 import plpEtc.ConfidenceInterval;
 import plpEtc.Predicate;
@@ -19,12 +20,17 @@ public class ObservePLP extends PLP {
 
     private ObservationGoal goal;
 
+    // If the observation goal is a condition we need a result parameter
+    private String resultParameter;
+
     private List<ConditionalProb> failureToObserveProb;
     private List<ConditionalProb> correctObservationProb;
     private ConfidenceInterval correctObservationConfidence;
 
     private List<ConditionalDist> successRuntime;
     private List<ConditionalDist> failureRuntime;
+
+    private Condition failTerminationCond;
 
     public ObservePLP(String baseName) {
         super(baseName);
@@ -88,6 +94,28 @@ public class ObservePLP extends PLP {
     public String getName() {
         return "Observe '"+name+"'";
     }
+
+    public void setResultParameterName(String name) {
+        this.resultParameter = name;
+    }
+
+    public PLPParameter getResultParameter() {
+        for (PLPParameter outputParam : getOutputParams()) {
+            if (outputParam.simpleString().equals(this.resultParameter))
+                return outputParam;
+        }
+        return null;
+    }
+
+    public Condition getFailTerminationCond() {
+        return failTerminationCond;
+    }
+
+    public void setFailTerminationCond(Condition failTerminationCond) {
+        this.failTerminationCond = failTerminationCond;
+    }
+
+    public boolean hasFailTerminationCond() { return failTerminationCond != null; }
 
     @Override
     public String toString() {

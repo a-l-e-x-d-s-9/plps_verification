@@ -45,6 +45,13 @@ public class PLPLoader {
     }
 
     public static void main(String[] args) {
+        /*PLPLoader.loadFromDirectory(args[0]);
+        for (AchievePLP aPLP : PLPLoader.getAchievePLPs())
+            System.out.println(aPLP.toString());
+        for (PLPParameter execParam : PLPLoader.getAchievePLPs().get(0).getExecParams()) {
+            System.out.println(execParam.toString());
+            System.out.println(execParam.simpleString());
+        }*/
     }
 
     public static void loadFromDirectory(String dir) {
@@ -53,7 +60,9 @@ public class PLPLoader {
         detectPLPs = new LinkedList<>();
         maintainPLPs = new LinkedList<>();
 
-        if (!dir.endsWith("\\")) { dir = dir.concat("\\"); }
+        // Complete path with with '/' or '\' according to what to OS uses
+        if (!dir.endsWith("\\") && dir.contains("\\")) { dir = dir.concat("\\"); }
+        else if (!dir.endsWith("/")) { dir = dir.concat("/"); }
 
         File folder = new File(dir);
         if (!folder.isDirectory()) {
@@ -84,8 +93,8 @@ public class PLPLoader {
             String PLPname = rootElement.getAttribute("name");
 
             PLP plp;
-
-            switch (rootElement.getNodeName()) {
+            String nodeNameWithoutNS = rootElement.getNodeName().substring(rootElement.getNodeName().indexOf(':')+1);
+            switch (nodeNameWithoutNS) {
                 case "achieve_plp":
                     plp = new AchievePLP(PLPname);
                     achievePLPs.add((AchievePLP) plp);
@@ -160,6 +169,14 @@ public class PLPLoader {
             if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
                 LoadProgressMeasures((Element) currentNode, plp);
             }
+
+            // Check to see if there is an observe PLP that observes a condition but doesn't have a result param
+            for (ObservePLP oplp : getObservePLPs()) {
+                if (!oplp.isGoalParameter() && oplp.getResultParameter() == null) {
+                    throw new RuntimeException("Observe PLP: " + oplp.getBaseName() + " is missing the result parameter from the parameter list");
+                }
+            }
+
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -227,6 +244,7 @@ public class PLPLoader {
             currentNode = rootElement.getElementsByTagName("observation_goal_condition").item(0);
             if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
                 plp.setGoal(parseConditions((Element) currentNode).get(0));
+                plp.setResultParameterName(((Element) currentNode).getAttribute("result_parameter_name"));
             }
             currentNode = rootElement.getElementsByTagName("correct_condition_observation_probability").item(0);
             if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -248,6 +266,11 @@ public class PLPLoader {
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
             List<ConditionalProb> condProbList = parseProb((Element) currentNode);
             condProbList.forEach(plp::addFailureToObserveProb);
+        }
+        currentNode = rootElement.getElementsByTagName("failure_termination_condition").item(0);
+        if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
+            List<Condition> condList = parseConditions((Element) currentNode);
+            plp.setFailTerminationCond(condList.get(0));
         }
         currentNode = rootElement.getElementsByTagName("runtime_given_success").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -302,6 +325,11 @@ public class PLPLoader {
             List<Condition> condList = parseConditions((Element) currentNode);
             plp.setGoal(condList.get(0));
         }
+        currentNode = rootElement.getElementsByTagName("success_termination_condition").item(0);
+        if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
+            List<Condition> condList = parseConditions((Element) currentNode);
+            plp.setSuccessTerminationCond(condList.get(0));
+        }
         currentNode = rootElement.getElementsByTagName("success_probability").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
             List<ConditionalProb> condProbList = parseProb((Element) currentNode);
@@ -315,6 +343,11 @@ public class PLPLoader {
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
             List<ConditionalProb> condProbList = parseProb((Element) currentNode);
             condProbList.forEach(plp::addGeneralFailureProb);
+        }
+        currentNode = rootElement.getElementsByTagName("failure_termination_condition").item(0);
+        if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
+            List<Condition> condList = parseConditions((Element) currentNode);
+            plp.setFailTerminationCond(condList.get(0));
         }
         currentNode = rootElement.getElementsByTagName("runtime_given_success").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
