@@ -76,12 +76,17 @@ public class MiddlewareGenerator {
         }
 
         // Generate trigger publishers
+
         int publisherCounter = 0;
         for (List<ParameterGlue> gluelst : triggerPublishers.values()) {
             writer.writeLine(String.format("self.action_publisher_%d = " +
-                    "rospy.Publisher(\""+ gluelst.get(0).getRosTopic() +"\", " + gluelst.get(0).getMessageType() +
-                    ", queue_size=10)",publisherCounter));
+                    "rospy.Publisher(\"" + gluelst.get(0).getRosTopic() + "\", " + gluelst.get(0).getMessageType() +
+                    ", queue_size=10)", publisherCounter));
             publisherCounter++;
+        }
+
+        if (plp.getExecParams().size() == 0) {
+            writer.writeLine("# TODO: Implement subscriber/client to trigger module execution - no execution parameters defined.");
         }
 
         writer.newLine();
@@ -155,63 +160,74 @@ public class MiddlewareGenerator {
         writer.dendent();
         writer.writeLine("self.current_action = action");
         writer.newLine();
-        writer.writeLine("for pair in action.parameters:");
-        writer.indent();
-        for (PLPParameter execParam : plp.getExecParams()) {
-            writer.writeLine("if pair.key == \"" + execParam.simpleString().toLowerCase() + "\":");
-            // TODO: do the PDDL->PLP mapping and maybe remove tolowercase?
+
+        if (plp.getExecParams().size() > 0) {
+            writer.writeLine("for pair in action.parameters:");
             writer.indent();
-            if (!PLPHarnessGenerator.parameterLocations.containsKey(execParam.toString()))
-                throw new RuntimeException("Execution param: " + execParam.toString() + " doesn't have a glue mapping");
-            writer.writeLine("# Query the DB to get the real value of the PDDL parameter value received");
-            writer.writeLine("query_result = self.message_store.query_named(pair.value, " +
-                    PLPHarnessGenerator.parameterLocations.get(execParam.toString()).getFieldType() + "._type, False)");
-            writer.writeLine("# If there isn't a special value sent, use the PDDL parameter value received");
-            writer.writeLine("if not query_result:");
-            writer.indent();
-            writer.writeLine("self.plp_params." + execParam.simpleString() + " = pair.value");
+            for (PLPParameter execParam : plp.getExecParams()) {
+                writer.writeLine("if pair.key == \"" + execParam.simpleString().toLowerCase() + "\":");
+                // TODO: do the PDDL->PLP mapping and maybe remove tolowercase?
+                writer.indent();
+                if (!PLPHarnessGenerator.parameterLocations.containsKey(execParam.toString()))
+                    throw new RuntimeException("Execution param: " + execParam.toString() + " doesn't have a glue mapping");
+                ParameterGlue mapping = PLPHarnessGenerator.parameterLocations.get(execParam.toString());
+                writer.writeLine("# Query the DB to get the real value of the PDDL parameter value received");
+                writer.writeLine("query_result = self.message_store.query_named(pair.value, " +
+                        (mapping.hasFieldInMessage() ? mapping.getFieldType() : mapping.getMessageType()) + "._type, False)");
+                writer.writeLine("# If there isn't a special value sent, use the PDDL parameter value received");
+                writer.writeLine("if not query_result:");
+                writer.indent();
+                writer.writeLine("self.plp_params." + execParam.simpleString() + " = pair.value");
+                writer.dendent();
+                writer.writeLine("else:");
+                writer.indent();
+                writer.writeLine("self.plp_params." + execParam.simpleString() + " = query_result[0][0]");
+                writer.dendent();
+                writer.dendent();
+                writer.newLine();
+            }
             writer.dendent();
-            writer.writeLine("else:");
-            writer.indent();
-            writer.writeLine("self.plp_params." + execParam.simpleString() + " = query_result[0][0]");
-            writer.dendent();
-            writer.dendent();
+
+            writer.writeLine("# If some of the execution parameters weren't assigned:");
+            writer.writeLine("# Check if they were saved as output params from other modules");
+            for (PLPParameter execParam : plp.getExecParams()) {
+                //if (!PLPHarnessGenerator.parameterLocations.containsKey(execParam.toString()))
+                writer.writeLine("if not self.plp_params." + execParam.simpleString() + ":");
+                writer.indent();
+                ParameterGlue mapping = PLPHarnessGenerator.parameterLocations.get(execParam.toString());
+                writer.writeLine(String.format("self.plp_params.%1$s = self.message_store.query_named(\"output_%1$s\", %2$s._type, False)",
+                        execParam.simpleString(), (mapping.hasFieldInMessage() ? mapping.getFieldType() : mapping.getMessageType())));
+                writer.dendent();
+            }
             writer.newLine();
+            writer.writeLine("# Check if the action can be dispatched (every execution parameter has a value)");
         }
-        writer.dendent();
-        writer.writeLine("# If some of the execution parameters weren't assigned:");
-        writer.writeLine("# Check if they were saved as output params from other modules");
-        for (PLPParameter execParam : plp.getExecParams()) {
-            writer.writeLine("if not self.plp_params." + execParam.simpleString() + ":");
-            writer.indent();
-            writer.writeLine(String.format("self.plp_params.%1$s = self.message_store.query_named(\"output_%1$s\", %2$s._type, False)",
-                    execParam.simpleString(), PLPHarnessGenerator.parameterLocations.get(execParam.toString()).getFieldType()));
-            writer.dendent();
-        }
-        writer.newLine();
-        writer.writeLine("# Check if the action can be dispatched (every execution parameter has a value)");
         writer.writeLine("if self.check_can_dispatch():");
         writer.indent();
 
-        publisherCounter = 0;
-        for (List<ParameterGlue> gluelst : triggerPublishers.values()) {
-            if (publisherCounter > 0) writer.newLine();
-            if (gluelst.size() > 1) {
-                writer.writeLine(String.format("in_%s = %s()",
-                        gluelst.get(0).getMessageType().toLowerCase(), gluelst.get(0).getMessageType()));
-                for (ParameterGlue parGlue : gluelst) {
-                    writer.writeLine(String.format("in_%s.%s = self.plp_params.%s",
-                            parGlue.getMessageType().toLowerCase(),
-                            parGlue.getField(), parGlue.getParameterName()));
+        if (plp.getExecParams().size() > 0) {
+            publisherCounter = 0;
+            for (List<ParameterGlue> gluelst : triggerPublishers.values()) {
+                if (publisherCounter > 0) writer.newLine();
+                if (gluelst.size() > 1) {
+                    writer.writeLine(String.format("in_%s = %s()",
+                            gluelst.get(0).getMessageType().toLowerCase(), gluelst.get(0).getMessageType()));
+                    for (ParameterGlue parGlue : gluelst) {
+                        writer.writeLine(String.format("in_%s.%s = self.plp_params.%s",
+                                parGlue.getMessageType().toLowerCase(),
+                                parGlue.getField(), parGlue.getParameterName()));
+                    }
+                    writer.writeLine(String.format("self.action_publisher_%d.publish(in_%s)",
+                            publisherCounter, gluelst.get(0).getMessageType().toLowerCase()));
+                } else {
+                    writer.writeLine(String.format("self.action_publisher_%d.publish(self.plp_params.%s)",
+                            publisherCounter, gluelst.get(0).getParameterName()));
                 }
-                writer.writeLine(String.format("self.action_publisher_%d.publish(in_%s)",
-                        publisherCounter, gluelst.get(0).getMessageType().toLowerCase()));
+                publisherCounter++;
             }
-            else {
-                writer.writeLine(String.format("self.action_publisher_%d.publish(self.plp_params.%s)",
-                        publisherCounter, gluelst.get(0).getParameterName()));
-            }
-            publisherCounter++;
+        }
+        else {
+            writer.writeLine("# TODO: Implement PLP module triggering (module dispatch) - no execution parameters defined");
         }
         writer.dendent();
         writer.writeLine("else:");
@@ -225,22 +241,28 @@ public class MiddlewareGenerator {
         writer.writeLine("def check_can_dispatch(self):");
         writer.indent();
         writer.writeLine("canDispatch = True");
-        writer.write("if (");
-        int paramCounter = 0;
-        for (PLPParameter execParam : plp.getExecParams()) {
-            if (paramCounter > 0)
-                writer.writeNoIndent(" or ");
-            writer.writeNoIndent("self.plp_params." + execParam.simpleString() + " is None");
-            paramCounter++;
+        if (plp.getExecParams().size() > 0) {
+            writer.write("if (");
+            int paramCounter = 0;
+            for (PLPParameter execParam : plp.getExecParams()) {
+                if (paramCounter > 0)
+                    writer.writeNoIndent(" or ");
+                writer.writeNoIndent("self.plp_params." + execParam.simpleString() + " is None");
+                paramCounter++;
+            }
+            writer.writeNoIndent("):");
+            writer.newLine();
+            writer.indent();
+            writer.writeLine("canDispatch = False");
+            writer.dendent();
+            writer.newLine();
         }
-        writer.writeNoIndent("):");
+        else {
+            writer.writeLine("# No defined execution parameters for module");
+        }
+        writer.writeLine("# TODO: Optionally, add more trigger requirements using self.plp_params.<parameter_name> and/or self.plp_vars.<variable_name>");
         writer.newLine();
-        writer.indent();
-        writer.writeLine("canDispatch = False");
-        writer.dendent();
-        writer.newLine();
-        writer.writeLine("# Here you can add more trigger requirements using self.plp_params.<parameter_name> and/or self.plp_vars.<variable_name>");
-        writer.newLine();
+
         writer.writeLine("return canDispatch");
         writer.dendent();
 

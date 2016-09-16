@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
-    elementFormDefault="qualified"
-    xmlns="http://tempuri.org/XMLSchema.xsd"
-    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+<xs:schema targetNamespace="PLP-schemas"
+    xmlns="PLP-schemas"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
 
@@ -378,18 +376,32 @@
   </xs:complexType>
 
   <!-- NEXT TYPES ARE SPECIFIC FOR MAINTAIN -->
-
+  
   <xs:complexType name="maintained_condition_type">
-    <xs:choice minOccurs="1" maxOccurs="1">
-      <xs:element name="predicate_condition" type="predicate_type" />
-      <xs:element name="formula_condition" type="formula_condition_type" />
-      <xs:element name="not_condition" type="not_condition_type" />
-      <xs:element name="forall_condition" type="forall_condition_type" />
-      <xs:element name="exists_condition" type="exists_condition_type" />
-      <xs:element name="AND" type="and_or_condition_type" />
-      <xs:element name="OR" type="and_or_condition_type" />
-    </xs:choice>
-    <xs:attribute name="initially_true" use="required" type="xs:boolean" />
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="forall_condition" type="forall_condition_type" />
+        <xs:element name="exists_condition" type="exists_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="initially_true">
+          <xs:complexType />
+        </xs:element>
+        <xs:sequence minOccurs="1" maxOccurs="1">
+          <xs:element name="initially_false">
+            <xs:complexType />
+          </xs:element>
+          <xs:choice minOccurs="0" maxOccurs="1">
+            <xs:element name="time_until_true" type="runtimes_type" />
+          </xs:choice>
+        </xs:sequence>
+      </xs:choice>
+  </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="success_termination_type">

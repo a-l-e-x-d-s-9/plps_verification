@@ -1,16 +1,19 @@
 ﻿<?xml version="1.1" encoding="utf-8"?>
-<maintain_plp name="maintain_direction_on_map" version="1.0" glue_file_location="maintain_direction_on_map_glue.xml" xmlns="http://tempuri.org/XMLSchema.xsd">
+<plps:maintain_plp name="maintain_direction_on_map" version="1.0" glue_file_location="maintain_direction_on_map_glue.xml"
+  xmlns:plps="PLP-schemas"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="PLP-schemas MaintainPLP_schema.xsd">
+  
   <parameters>
     <execution_parameters>
-      <param name="map" />
       <param name="goal_location" />
-      <param name="max_change_rate_path_tangent" />
-      <param name="gas_level" />
-      <param name="linear_speed" />
-      <param name="odometry" />
     </execution_parameters>
 
     <input_parameters>
+      <param name="map" />
+      <param name="max_change_rate_path_tangent" />
+      <param name="gas_level" />
+      <param name="odometry" />
     </input_parameters>
     
     <output_parameters>
@@ -82,13 +85,16 @@
     </progress_measure>
   </progress_measures>
 
-  <maintained_condition initially_true="true">
+  <maintained_condition>
+    
     <formula_condition key_description="correct_path">
       <expression value="current_path_direction" />
       <inside_range>
         <range min_value="current_robot_direction-path_offset" min_inclusive="true" max_value="current_robot_direction+path_offset" max_inclusive="true" />
       </inside_range>
     </formula_condition>
+    
+    <initially_true />
   </maintained_condition>
 
   <success_termination_condition>
@@ -182,4 +188,4 @@
   <runtime_given_failure>
   </runtime_given_failure>
   
-</maintain_plp>
+</plps:maintain_plp>

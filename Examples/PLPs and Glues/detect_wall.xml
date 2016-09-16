@@ -1,17 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<detect_plp name="detect_wall" version="1.0" glue_file_location="detect_wall_glue.xml" xmlns="http://tempuri.org/XMLSchema.xsd">
+<plps:detect_plp name="detect_wall" version="1.0" glue_file_location="detect_wall_glue.xml"
+  xmlns:plps="PLP-schemas"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="PLP-schemas DetectPLP_schema.xsd">
+  
   <parameters>
     <execution_parameters></execution_parameters>
+    
     <input_parameters>
       <param name="laser_scan" read_frequency="5" />
-      <param name="initial_distance_to_wall" />
     </input_parameters>
-    <output_parameters></output_parameters>
+    
+    <output_parameters>
+    	<param name="output" />
+    </output_parameters>
+    
     <non_observable></non_observable>
   </parameters>
 
   <variables>
     <var name="distance_to_wall" type="real" />
+    <var name="initial_distance_to_wall" type="real" />
   </variables>
 
   <constants>
@@ -43,7 +52,7 @@
   <progress_measures>
   </progress_measures>
 
-  <detection_goal>
+  <detection_goal result_parameter_name="output">
     <formula_condition key_description="close_to_wall">
       <expression value="distance_to_wall" />
       <operator type="less_equal" />
@@ -55,4 +64,4 @@
     <probability value="0.95" />
   </success_prob_given_condition>
   
-</detect_plp>
+</plps:detect_plp>

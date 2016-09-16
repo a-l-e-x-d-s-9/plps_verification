@@ -136,13 +136,13 @@ class observe_gateway_dispatcher(object):
 
     def detect_success(self):
         if self.plp_params.gateway_location_gateway is not None:
-            # TODO: Add more conditions on the returned value, to determine if the observation finished successfully
+            # TODO: Optionally, add more conditions on the returned value, to determine if the observation finished successfully
             return True
-        return False
+        return None
 
     def detect_failures(self):
         # TODO: Implement failure to observe detection. No failed termination conditions specified
-        return False
+        return None
 
     def dispatch_action(self, action):
         if not action.name == "observe_gateway":
@@ -201,7 +201,7 @@ class observe_gateway_dispatcher(object):
         if (self.plp_params.areaA is None or self.plp_params.areaB is None or self.plp_params.gateway is None):
             canDispatch = False
 
-        # Here you can add more trigger requirements using self.plp_params.<parameter_name> and/or self.plp_vars.<variable_name>
+        # TODO: Optionally, add more trigger requirements using self.plp_params.<parameter_name> and/or self.plp_vars.<variable_name>
 
         return canDispatch
 

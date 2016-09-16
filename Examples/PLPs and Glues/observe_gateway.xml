@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<observe_plp name="observe_gateway" version="1.0" glue_file_location="observe_gateway_glue.xml" xmlns="http://tempuri.org/XMLSchema.xsd">
+
+<plps:observe_plp name="observe_gateway" version="1.0" glue_file_location="observe_gateway_glue.xml"
+	xmlns:plps="PLP-schemas"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="PLP-schemas ObservePLP_schema.xsd">
+
   <parameters>
     <execution_parameters>
       <param name="areaA" />
@@ -8,18 +13,15 @@
     </execution_parameters>
 
     <input_parameters>
-      <param name="camera_controller" read_frequency="5" />
-      <param name="odometry" />
-      <param name="arm_controller" />
-      <param name="begin_Aspeed" />
-      <param name="begin_Lspeed" />
+      <param name="rgb_image" read_frequency="5" />
+      <param name="odometry" read_frequency="5" />
+      <param name="arm_controller" read_frequency="1" />
     </input_parameters>
 
     <output_parameters>
       <param name="gateway_location">
         <field value="gateway"/>
       </param>
-      <param name="result" />
     </output_parameters>
 
     <non_observable>
@@ -32,6 +34,8 @@
   <variables>
     <var name="collision_alert" type="boolean" />
     <var name="arm_moving" type="boolean" />
+    <var name="begin_Aspeed" type="real" />
+    <var name="begin_Lspeed" type="real" />
   </variables>
 
   <constants>
@@ -149,4 +153,4 @@
     </distribution>
   </runtime_given_failure>
  
-</observe_plp>
+</plps:observe_plp>

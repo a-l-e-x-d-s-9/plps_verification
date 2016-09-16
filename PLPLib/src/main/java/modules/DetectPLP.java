@@ -3,6 +3,7 @@ package modules;
 import conditions.Condition;
 import plpEtc.Predicate;
 import plpFields.ConditionalProb;
+import plpFields.PLPParameter;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -16,6 +17,10 @@ public class DetectPLP extends PLP {
 
     private Condition goal;
     private List<ConditionalProb> successProbGivenCondition;
+
+    private String resultParameter;
+
+    private Condition failTerminationCond;
 
     public DetectPLP(String baseName) {
         super(baseName);
@@ -38,6 +43,28 @@ public class DetectPLP extends PLP {
     public void addSuccessProbGivenCond(ConditionalProb prob) {
         successProbGivenCondition.add(prob);
     }
+
+    public void setResultParameterName(String name) {
+        this.resultParameter = name;
+    }
+
+    public PLPParameter getResultParameter() {
+        for (PLPParameter outputParam : getOutputParams()) {
+            if (outputParam.simpleString().equals(this.resultParameter))
+                return outputParam;
+        }
+        return null;
+    }
+
+    public Condition getFailTerminationCond() {
+        return failTerminationCond;
+    }
+
+    public void setFailTerminationCond(Condition failTerminationCond) {
+        this.failTerminationCond = failTerminationCond;
+    }
+
+    public boolean hasFailTerminationCond() { return failTerminationCond != null; }
 
     public String toString() {
         return super.toString() + "\n" +

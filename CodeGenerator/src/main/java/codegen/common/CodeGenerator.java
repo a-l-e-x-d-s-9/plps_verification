@@ -84,6 +84,10 @@ public class CodeGenerator {
             Domain domain = pddlParser.getDomain();
             MiddlewareGenerator.setDomain(domain);
 
+            PythonWriter launchFileWriter = new PythonWriter();
+            launchFileWriter.writeLine("<launch>");
+            launchFileWriter.indent();
+
             // Go over every PDDL action and find the corresponding PLP
             for (Op pddlAction : domain.getOperators()) {
                 boolean generatedMiddleware = false;
@@ -96,10 +100,20 @@ public class CodeGenerator {
                                 plpPath+packageName+pathBreak+"scripts"+pathBreak
                                         +"plp_"+aPLP.getBaseName()+"_action_dispatcher.py");
                         generatedMiddleware = true;
+                        launchFileWriter.writeLine("<node name=\"plp_" + aPLP.getBaseName() + "_action_dispatcher\" pkg=\"" + packageName + "\" type=\"plp_"+aPLP.getBaseName()+"_action_dispatcher.py\" required=\"true\" output=\"screen\"/>");
                     }
                 }
                 if (!generatedMiddleware)
                     for (MaintainPLP mPLP : PLPLoader.getMaintainPLPs()) {
+                        if (mPLP.getBaseName().equals(pddlAction.getName().toString())) {
+                            //System.out.println(aPLP.getBaseName());
+                            String middlewareCode = MiddlewareGenerator.generateMiddleware(mPLP, pddlAction, plpPath);
+                            writeStringToFile(middlewareCode,
+                                    plpPath+packageName+pathBreak+"scripts"+pathBreak
+                                            +"plp_"+mPLP.getBaseName()+"_action_dispatcher.py");
+                            generatedMiddleware = true;
+                            launchFileWriter.writeLine("<node name=\"plp_" + mPLP.getBaseName() + "_action_dispatcher\" pkg=\"" + packageName + "\" type=\"plp_"+mPLP.getBaseName()+"_action_dispatcher.py\" required=\"true\" output=\"screen\"/>");
+                        }
                     }
                 if (!generatedMiddleware)
                     for (ObservePLP oPLP : PLPLoader.getObservePLPs()) {
@@ -110,10 +124,20 @@ public class CodeGenerator {
                                     plpPath+packageName+pathBreak+"scripts"+pathBreak
                                             +"plp_"+oPLP.getBaseName()+"_action_dispatcher.py");
                             generatedMiddleware = true;
+                            launchFileWriter.writeLine("<node name=\"plp_" + oPLP.getBaseName() + "_action_dispatcher\" pkg=\"" + packageName + "\" type=\"plp_"+oPLP.getBaseName()+"_action_dispatcher.py\" required=\"true\" output=\"screen\"/>");
                         }
                     }
                 if (!generatedMiddleware)
                     for (DetectPLP dPLP : PLPLoader.getDetectPLPs()) {
+                        if (dPLP.getBaseName().equals(pddlAction.getName().toString())) {
+                            //System.out.println(aPLP.getBaseName());
+                            String middlewareCode = MiddlewareGenerator.generateMiddleware(dPLP, pddlAction, plpPath);
+                            writeStringToFile(middlewareCode,
+                                    plpPath+packageName+pathBreak+"scripts"+pathBreak
+                                            +"plp_"+dPLP.getBaseName()+"_action_dispatcher.py");
+                            generatedMiddleware = true;
+                            launchFileWriter.writeLine("<node name=\"plp_" + dPLP.getBaseName() + "_action_dispatcher\" pkg=\"" + packageName + "\" type=\"plp_"+dPLP.getBaseName()+"_action_dispatcher.py\" required=\"true\" output=\"screen\"/>");
+                        }
                     }
 
                 if (!generatedMiddleware) {
@@ -121,10 +145,11 @@ public class CodeGenerator {
                 }
             }
 
-            /*
-            copyResourceFile("launch_example.launch", plpPath+packageName+pathBreak+"launch"+pathBreak
-                    , "plp_dispatchers.py");*/
+            launchFileWriter.dendent();
+            launchFileWriter.writeLine("</launch>");
 
+            // Create Package Files
+            writeStringToFile(launchFileWriter.end(),plpPath+packageName+pathBreak+"launch"+pathBreak+"middleware_launch.launch");
             generateCMakeLists(plpPath+packageName);
             generatePackageXMLFile(plpPath+packageName);
         }

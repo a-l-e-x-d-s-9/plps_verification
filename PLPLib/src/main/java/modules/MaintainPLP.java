@@ -19,6 +19,8 @@ public class MaintainPLP extends PLP {
     private Condition maintainedCondition;
     private boolean initiallyTrue;
 
+    private List<ConditionalDist> timeUntilTrue;
+
     private Condition successTerminationCondition;
     private List<Condition> failureTerminationConditions;
 
@@ -118,10 +120,23 @@ public class MaintainPLP extends PLP {
         return failRuntime;
     }
 
+    public List<ConditionalDist> getTimeUntilTrue() {
+        return timeUntilTrue;
+    }
+
+    public void setTimeUntilTrue(List<ConditionalDist> timeUntilTrue) {
+        this.timeUntilTrue = timeUntilTrue;
+    }
+
+    public boolean hasTimeUntilTrue() {
+        return this.timeUntilTrue != null;
+    }
+
     @Override
     public String toString() {
         return super.toString()  + "\n" +
-                " - Maintained Condition: " + maintainedCondition.toString() + "(initially "+initiallyTrue+")\n" +
+                " - Maintained Condition (initially "+initiallyTrue+"): " + maintainedCondition.toString() + "\n" +
+                (hasTimeUntilTrue() ? " - Runtime Until True: " + Arrays.toString(timeUntilTrue.toArray()) + "\n" : "") +
                 " - Success Termination Condition: " + successTerminationCondition.toString() + "\n" +
                 " - Failure Termination Conditions: " + Arrays.toString(failureTerminationConditions.toArray()) + "\n" +
                 " - Success Prob: " + Arrays.toString(successProb.toArray()) + "\n" +

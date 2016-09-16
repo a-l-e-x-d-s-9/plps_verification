@@ -46,6 +46,9 @@ public class PLPLoader {
 
     public static void main(String[] args) {
         /*PLPLoader.loadFromDirectory(args[0]);
+        for (MaintainPLP oplp : PLPLoader.getMaintainPLPs())
+            System.out.println(oplp.toString());
+
         for (AchievePLP aPLP : PLPLoader.getAchievePLPs())
             System.out.println(aPLP.toString());
         for (PLPParameter execParam : PLPLoader.getAchievePLPs().get(0).getExecParams()) {
@@ -170,13 +173,31 @@ public class PLPLoader {
                 LoadProgressMeasures((Element) currentNode, plp);
             }
 
-            // Check to see if there is an observe PLP that observes a condition but doesn't have a result param
+
+            // Validate Observe PLPs
             for (ObservePLP oplp : getObservePLPs()) {
+                // Check to see if there is an observe PLP that observes a condition but doesn't have a result param
                 if (!oplp.isGoalParameter() && oplp.getResultParameter() == null) {
                     throw new RuntimeException("Observe PLP: " + oplp.getBaseName() + " is missing the result parameter from the parameter list");
                 }
+                // Check to see if there is an observe PLP that observes a parameter that isn't listed as an output param
+                if (oplp.isGoalParameter()) {
+                    boolean foundParamMatch = false;
+                    for (PLPParameter outputParam : oplp.getOutputParams()) {
+                        if (outputParam.toString().equals(oplp.getGoal().toString()))
+                            foundParamMatch = true;
+                    }
+                    if (!foundParamMatch)
+                        throw new RuntimeException("Observe PLP: " + oplp.getBaseName() + " has a parameter observation goal that isn't listed as an output parameter");
+                }
             }
-
+            // Validate Detect PLPs
+            for (DetectPLP dplp : getDetectPLPs()) {
+                // Check to see if there is a detect PLP that doesn't have a result param
+                if (dplp.getResultParameter() == null) {
+                    throw new RuntimeException("Detect PLP: " + dplp.getBaseName() + " is missing the result parameter from the parameter list");
+                }
+            }
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -188,11 +209,17 @@ public class PLPLoader {
         Node currentNode = rootElement.getElementsByTagName("detection_goal").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
             plp.setGoal(parseConditions((Element) currentNode).get(0));
+            plp.setResultParameterName(((Element) currentNode).getAttribute("result_parameter_name"));
         }
         currentNode = rootElement.getElementsByTagName("success_prob_given_condition").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
             List<ConditionalProb> condProbList = parseProb((Element) currentNode);
             condProbList.forEach(plp::addSuccessProbGivenCond);
+        }
+        currentNode = rootElement.getElementsByTagName("failure_termination_condition").item(0);
+        if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
+            List<Condition> condList = parseConditions((Element) currentNode);
+            plp.setFailTerminationCond(condList.get(0));
         }
     }
 
@@ -200,7 +227,18 @@ public class PLPLoader {
         Node currentNode = rootElement.getElementsByTagName("maintained_condition").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
             plp.setMaintainedCondition(parseConditions((Element) currentNode).get(0));
-            plp.setInitiallyTrue(Boolean.parseBoolean(((Element) currentNode).getAttribute("initially_true")));
+
+            if (((Element) currentNode).getElementsByTagName("initially_true").getLength() > 0)
+                plp.setInitiallyTrue(true);
+            else {
+                plp.setInitiallyTrue(false);
+                NodeList timeUntilTrueNL = ((Element) currentNode).getElementsByTagName("time_until_true");
+                if (timeUntilTrueNL.getLength() > 0) {
+                    Node timeUntilTrueNode =  timeUntilTrueNL.item(0);
+                    plp.setTimeUntilTrue(parseRuntime((Element) timeUntilTrueNode));
+                }
+            }
+            //plp.setInitiallyTrue(Boolean.parseBoolean(((Element) currentNode).getAttribute("initially_true")));
         }
         currentNode = rootElement.getElementsByTagName("success_termination_condition").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {

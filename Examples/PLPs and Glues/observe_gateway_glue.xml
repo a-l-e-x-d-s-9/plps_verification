@@ -1,58 +1,65 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<code_generator_glue xmlns="http://tempuri.org/XMLSchema.xsd">
+<plps:code_generator_glue xmlns:plps="PLP-schemas"
+							xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+							xsi:schemaLocation="PLP-schemas GlueFile_schema.xsd">
 
-  <import from="test.msg">
-    <python_class>testing</python_class>
-    <python_class>testing</python_class>
+  <import from="nav_msgs.msg">
+    <python_class>Odometry</python_class>
   </import>
-  <import from="test2">
-    <python_class>testing</python_class>
-    <python_class>testing</python_class>
+  <import from="service_robot_msgs.msg">
+    <python_class>ObGWcmd</python_class>
+  </import>
+  <import from="sensor_msgs.msg">
+    <python_class>Image</python_class>
+  </import>
+  <import from="dynamixel_msgs.msg">
+  	<python_class>MotorStateList</python_class>
+  </import>
+  <import from="geometry_msgs.msg">
+  	<python_class>Pose</python_class>
   </import>
 
   <parameter_location>
-    <param name="linear_distance" />
-    <ROS_topic name="/cupinator/walker/command" message_type="WalkerCommand" field_in_message="l_distance" />
-  </parameter_location>
-
-  <parameter_location>
-    <param name="angular_distance" />
-    <ROS_topic name="/cupinator/walker/command" message_type="WalkerCommand" field_in_message="a_distance" />
-  </parameter_location>
-
-  <parameter_location>
-    <param name="laser_scan" />
-    <ROS_topic name="/laser_scanner" message_type="Scan" field_in_message="" />
-  </parameter_location>
-
-  <parameter_location>
-    <param name="current_angle" />
-    <ROS_topic name="/odom_pub" message_type="Odom" field_in_message="position.angular" />
-  </parameter_location>
-
-  <parameter_location>
-    <param name="current_position" />
-    <ROS_topic name="/odom_pub" message_type="Odom" field_in_message="position.linear" />
-  </parameter_location>
-
-  <parameter_location>
-    <param name="current_linear_speed" />
-    <ROS_topic name="/odom_pub" message_type="Odom" field_in_message="speed.linear" />
-  </parameter_location>
-
-  <parameter_location>
-    <param name="current_angular_speed" />
-    <ROS_topic name="/odom_pub" message_type="Odom" field_in_message="speed.linear" />
-  </parameter_location>
-
-  <parameter_location>
-    <param name="energy_level" />
-    <ROS_topic name="/energy_publisher" message_type="Energy" field_in_message="level" />
-  </parameter_location>
-
-  <parameter_location>
-    <param name="result" />
-    <ROS_topic name="/cupinator/walker/result" message_type="WalkerResult" field_in_message="result" />
+    <param name="gateway" />
+    <ROS_topic name="/observe_gateway_cmd" message_type="ObGWcmd">
+    	<field_in_message field_name="gateway" field_type="String"/>
+    </ROS_topic>
   </parameter_location>
   
-</code_generator_glue>
+  <parameter_location>
+    <param name="areaA" />
+    <ROS_topic name="/observe_gateway_cmd" message_type="ObGWcmd">
+    	<field_in_message field_name="areaA" field_type="String"/>
+    </ROS_topic>
+  </parameter_location>
+  
+  <parameter_location>
+    <param name="areaB" />
+    <ROS_topic name="/observe_gateway_cmd" message_type="ObGWcmd">
+    	<field_in_message field_name="areaB" field_type="String"/>
+    </ROS_topic>
+  </parameter_location>
+  
+  <parameter_location>
+    <param name="rgb_image" />
+    <ROS_topic name="/komodo_1/komodo_1_Asus_Camera/rgb/image_raw" message_type="Image" /> 
+  </parameter_location>
+ 
+  <parameter_location>
+    <param name="odometry" />
+    <ROS_topic name="/komodo_1/odom_pub" message_type="Odometry" /> 
+  </parameter_location>
+
+  <parameter_location>
+    <param name="arm_controller" />
+    <ROS_topic name="/komodo_1/motor_states/arm_port" message_type="MotorStateList" /> 
+  </parameter_location>
+ 
+  <parameter_location>
+    <param name="gateway_location">
+    	<field value="gateway"/>
+    </param>
+    <ROS_topic name="/observe_gateway_res" message_type="Pose" />
+  </parameter_location>
+ 
+</plps:code_generator_glue>

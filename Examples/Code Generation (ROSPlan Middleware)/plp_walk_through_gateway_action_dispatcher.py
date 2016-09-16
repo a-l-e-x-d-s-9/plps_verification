@@ -240,7 +240,7 @@ class walk_through_gateway_dispatcher(object):
         if (self.plp_params.areaA is None or self.plp_params.areaB is None or self.plp_params.gateway is None):
             canDispatch = False
 
-        # Here you can add more trigger requirements using self.plp_params.<parameter_name> and/or self.plp_vars.<variable_name>
+        # TODO: Optionally, add more trigger requirements using self.plp_params.<parameter_name> and/or self.plp_vars.<variable_name>
 
         return canDispatch
 
