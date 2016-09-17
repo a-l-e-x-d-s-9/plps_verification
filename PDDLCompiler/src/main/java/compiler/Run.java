@@ -1,9 +1,12 @@
 package compiler;
 
 
+import fr.uga.pddl4j.parser.Domain;
+import fr.uga.pddl4j.parser.Parser;
 import loader.PLPLoader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 public class Run {
@@ -17,6 +20,8 @@ public class Run {
             PLPLoader.loadFromDirectory(args[0]);
             PDDLCompiler.setAchievePLPs(PLPLoader.getAchievePLPs());
             PDDLCompiler.setObservePLPs(PLPLoader.getObservePLPs());
+            PDDLCompiler.setMaintainPLPs(PLPLoader.getMaintainPLPs());
+            PDDLCompiler.setDetectPLPs(PLPLoader.getDetectPLPs());
             String compiledPDDL = PDDLCompiler.producePDDL();
             PrintWriter writer = null;
             try {
@@ -31,21 +36,16 @@ public class Run {
                     writer.close();
             }
 
+            /*Parser pddlParser = new Parser();
+            Domain domain = null;
+            try {
+                pddlParser.parseDomain(args[0]);
+                domain = pddlParser.getDomain();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            System.out.println(domain.toString());*/
         }
-
-        //System.out.println(PDDLCompiler.producePDDL(args[0]));
-        /*System.out.println(walkThroughGateway.toString());
-
-        System.out.println("--------------------------------------------");
-        System.out.println(observeGateway.toString());
-
-        System.out.println("--------------------------------------------");
-        List<ObservationGoal> observableValues = new LinkedList<>();
-        observableValues.add(observeGateway.getGoal());
-
-        System.out.println(walkThroughGateway.toPDDL(observableValues));
-        System.out.println("--------------------------------------------");
-        System.out.println(observeGateway.toPDDL());*/
     }
 
 }

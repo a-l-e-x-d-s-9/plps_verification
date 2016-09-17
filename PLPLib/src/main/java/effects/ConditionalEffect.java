@@ -42,7 +42,7 @@ public class ConditionalEffect implements Effect {
 
     @Override
     public String toString() {
-        return "[" + effect.toString() + "|" + condition.toString() + "]";
+        return "[when " + effect.toString() + " -> " + condition.toString() + "]";
     }
 
     @Override

@@ -46,6 +46,10 @@ public class PLPParameter implements ObservationGoal {
 
     @Override
     public boolean containsParam(String paramName) {
+        if (paramName.indexOf('(') >= 0) {
+            String name = paramName.substring(0, paramName.indexOf('('));
+            return this.name.equals(name);
+        }
         return this.name.equals(paramName);
     }
 
