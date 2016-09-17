@@ -31,12 +31,14 @@
       <file leaf-file-name="PDDLCompiler.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/compiler/PDDLCompiler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="18">
-              <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+            <state relative-caret-position="135">
+              <caret line="337" column="29" selection-start-line="337" selection-start-column="29" selection-end-line="337" selection-end-column="29" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#7881#7882#0" expanded="true" />
-                <element signature="e#7940#7941#0" expanded="true" />
+                <element signature="e#26872#26873#0" expanded="true" />
+                <element signature="e#26919#26920#0" expanded="true" />
+                <element signature="e#31654#31655#0" expanded="true" />
+                <element signature="e#31681#31682#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -45,8 +47,8 @@
       <file leaf-file-name="Run.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/compiler/Run.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="233">
-              <caret line="22" column="51" selection-start-line="22" selection-start-column="51" selection-end-line="22" selection-end-column="51" />
+            <state relative-caret-position="-198">
+              <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -64,6 +66,13 @@
       </file>
     </leaf>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="GradleLocalSettings">
     <option name="externalProjectsViewState">
       <projects_view />
@@ -76,6 +85,8 @@
         <option value="$PROJECT_DIR$/PDDLCompiler.iml" />
         <option value="$PROJECT_DIR$/src/main/java/META-INF/MANIFEST.MF" />
         <option value="$PROJECT_DIR$/src/main/java/compiler/Run.java" />
+        <option value="$PROJECT_DIR$/src/main/java/compiler/BaseCompiler.java" />
+        <option value="$PROJECT_DIR$/src/test/java/compiler/PDDLCompilerTest.groovy" />
         <option value="$PROJECT_DIR$/src/main/java/compiler/PDDLCompiler.java" />
       </list>
     </option>
@@ -88,10 +99,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="65" />
-    <option name="y" value="-4" />
-    <option name="width" value="1301" />
-    <option name="height" value="772" />
+    <option name="x" value="1423" />
+    <option name="y" value="-7" />
+    <option name="width" value="967" />
+    <option name="height" value="775" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -119,8 +130,6 @@
     </navigator>
     <panes>
       <pane id="PackagesPane" />
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -140,6 +149,32 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="PDDLCompiler" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="PDDLCompiler" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="PDDLCompiler" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="compiler" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -197,17 +232,27 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="settings.editor.selected.configurable" value="reference.projectsettings.compiler.javacompiler" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
-    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/pddl4j-3.5.0.jar!/" />
+    <property name="last_opened_file_path" value="$APPLICATION_HOME_DIR$/lib/junit-4.12.jar!/" />
+    <property name="extract.method.default.visibility" value="private" />
+    <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary" value="Groovy JUnit" />
   </component>
   <component name="RecentsManager">
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="compiler" />
+    </key>
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="groovy.util.GroovyTestCase" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\maora_000\Desktop\PLP-repo\PDDLCompiler\src\main\java" />
     </key>
@@ -222,7 +267,7 @@
       </extension>
       <option name="MAIN_CLASS_NAME" value="compiler.Run" />
       <option name="VM_PARAMETERS" value="" />
-      <option name="PROGRAM_PARAMETERS" value="$PROJECT_DIR$/../../compiler_tests" />
+      <option name="PROGRAM_PARAMETERS" value="-PO $PROJECT_DIR$/../../compiler_tests" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -231,6 +276,32 @@
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="PDDLCompiler" />
       <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="PDDLCompilerTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
+        <pattern>
+          <option name="PATTERN" value="compiler.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <module name="PDDLCompiler" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="compiler" />
+      <option name="MAIN_CLASS_NAME" value="compiler.PDDLCompilerTest" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <envs />
+      <patterns />
       <method />
     </configuration>
     <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
@@ -430,12 +501,14 @@
       <listeners />
       <method />
     </configuration>
-    <list size="1">
+    <list size="2">
       <item index="0" class="java.lang.String" itemvalue="Application.Run" />
+      <item index="1" class="java.lang.String" itemvalue="JUnit.PDDLCompilerTest" />
     </list>
     <recent_temporary>
-      <list size="1">
+      <list size="2">
         <item index="0" class="java.lang.String" itemvalue="Application.Run" />
+        <item index="1" class="java.lang.String" itemvalue="JUnit.PDDLCompilerTest" />
       </list>
     </recent_temporary>
   </component>
@@ -455,9 +528,41 @@
     </task>
     <servers />
   </component>
+  <component name="TestHistory">
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 37m 20s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 37m 27s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 38m 48s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 40m 22s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 40m 41s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 41m 39s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 45m 16s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 46m 03s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 47m 51s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="PDDLCompilerTest - 2016.09.17 at 22h 49m 43s.xml">
+      <configuration name="PDDLCompilerTest" configurationId="JUnit" />
+    </history-entry>
+  </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1301" height="772" extended-state="6" />
-    <editor active="true" />
+    <frame x="1423" y="-7" width="967" height="775" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -466,15 +571,15 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.69597614" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2596439" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.11990777" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23267838" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39940387" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39910978" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -509,36 +614,10 @@
           <caret line="229" column="43" selection-start-line="229" selection-start-column="43" selection-end-line="229" selection-end-column="43" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/compiler/Run.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="22" column="29" selection-start-line="22" selection-start-column="29" selection-end-line="22" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/META-INF/MANIFEST.MF">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/compiler/PDDLCompiler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3852">
-          <caret line="229" column="43" selection-start-line="229" selection-start-column="43" selection-end-line="229" selection-end-column="43" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -557,8 +636,10 @@
           <caret line="229" column="43" selection-start-line="229" selection-start-column="43" selection-end-line="229" selection-end-column="43" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -577,8 +658,10 @@
           <caret line="229" column="43" selection-start-line="229" selection-start-column="43" selection-end-line="229" selection-end-column="43" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -597,8 +680,10 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -617,8 +702,10 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -652,8 +739,10 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -687,8 +776,10 @@
           <caret line="36" column="46" selection-start-line="36" selection-start-column="46" selection-end-line="36" selection-end-column="46" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -729,8 +820,10 @@
           <caret line="36" column="46" selection-start-line="36" selection-start-column="46" selection-end-line="36" selection-end-column="46" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -771,8 +864,10 @@
           <caret line="36" column="46" selection-start-line="36" selection-start-column="46" selection-end-line="36" selection-end-column="46" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -813,8 +908,10 @@
           <caret line="36" column="46" selection-start-line="36" selection-start-column="46" selection-end-line="36" selection-end-column="46" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -857,27 +954,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/NamedTypedList.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="21" column="13" selection-start-line="21" selection-start-column="13" selection-end-line="21" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/Op.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="21" column="13" selection-start-line="21" selection-start-column="13" selection-end-line="21" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/Symbol.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/NamedTypedList.class" />
+    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/Op.class" />
+    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/Symbol.class" />
     <entry file="jar://$PROJECT_DIR$/../PLPLib/out/artifacts/PLPLib_jar/PLPLib.jar!/conditions/Formula.class">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -885,17 +964,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/Domain.class">
+    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/Domain.class" />
+    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/Exp.class" />
+    <entry file="jar://$PROJECT_DIR$/../PLPLib/out/artifacts/PLPLib_jar/PLPLib.jar!/plpFields/PLPParameter.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="319" column="0" selection-start-line="319" selection-start-column="0" selection-end-line="319" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/pddl4j-3.1.0.jar!/fr/uga/pddl4j/parser/Exp.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="64" column="0" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
+        <state relative-caret-position="108">
+          <caret line="7" column="35" selection-start-line="7" selection-start-column="35" selection-end-line="7" selection-end-column="35" />
         </state>
       </provider>
     </entry>
@@ -907,30 +981,50 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/../PLPLib/out/artifacts/PLPLib_jar/PLPLib.jar!/plpFields/PLPParameter.class">
+    <entry file="file://$PROJECT_DIR$/src/main/java/compiler/BaseCompiler.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="7" column="35" selection-start-line="7" selection-start-column="35" selection-end-line="7" selection-end-column="35" />
+        <state relative-caret-position="490">
+          <caret line="240" column="24" selection-start-line="240" selection-start-column="24" selection-end-line="240" selection-end-column="24" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/lib/groovy-all-2.4.6.jar!/org/codehaus/groovy/runtime/DefaultGroovyMethods.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="134">
+          <caret line="641" column="0" selection-start-line="641" selection-start-column="0" selection-end-line="641" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/compiler/PDDLCompilerTest.groovy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="62">
+          <caret line="21" column="29" selection-start-line="21" selection-start-column="29" selection-end-line="21" selection-end-column="29" />
+          <folding>
+            <element signature="e#18#56#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/compiler/Run.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="233">
-          <caret line="22" column="51" selection-start-line="22" selection-start-column="51" selection-end-line="22" selection-end-column="51" />
+        <state relative-caret-position="-198">
+          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/compiler/PDDLCompiler.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+        <state relative-caret-position="135">
+          <caret line="337" column="29" selection-start-line="337" selection-start-column="29" selection-end-line="337" selection-end-column="29" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7881#7882#0" expanded="true" />
-            <element signature="e#7940#7941#0" expanded="true" />
+            <element signature="e#26872#26873#0" expanded="true" />
+            <element signature="e#26919#26920#0" expanded="true" />
+            <element signature="e#31654#31655#0" expanded="true" />
+            <element signature="e#31681#31682#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1002,7 +1096,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited>pddl4j-3.5.0</last-edited>
+          <last-edited>junit-4.12</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
