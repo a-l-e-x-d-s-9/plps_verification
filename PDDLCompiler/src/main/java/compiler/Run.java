@@ -1,18 +1,13 @@
 package compiler;
 
-
-import fr.uga.pddl4j.parser.Domain;
-import fr.uga.pddl4j.parser.Parser;
 import loader.PLPLoader;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 public class Run {
     public static void main(String[] args) {
 
-        if (args.length < 2 || (!args[0].equals("-NFO") && !args[0].equals("-PO"))) {
+        if (args.length < 2 || (!args[0].equals("-NFO") && !args[0].equals("-PO") && !args[0].equals("-POprob"))) {
             System.out.println("Usage:");
             System.out.println("\t-NFO <plp_dir_path> (For near-fully-observable mode)");
             System.out.println("\t-PO <plp_dir_path> (For partially-observable mode)");
@@ -24,7 +19,7 @@ public class Run {
                 PDDLCompiler.compilerMode = PDDLCompiler.Mode.PARTIALLY_OBSERVABLE;
             else if (args[0].equals("-POprob")) {
                 String problem = PDDLCompiler.finishPOproblem(args[1]);
-                printToFile(args[1] + "/problem.pddl", problem);
+                printToFile(args[1] + "/problem.pddl", problem.replace("(:requirements)\n",""));
                 return;
             }
 
@@ -39,7 +34,7 @@ public class Run {
             String[] compiledPDDL = PDDLCompiler.producePDDL();
 
             printToFile(folderPath +"/domain.pddl", compiledPDDL[0]);
-            printToFile(folderPath +"/problem.pddl", compiledPDDL[1]);
+            printToFile(folderPath +"/problem.pddl", compiledPDDL[1].replace("(:requirements)\n",""));
         }
     }
 

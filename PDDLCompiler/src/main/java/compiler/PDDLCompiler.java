@@ -4,10 +4,12 @@ import conditions.*;
 import conditions.Condition;
 import effects.*;
 import fr.uga.pddl4j.parser.*;
+import loader.PLPLoader;
 import modules.*;
 import plpEtc.Predicate;
 import plpFields.*;
 
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,6 +32,10 @@ public class PDDLCompiler {
     private static String domainName = "PLPDomain";
     private static String problemName = "PLPDomain_problem";
 
+    private static String knowValuePred = "KV_";
+    private static String knowHoldsPred = "KNOW_";
+    private static String knowNotHoldsPred = "KNOW_NOT_";
+
     private static List<AchievePLP> achievePLPs;
     private static List<ObservePLP> observePLPs;
     private static List<MaintainPLP> maintainPLPs;
@@ -37,7 +43,7 @@ public class PDDLCompiler {
     public static List<PLPParameter> observableValues;
     public static List<Effect> possibleEffects;
 
-    public static Logger logger;
+    public static Logger logger = Logger.getLogger("PLP->PDDL Logger");;
 
     public static CompilerPrompts prompts = CompilerPrompts.NO_PROMPTS;
     public static Mode compilerMode;
@@ -50,6 +56,7 @@ public class PDDLCompiler {
     public static Map<String, Boolean> assumptions;
 
     public static Map<String, Integer> predicates;
+    public static Map<String, Integer> knowPredicates; // Only for PO mode
 
     static void setAchievePLPs(List<AchievePLP> achievePLPs) {
         PDDLCompiler.achievePLPs = achievePLPs;
@@ -64,12 +71,13 @@ public class PDDLCompiler {
     }
 
     static String[] producePDDL() {
-        logger = Logger.getLogger("PLP->PDDL Logger");
         observableValues = new LinkedList<>();
         possibleEffects = new LinkedList<>();
         requirements = new LinkedList<>();
-        assumptions = new HashMap<>();
-        predicates = new HashMap<>();
+        requirements.add(RequireKey.STRIPS);
+        assumptions = new TreeMap<>();
+        predicates = new TreeMap<>();
+        knowPredicates = new TreeMap<>();
 
         String[] resultFiles = new String[2];
         loadObservableAndEffects();
@@ -79,30 +87,37 @@ public class PDDLCompiler {
 
         for (AchievePLP aPLP : achievePLPs) {
             currentPLP = aPLP;
-            domain.addOperator(compile(aPLP));
+            Op compiledPLP = compile(aPLP);
+            if (compiledPLP != null)
+                domain.addOperator(compiledPLP);
         }
 
         for (ObservePLP oPLP : observePLPs) {
-            if (oPLP.isGoalParameter()) {
-                currentPLP = oPLP;
-                domain.addOperator(compile(oPLP));
+            if (!oPLP.isGoalParameter() && compilerMode != Mode.PARTIALLY_OBSERVABLE) {
+                continue;
             }
-            else if (compilerMode == Mode.PARTIALLY_OBSERVABLE) {
+            else {
                 currentPLP = oPLP;
-                domain.addOperator(compile(oPLP));
+                Op compiledPLP = compile(oPLP);
+                if (compiledPLP != null)
+                    domain.addOperator(compiledPLP);
             }
         }
 
         for (MaintainPLP mPLP : maintainPLPs) {
             if (!mPLP.isInitiallyTrue()) {
                 currentPLP = mPLP;
-                domain.addOperator(compile(mPLP));
+                Op compiledPLP = compile(mPLP);
+                if (compiledPLP != null)
+                    domain.addOperator(compiledPLP);
             }
         }
 
         for (DetectPLP dPLP : detectPLPs) {
             currentPLP = dPLP;
-            domain.addOperator(compile(dPLP));
+            Op compiledPLP = compile(dPLP);
+            if (compiledPLP != null)
+                domain.addOperator(compiledPLP);
         }
 
         // Load requirements into domain
@@ -117,13 +132,22 @@ public class PDDLCompiler {
             }
             domain.addPredicate(ntl);
         }
+        if (compilerMode == Mode.PARTIALLY_OBSERVABLE) {
+            for (String pred_name : knowPredicates.keySet()) {
+                NamedTypedList ntl = new NamedTypedList(new Symbol(Symbol.Kind.PREDICATE, pred_name));
+                for (int i = 1; i <= knowPredicates.get(pred_name); i++) {
+                    ntl.add(new TypedSymbol(new Symbol(Symbol.Kind.VARIABLE, "?par" + i)));
+                }
+                domain.addPredicate(ntl);
+            }
+        }
 
         resultFiles[0] = domain.toString();
 
-        // Generate problem file
+        // Generate template problem file
 
         Problem problem = new Problem(new Symbol(Symbol.Kind.PROBLEM,problemName));
-        requirements.forEach(problem::addRequirement);
+        //requirements.forEach(problem::addRequirement);
         problem.setDomain(new Symbol(Symbol.Kind.DOMAIN,domainName));
 
         int maxVariables = 0;
@@ -132,7 +156,7 @@ public class PDDLCompiler {
             List<Symbol> tempSymbols = new LinkedList<>();
             tempSymbols.add(new Symbol(Symbol.Kind.PREDICATE,pred_name));
             for (int i=1; i<=predicates.get(pred_name); i++) {
-                tempSymbols.add(new Symbol(Symbol.Kind.VARIABLE,"?example"+i));
+                tempSymbols.add(new Symbol(Symbol.Kind.VARIABLE,"example"+i));
                 maxVariables = (i > maxVariables ? i : maxVariables);
             }
             exp.setAtom(tempSymbols);
@@ -187,7 +211,9 @@ public class PDDLCompiler {
         loadParamsAndPreds(pddlpreconds);
         loadParamsAndPreds(pddleffects);
 
-        return new Op(new Symbol(Symbol.Kind.ACTION,plp.getBaseName()), currentPDDLParameters, pddlpreconds, pddleffects);
+        if (pddleffects.getChildren().size() > 0)
+            return new Op(new Symbol(Symbol.Kind.ACTION,plp.getBaseName()), currentPDDLParameters, pddlpreconds, pddleffects);
+        return null;
     }
 
     private static Exp getEffects(PLP plp) {
@@ -266,9 +292,10 @@ public class PDDLCompiler {
             }
         }
 
-        if (pddleffects.getChildren().size() == 1)  {
-            pddleffects = pddleffects.getChildren().get(0);
-        }
+        // Uncommenting the following lines requires changes when checking if there are no effects for the action
+        //if (pddleffects.getChildren().size() == 1)  {
+        //    pddleffects = pddleffects.getChildren().get(0);
+        //}
         return pddleffects;
     }
 
@@ -340,7 +367,20 @@ public class PDDLCompiler {
         }
         else if (exp.getConnective() == Connective.ATOM) {
             List<Symbol> atom = exp.getAtom();
-            predicates.put(atom.get(0).getImage(),atom.size()-1);
+            String predname = atom.get(0).getImage();
+            if (compilerMode == Mode.PARTIALLY_OBSERVABLE) {
+                if (!predname.contains(knowHoldsPred.toLowerCase())
+                        && !predname.contains(knowNotHoldsPred.toLowerCase())) {
+                    predicates.put(predname, atom.size() - 1);
+                    if (!predname.contains(knowValuePred.toLowerCase())) {
+                        knowPredicates.put(knowHoldsPred + predname, atom.size() - 1);
+                        knowPredicates.put(knowNotHoldsPred + predname, atom.size() - 1);
+                    }
+                }
+            }
+            else {
+                predicates.put(predname, atom.size() - 1);
+            }
             for (int i=1; i<atom.size(); i++) {
                 boolean match = false;
                 for (TypedSymbol excludets : excludeParams) {
@@ -383,7 +423,7 @@ public class PDDLCompiler {
         boolean isFirstMatch = true;
         while (matcher.find()) {
             if (isFirstMatch)
-                tempSymbols.add(new Symbol(Symbol.Kind.PREDICATE, "KV_" + matcher.group().toUpperCase()));
+                tempSymbols.add(new Symbol(Symbol.Kind.PREDICATE, knowValuePred + matcher.group().toUpperCase()));
             else
                 tempSymbols.add(new Symbol(Symbol.Kind.VARIABLE, "?"+matcher.group()));
             //sb.append((isFirstMatch ? matcher.group().toUpperCase() : matcher.group())).append(" ");
@@ -691,6 +731,7 @@ public class PDDLCompiler {
     private static boolean promptComplex(String text, RequireKey reqkey) {
         if (prompts == CompilerPrompts.NO_PROMPTS) {
             logCondComplex(text,reqkey,true);
+            requirements.add(reqkey);
             return true;
         }
         if (requirements.contains(reqkey))
@@ -720,12 +761,15 @@ public class PDDLCompiler {
         else logger.log(Level.INFO, "["+currentPLP.getBaseName()+"] Skipped condition/effect: " + text + ". It requires "+reqKey);
     }
 
-    // METHODS SPECIFIC FOR PARTIALLY OBSERVABLE MODE
+    // METHODS FOR PARTIALLY OBSERVABLE MODE
 
     private static Exp createKnowPair(Exp exp) {
         Exp result = new Exp(Connective.AND);
+        Exp knowExp = createKnowExp(exp);
+        if (knowExp == null)
+            return exp;
         result.addChild(exp);
-        result.addChild(createKnowExp(exp));
+        result.addChild(knowExp);
         return result;
     }
 
@@ -737,7 +781,11 @@ public class PDDLCompiler {
         if (exp.getConnective() == Connective.ATOM) {
             Exp result = new Exp(Connective.ATOM);
             List<Symbol> symbols = new LinkedList<>();
-            symbols.add(new Symbol(Symbol.Kind.PREDICATE,(holds? "KNOW_" : "KNOW_NOT_")+exp.getAtom().get(0).getImage()));
+            // Check if it's a know value predicate
+            if (exp.getAtom().get(0).getImage().contains(knowValuePred.toLowerCase())) {
+                return null;
+            }
+            symbols.add(new Symbol(Symbol.Kind.PREDICATE,(holds? knowHoldsPred : knowNotHoldsPred)+exp.getAtom().get(0).getImage()));
             for (int i=1;i<exp.getAtom().size();i++) {
                 symbols.add(exp.getAtom().get(i));
             }
@@ -747,29 +795,22 @@ public class PDDLCompiler {
         else if (exp.getConnective() == Connective.NOT) {
             return createKnowExp(exp.getChildren().get(0), !holds);
         }
-        else if (exp.getConnective() == Connective.FORALL) {
-            Exp result = new Exp(holds ? Connective.FORALL : Connective.EXISTS);
+        else if (exp.getConnective() == Connective.FORALL || exp.getConnective() == Connective.EXISTS) {
+            Exp result = new Exp(holds ? exp.getConnective() : getOppositeConnective(exp.getConnective()));
             result.setVariables(exp.getVariables());
-            result.addChild(createKnowExp(exp.getChildren().get(0),holds));
+            Exp knowExp = createKnowExp(exp.getChildren().get(0),holds);
+            if (knowExp == null)
+                return null;
+            result.addChild(knowExp);
             return result;
         }
-        else if (exp.getConnective() == Connective.EXISTS) {
-            Exp result = new Exp(holds ? Connective.EXISTS : Connective.FORALL);
-            result.setVariables(exp.getVariables());
-            result.addChild(createKnowExp(exp.getChildren().get(0),holds));
-            return result;
-        }
-        else if (exp.getConnective() == Connective.AND) {
-            Exp result = new Exp(holds ? Connective.AND : Connective.OR);
+        else if (exp.getConnective() == Connective.AND || exp.getConnective() == Connective.OR) {
+            Exp result = new Exp(holds ? exp.getConnective() : getOppositeConnective(exp.getConnective()));
             for (Exp child : exp.getChildren()) {
-                result.addChild(createKnowExp(child, holds));
-            }
-            return result;
-        }
-        else if (exp.getConnective() == Connective.OR) {
-            Exp result = new Exp(holds ? Connective.OR : Connective.AND);
-            for (Exp child : exp.getChildren()) {
-                result.addChild(createKnowExp(child, holds));
+                Exp knowExp = createKnowExp(child, holds);
+                if (knowExp == null)
+                    return null;
+                result.addChild(knowExp);
             }
             return result;
         }
@@ -781,17 +822,37 @@ public class PDDLCompiler {
         }
     }
 
+    private static Connective getOppositeConnective(Connective connective) {
+        switch (connective) {
+            case AND:
+                return Connective.OR;
+            case OR:
+                return Connective.AND;
+            case FORALL:
+                return Connective.EXISTS;
+            case EXISTS:
+                return Connective.FORALL;
+            default:
+                throw new RuntimeException("Unexpected connective in getOppositeConnective");
+        }
+    }
+
     private static List<Exp> getCondSensingEffs(Condition goal) {
         List<Exp> senseEffs = new LinkedList<>();
 
         Exp senseEff = new Exp(Connective.WHEN);
         Exp compiledGoal = compile(goal);
         if (compiledGoal != null) {
+            Exp knowTrueExp = createKnowExp(compiledGoal, true);
+            Exp knowFalseExp = createKnowExp(compiledGoal, false);
+            if (knowTrueExp == null || knowFalseExp == null)
+                return senseEffs;
+
             senseEff.addChild(compiledGoal);
             Exp andExp1 = new Exp(Connective.AND);
-            andExp1.addChild(createKnowExp(compiledGoal, true));
+            andExp1.addChild(knowTrueExp);
             Exp notExp1 = new Exp(Connective.NOT);
-            notExp1.addChild(createKnowExp(compiledGoal, false));
+            notExp1.addChild(knowFalseExp);
             andExp1.addChild(notExp1);
             senseEff.addChild(andExp1);
 
@@ -802,9 +863,9 @@ public class PDDLCompiler {
             notCompiledGoal.addChild(compiledGoal);
             senseEffs.add(notCompiledGoal);
             Exp andExp2 = new Exp(Connective.AND);
-            andExp2.addChild(createKnowExp(compiledGoal, false));
+            andExp2.addChild(knowFalseExp);
             Exp notExp2 = new Exp(Connective.NOT);
-            notExp2.addChild(createKnowExp(compiledGoal, true));
+            notExp2.addChild(knowTrueExp);
             andExp2.addChild(notExp2);
             senseEff.addChild(andExp2);
 
@@ -823,36 +884,234 @@ public class PDDLCompiler {
 
             // (Kp,Kq)
             Exp condEffect = new Exp(Connective.WHEN);
-            condEffect.addChild(createKnowExp(cond));
-            condEffect.addChild(createKnowExp(eff));
+            Exp knowCondTrue = createKnowExp(cond);
+            Exp knowEffTrue = createKnowExp(eff);
+            if (knowEffTrue == null && knowCondTrue != null) {
+                // (Kp,q)
+                condEffect.addChild(knowCondTrue);
+                condEffect.addChild(eff);
+                res.add(condEffect);
+                return res;
+            }
+            else if (knowEffTrue != null && knowCondTrue == null) {
+                // (p,q AND Kq)
+                Exp andExp = new Exp(Connective.AND);
+                andExp.addChild(eff);
+                andExp.addChild(knowEffTrue);
+                condEffect.addChild(cond);
+                condEffect.addChild(andExp);
+                res.add(condEffect);
+                return res;
+            }
+            else if (knowEffTrue == null) {
+                // (p,q)
+                res.add(exp);
+                return res;
+            }
+            condEffect.addChild(knowCondTrue);
+            condEffect.addChild(knowEffTrue);
             res.add(condEffect);
 
             // (-K-p,-K-q)
-            condEffect = new Exp(Connective.WHEN);
-            Exp notCond = new Exp(Connective.NOT);
-            notCond.addChild(createKnowExp(cond,false));
-            condEffect.addChild(notCond);
-            Exp notEff = new Exp(Connective.NOT);
-            notEff.addChild(createKnowExp(eff,false));
-            condEffect.addChild(notEff);
-            res.add(condEffect);
+            Exp knowNotCond = createKnowExp(cond,false);
+            Exp knowNotEff = createKnowExp(cond,false);
+            if (knowNotCond != null && knowNotEff != null) { // Will always happen
+                condEffect = new Exp(Connective.WHEN);
+                Exp notCond = new Exp(Connective.NOT);
+                notCond.addChild(knowNotCond);
+                condEffect.addChild(notCond);
+                Exp notEff = new Exp(Connective.NOT);
+                notEff.addChild(knowNotEff);
+                condEffect.addChild(notEff);
+                res.add(condEffect);
+            }
         }
         else {
+            Exp knowCondTrue = createKnowExp(exp, true);
+            Exp knowCondFalse = createKnowExp(exp, false);
             // p
             res.add(exp);
             // Kp
-            res.add(createKnowExp(exp, true));
+            if (knowCondTrue != null)
+                res.add(knowCondTrue);
             // -K-p
-            Exp notExp = new Exp(Connective.NOT);
-            notExp.addChild(createKnowExp(exp, false));
-            res.add(notExp);
+            if (knowCondFalse != null) {
+                Exp notExp = new Exp(Connective.NOT);
+                notExp.addChild(knowCondFalse);
+                res.add(notExp);
+            }
         }
         return res;
     }
 
 
-    public static String finishPOproblem(String arg) {
-        return null;
+    public static String finishPOproblem(String folderPath) {
+        Parser pddlParser = new Parser();
+        try {
+            pddlParser.parse(folderPath+"/domain.pddl",folderPath+"/problem.pddl");
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Wrong folder path (can't find domain.pddl and problem.pddl in path): "+folderPath);
+        }
+        PLPLoader.loadFromDirectory(folderPath);
+
+        Domain domain = pddlParser.getDomain();
+        Problem problem = pddlParser.getProblem();
+
+        // Set up new problem with old problem values
+        Problem resultProblem = new Problem(problem.getName());
+        resultProblem.setDomain(problem.getDomain());
+        //problem.getRequirements().forEach(resultProblem::addRequirement);
+        problem.getObjects().forEach(resultProblem::addObject);
+        resultProblem.setGoal(problem.getGoal());
+
+        // Update initial state
+        for (NamedTypedList pred : domain.getPredicates()) {
+            String predName = pred.getName().getImage();
+            if (predName.contains(knowValuePred.toLowerCase())
+                    || predName.contains(knowHoldsPred.toLowerCase())
+                    || predName.contains(knowNotHoldsPred.toLowerCase())) {
+                continue;
+            }
+            List<Exp> groundedPredList = groundPredicate(pred.getName().getImage(), pred.getArguments().size(),
+                    problem.getObjects());
+
+            for (Exp gPred : groundedPredList) {
+                if (inInitialState(gPred,problem.getInit(),true)) {
+                    //holds in initial state
+                    resultProblem.addInitialFact(gPred);
+                    resultProblem.addInitialFact(createKnowExp(gPred,true));
+                }
+                else if (inInitialState(gPred,problem.getInit(),false)) {
+                    //doesn't hold in initial state
+                    resultProblem.addInitialFact(createKnowExp(gPred,false));
+                }
+                else {
+                    //unknown in initial state
+                    if (canBeSensed(gPred, domain.getOperators()) || canBeAchieved(gPred, domain.getOperators())) {
+                        // optimistically assume holds but not KNOW holds
+                        resultProblem.addInitialFact(gPred);
+                        logger.log(Level.INFO,"Grounded predicate: "+gPred.toString()+" isn't known in the Initial State but can be sensed/achieved.");
+                    }
+                    else {
+                        // optimistically assume holds and KNOW holds
+                        resultProblem.addInitialFact(gPred);
+                        resultProblem.addInitialFact(createKnowExp(gPred,true));
+                        logger.log(Level.INFO,"Grounded predicate: "+gPred.toString()+" isn't known in the Initial State and can't be sensed/achieved.");
+                    }
+                }
+            }
+        }
+
+        return resultProblem.toString();
     }
 
+    private static boolean canBeAchieved(Exp gPred, List<Op> actions) {
+        for (Op action : actions) {
+            if (canActionAchieve(gPred,action.getEffects()))
+                return true;
+        }
+        return false;
+    }
+
+    private static boolean canActionAchieve(Exp gPred, Exp actionEff) {
+        switch (actionEff.getConnective()) {
+            case AND:
+                boolean res = false;
+                for (Exp childEff : actionEff.getChildren()) {
+                    if (canActionAchieve(gPred,childEff))
+                        res = true;
+                }
+                return res;
+            case ATOM:
+                return gPred.getAtom().get(0).getImage().equals(actionEff.getAtom().get(0).getImage());
+            case FORALL:
+                return canActionAchieve(gPred,actionEff.getChildren().get(0));
+            case WHEN:
+                return canActionAchieve(gPred,actionEff.getChildren().get(1));
+            case NOT:
+                return false;
+            default:
+                throw new RuntimeException("Unexpected connective in: "+actionEff+" when checking what it achieves");
+        }
+    }
+
+    private static boolean canBeSensed(Exp gPred, List<Op> actions) {
+        for (ObservePLP oPLP : PLPLoader.getObservePLPs()) {
+            if (!oPLP.isGoalParameter()) {
+                for (Op action : actions) {
+                    // Check if the PLP was compiled to a PDDL action
+                    if (action.getName().getImage().equals(oPLP.getBaseName())) {
+                        Exp compiledCond = compile((Condition) oPLP.getGoal());
+                        if (compiledCond != null && compiledCond.getConnective() == Connective.ATOM &&
+                                compiledCond.getAtom().get(0).getImage().equals(gPred.getAtom().get(0).getImage())) {
+                            return true;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given grounded predicate is in the initial state (according to holds)
+     * @param gPred the grounded predicate
+     * @param init the initial state
+     * @param holds if gPred holds or doesn't hold (not gPred)
+     * @return
+     */
+    private static boolean inInitialState(Exp gPred, List<Exp> init, boolean holds) {
+        for (Exp initPred : init) {
+            boolean result = true;
+            if (holds && initPred.getAtom().size() == gPred.getAtom().size()) {
+                for (int i=0;i<initPred.getAtom().size();i++) {
+                    if (!initPred.getAtom().get(i).getImage().equals(gPred.getAtom().get(i).getImage())) {
+                        result = false;
+                    }
+                }
+            }
+            else if (!holds && initPred.getConnective() == Connective.NOT &&
+                    initPred.getChildren().get(0).getAtom().size() == gPred.getAtom().size()) {
+                Exp baseInit = initPred.getChildren().get(0);
+                for (int i=0;i<baseInit.getAtom().size();i++) {
+                    if (!baseInit.getAtom().get(i).getImage().equals(gPred.getAtom().get(i).getImage())) {
+                        result = false;
+                    }
+                }
+            }
+            else
+                result = false;
+
+            if (result) return true;
+        }
+        return false;
+    }
+
+    public static List<Exp> groundPredicate(String predName, int objectsLeft, List<TypedSymbol> objectList) {
+        return groundPredicate(predName, objectsLeft, objectList, new LinkedList<>());
+    }
+
+    public static List<Exp> groundPredicate(String predName, int objectsLeft,
+                                                          List<TypedSymbol> objectList, List<TypedSymbol> chosenObjects) {
+        List<Exp> groundedList = new LinkedList<>();
+        if (objectsLeft == 0) {
+            Exp tempExp = new Exp(Connective.ATOM);
+            List<Symbol> tempSymbols = new LinkedList();
+            tempSymbols.add(new Symbol(Symbol.Kind.PREDICATE,predName));
+            for (TypedSymbol object : chosenObjects) {
+                tempSymbols.add(new Symbol(Symbol.Kind.VARIABLE,object.getImage()));
+            }
+            tempExp.setAtom(tempSymbols);
+            groundedList.add(tempExp);
+        }
+        else {
+            for (TypedSymbol object : objectList) {
+                chosenObjects.add(object);
+                groundedList.addAll(groundPredicate(predName, objectsLeft - 1, objectList, chosenObjects));
+                chosenObjects.remove(object);
+            }
+        }
+        return groundedList;
+    }
 }
