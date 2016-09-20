@@ -1,5 +1,7 @@
 package compiler;
 
+import fr.uga.pddl4j.parser.Op;
+import fr.uga.pddl4j.parser.Symbol;
 import loader.PLPLoader;
 
 import java.io.PrintWriter;
@@ -20,9 +22,9 @@ public class Run {
             else if (args[0].equals("-POprob")) {
                 String problem = PDDLCompiler.finishPOproblem(args[1]);
                 printToFile(args[1] + "/problem.pddl", problem.replace("(:requirements)\n",""));
+                printToFile(args[1] + "/assumptions.txt", buildAssumptionsFile());
                 return;
             }
-
 
             String folderPath = args[1];
 
@@ -36,6 +38,33 @@ public class Run {
             printToFile(folderPath +"/domain.pddl", compiledPDDL[0]);
             printToFile(folderPath +"/problem.pddl", compiledPDDL[1].replace("(:requirements)\n",""));
         }
+    }
+
+    private static String buildAssumptionsFile() {
+        StringBuilder sb = new StringBuilder();
+        for (String gPred : PDDLCompiler.assumptions.keySet()) {
+            sb.append(gPred).append(" ");
+            switch (PDDLCompiler.assumptions.get(gPred)) {
+                case TRUE_STRONG:
+                    sb.append("T STRONG");
+                    break;
+                case TRUE_WEAK:
+                    sb.append("T WEAK");
+                    break;
+                case TRUE_WEAK_NO_CHANGE:
+                    sb.append("T WEAKNC");
+                case FALSE_STRONG:
+                    sb.append("F STRONG");
+                    break;
+                case FALSE_WEAK:
+                    sb.append("F WEAK");
+                case FALSE_WEAK_NO_CHANGE:
+                    sb.append("F WEAKNC");
+                    break;
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     private static void printToFile(String fullPath, String text) {

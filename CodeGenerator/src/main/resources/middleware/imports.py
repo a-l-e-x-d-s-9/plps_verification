@@ -10,9 +10,9 @@ from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceRequest
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceResponse
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateService
 
-from rosplan_knowledge_msgs.srv import GetInstanceServiceRequest
-from rosplan_knowledge_msgs.srv import GetInstanceServiceResponse
-from rosplan_knowledge_msgs.srv import GetInstanceService
+from rosplan_knowledge_msgs.srv import KnowledgeQueryServiceRequest
+from rosplan_knowledge_msgs.srv import KnowledgeQueryServiceResponse
+from rosplan_knowledge_msgs.srv import KnowledgeQueryService
 
 import mongodb_store.message_store
 from std_msgs.msg import String

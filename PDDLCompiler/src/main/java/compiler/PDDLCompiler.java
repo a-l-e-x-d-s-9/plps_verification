@@ -28,6 +28,12 @@ public class PDDLCompiler {
     public enum Mode {
         NEAR_FULLY_OBSERVABLE, PARTIALLY_OBSERVABLE
     }
+    public enum ROSPlanFit {
+        DURATIVE_ACTIONS, CLASSICAL
+    }
+    public enum AssumptionType {
+        TRUE_STRONG, TRUE_WEAK, TRUE_WEAK_NO_CHANGE, FALSE_STRONG, FALSE_WEAK, FALSE_WEAK_NO_CHANGE
+    }
 
     private static String domainName = "PLPDomain";
     private static String problemName = "PLPDomain_problem";
@@ -47,13 +53,14 @@ public class PDDLCompiler {
 
     public static CompilerPrompts prompts = CompilerPrompts.NO_PROMPTS;
     public static Mode compilerMode;
+    public static ROSPlanFit rosplanFit = ROSPlanFit.DURATIVE_ACTIONS;
 
     public static List<RequireKey> requirements;
 
     public static PLP currentPLP;
     public static List<TypedSymbol> currentPDDLParameters;
 
-    public static Map<String, Boolean> assumptions;
+    public static Map<String, AssumptionType> assumptions;
 
     public static Map<String, Integer> predicates;
     public static Map<String, Integer> knowPredicates; // Only for PO mode
@@ -75,7 +82,6 @@ public class PDDLCompiler {
         possibleEffects = new LinkedList<>();
         requirements = new LinkedList<>();
         requirements.add(RequireKey.STRIPS);
-        assumptions = new TreeMap<>();
         predicates = new TreeMap<>();
         knowPredicates = new TreeMap<>();
 
@@ -207,13 +213,46 @@ public class PDDLCompiler {
         Exp pddlpreconds = getPreconditions(plp);
         Exp pddleffects = getEffects(plp);
 
+        if (pddleffects.getChildren().size() == 0) {
+            return null;
+        }
+
         // Finished loading preconditions and effects. Now building parameters and loading predicates
         loadParamsAndPreds(pddlpreconds);
         loadParamsAndPreds(pddleffects);
 
-        if (pddleffects.getChildren().size() > 0)
-            return new Op(new Symbol(Symbol.Kind.ACTION,plp.getBaseName()), currentPDDLParameters, pddlpreconds, pddleffects);
-        return null;
+        if (rosplanFit.equals(ROSPlanFit.DURATIVE_ACTIONS)) {
+            pddlpreconds = updateDurative(pddlpreconds);
+            pddleffects = updateDurative(pddleffects);
+            requirements.add(RequireKey.DURATIVE_ACTIONS);
+        }
+
+        Op result = new Op(new Symbol(Symbol.Kind.ACTION,plp.getBaseName()), currentPDDLParameters, pddlpreconds, pddleffects);
+
+        if (rosplanFit.equals(ROSPlanFit.DURATIVE_ACTIONS)) {
+            Exp durationChild = new Exp(Connective.EQUAL_ATOM);
+            List<Symbol> symbols = new LinkedList<>();
+            symbols.add(new Symbol(Symbol.Kind.VARIABLE,"?duration"));
+            symbols.add(new Symbol(Symbol.Kind.DURATION_VARIABLE,"10"));
+            durationChild.setAtom(symbols);
+            result.setDuration(durationChild);
+        }
+        return result;
+
+    }
+
+    private static Exp updateDurative(Exp exp) {
+        if (!exp.getConnective().equals(Connective.NOT) && !exp.getConnective().equals(Connective.ATOM)) {
+            for (int i=0;i<exp.getChildren().size();i++) {
+                exp.getChildren().set(i,updateDurative(exp.getChildren().get(i)));
+            }
+            return exp;
+        }
+        else {
+            Exp temp = new Exp(Connective.AT_START);
+            temp.addChild(exp);
+            return temp;
+        }
     }
 
     private static Exp getEffects(PLP plp) {
@@ -408,6 +447,9 @@ public class PDDLCompiler {
         else if (exp.getConnective() == Connective.WHEN) {
             loadParamsAndPreds(exp.getChildren().get(0), excludeParams);
             loadParamsAndPreds(exp.getChildren().get(1), excludeParams);
+        }
+        else if (exp.getConnective() == Connective.AT_START) {
+            loadParamsAndPreds(exp.getChildren().get(0), excludeParams);
         }
         else {
             throw new RuntimeException("Unexpected connective time while loading predicates and parameters for actions: "+exp.getConnective());
@@ -944,8 +986,10 @@ public class PDDLCompiler {
         return res;
     }
 
+    // METHODS FOR POprob MODE
 
     public static String finishPOproblem(String folderPath) {
+        assumptions = new TreeMap<>();
         Parser pddlParser = new Parser();
         try {
             pddlParser.parse(folderPath+"/domain.pddl",folderPath+"/problem.pddl");
@@ -987,21 +1031,27 @@ public class PDDLCompiler {
                 }
                 else {
                     //unknown in initial state
-                    if (canBeSensed(gPred, domain.getOperators()) || canBeAchieved(gPred, domain.getOperators())) {
+                    if (canBeAchieved(gPred, domain.getOperators())) {
                         // optimistically assume holds but not KNOW holds
                         resultProblem.addInitialFact(gPred);
+                        assumptions.put(gPred.toString(),AssumptionType.TRUE_WEAK);
+                        logger.log(Level.INFO,"Grounded predicate: "+gPred.toString()+" isn't known in the Initial State but can be sensed/achieved.");
+                    }
+                    else if  (canBeSensed(gPred, domain.getOperators())) {
+                        resultProblem.addInitialFact(gPred);
+                        assumptions.put(gPred.toString(),AssumptionType.TRUE_WEAK_NO_CHANGE);
                         logger.log(Level.INFO,"Grounded predicate: "+gPred.toString()+" isn't known in the Initial State but can be sensed/achieved.");
                     }
                     else {
                         // optimistically assume holds and KNOW holds
                         resultProblem.addInitialFact(gPred);
                         resultProblem.addInitialFact(createKnowExp(gPred,true));
+                        assumptions.put(gPred.toString(),AssumptionType.TRUE_STRONG);
                         logger.log(Level.INFO,"Grounded predicate: "+gPred.toString()+" isn't known in the Initial State and can't be sensed/achieved.");
                     }
                 }
             }
         }
-
         return resultProblem.toString();
     }
 
@@ -1024,12 +1074,15 @@ public class PDDLCompiler {
                 return res;
             case ATOM:
                 return gPred.getAtom().get(0).getImage().equals(actionEff.getAtom().get(0).getImage());
-            case FORALL:
-                return canActionAchieve(gPred,actionEff.getChildren().get(0));
             case WHEN:
                 return canActionAchieve(gPred,actionEff.getChildren().get(1));
             case NOT:
                 return false;
+            case FORALL:
+            case AT_START:
+            case AT_END:
+            case OVER_ALL:
+                return canActionAchieve(gPred, actionEff.getChildren().get(0));
             default:
                 throw new RuntimeException("Unexpected connective in: "+actionEff+" when checking what it achieves");
         }

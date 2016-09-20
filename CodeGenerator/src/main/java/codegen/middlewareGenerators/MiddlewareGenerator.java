@@ -51,6 +51,7 @@ public class MiddlewareGenerator {
         writer.writeLine("def __init__(self):");
         writer.indent();
         writer.writeLine("self.update_knowledge_client = rospy.ServiceProxy(\"/kcl_rosplan/update_knowledge_base\", KnowledgeUpdateService)");
+        writer.writeLine("self.query_client = rospy.ServiceProxy(\"/kcl_rosplan/query_knowledge_base\", KnowledgeQueryService)");
         writer.writeLine("self.message_store = mongodb_store.message_store.MessageStoreProxy()");
         writer.writeLine("self.action_feedback_pub = rospy.Publisher(\"/kcl_rosplan/action_feedback\", ActionFeedback, queue_size=10)");
         writer.newLine();
@@ -372,6 +373,16 @@ public class MiddlewareGenerator {
             String changeType = "KnowledgeUpdateServiceRequest.ADD_KNOWLEDGE";
             changeAtomEffect(effects, writer, inForAll, changeType);
         }
+        else if (effects.getConnective().equals(Connective.WHEN)) {
+            writer.newLine();
+            writer.writeLine("result = True");
+            queryConditionValue(effects.getChildren().get(0), writer, false, false);
+            writer.writeLine("if result:");
+            writer.indent();
+            writeKMSUpdate(effects.getChildren().get(1), writer, inForAll);
+            writer.dendent();
+            writer.newLine();
+        }
         else {
             System.err.println("Unsupported connective type: " + effects.getConnective());
         }
@@ -404,10 +415,76 @@ public class MiddlewareGenerator {
         writer.newLine();
     }
 
+
+    private static void queryConditionValue(Exp exp, PythonWriter writer, boolean inForAll, boolean inNot) {
+        if (exp.getConnective().equals(Connective.AT_START)
+                || exp.getConnective().equals(Connective.AT_END)
+                || exp.getConnective().equals(Connective.OVER_ALL)) {
+            queryConditionValue(exp.getChildren().get(0), writer, inForAll, inNot);
+        }
+        else if (exp.getConnective().equals(Connective.AND)) {
+            for (Exp child : exp.getChildren()) {
+                queryConditionValue(child,writer,inForAll, inNot);
+            }
+        }
+        else if (exp.getConnective().equals(Connective.FORALL)) {
+            if (inForAll) {
+                throw new RuntimeException("Currently unsupported nested quantified conditions: "+exp.toString());
+            }
+            writer.writeLine("instance_query_client = rospy.ServiceProxy(\"/kcl_rosplan/get_current_instances\", GetInstanceService)");
+            writer.writeLine("forAllInstances = instance_query_client.call(\"" +
+                    exp.getVariables().get(0).getTypes().get(0).toString() + "\").instances");
+            writer.writeLine("result_fa = True");
+            writer.writeLine("for forAllInstance in forAllInstances:");
+            writer.indent();
+            queryConditionValue(exp.getChildren().get(0), writer, true, inNot);
+            writer.dendent();
+            writer.writeLine("result = result & " + (inNot ? "not result_fa" : "result_fa"));
+        }
+        else if (exp.getConnective().equals(Connective.NOT)) {
+            Exp child = exp.getChildren().get(0);
+            queryConditionValue(exp.getChildren().get(0), writer, inForAll, !inNot);
+        }
+        else if (exp.getConnective().equals(Connective.ATOM)) {
+            queryAtomValue(exp, writer, inForAll, inNot);
+        }
+        else {
+            System.err.println("Unsupported connective type: " + exp.getConnective());
+        }
+    }
+
+    /**
+     * Helper function is called by queryConditionValue. It queries for atom conditions
+     * @param condition The effects to update the KMS on
+     * @param writer The writer to write the python block to
+     * @param inForAll If the condition was quantified
+     */
+    private static void queryAtomValue(Exp condition, PythonWriter writer, boolean inForAll, boolean inNot) {
+        //System.out.println(effects.getConnective().toString());
+        List<TypedSymbol> predArgs = getPredParams(condition.getAtom().get(0).toString());
+        String resParName = (inForAll ? "result_fa" : "result");
+        writer.write((inNot ? resParName + " = " + resParName +" & not " :
+                resParName + " = " + resParName +" & ")+"self.validateKMSFact(\""+condition.getAtom().get(0).toString()+"\", [");
+        for (int i=1;i<condition.getAtom().size();i++) {
+            if (inForAll) {
+                writer.writeNoIndent("[\"" + predArgs.get(i-1).getImage().substring(1) + "\", " +
+                        "parametersDic[\"" + condition.getAtom().get(i).toString().substring(1) + "\"]"
+                        + " if \"" + condition.getAtom().get(i).toString().substring(1) +
+                        "\" in parametersDic else forAllInstance]");
+            }
+            else {
+                writer.writeNoIndent("[\"" + predArgs.get(i - 1).getImage().substring(1) + "\", " +
+                        "parametersDic[\"" + condition.getAtom().get(i).toString().substring(1) + "\"]]");
+            }
+        }
+        writer.writeNoIndent("])");
+        writer.newLine();
+    }
+
     /**
      * Returns a list of the predicate's parameters.
      * @param predName The name of the predicate
-     * @return The prdicate's parameters
+     * @return The predicate's parameters
      */
     private static List<TypedSymbol> getPredParams(String predName) {
         for (NamedTypedList pred : domain.getPredicates()) {
