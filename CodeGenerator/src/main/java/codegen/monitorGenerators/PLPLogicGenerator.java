@@ -1,6 +1,7 @@
 package codegen.monitorGenerators;
 
 import codegen.common.PythonWriter;
+import codegen.middlewareGenerators.MiddlewareGenerator;
 import conditions.*;
 import distributions.ConditionalDist;
 import effects.AssignmentEffect;
@@ -278,7 +279,9 @@ public class PLPLogicGenerator {
             else {
                 if (oplp.getResultParameter() == null)
                     throw new RuntimeException("Observe PLP: " + oplp.getBaseName() + " doesn't have a result parameter");
-                generator.writeLine(String.format("if self.plp_params.%s is not None:",
+                generator.writeLine(String.format("if self.plp_params.%s is not None" +
+                        (MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE
+                                ? " and self.sense_contradiction is False:" : ":"),
                         oplp.getResultParameter().simpleString()));
                 generator.indent();
             }
@@ -315,6 +318,10 @@ public class PLPLogicGenerator {
                 Condition failCond = fm.getCondition();
                 generator.writeLine("if " + generateIFcondition(failCond) + ":");
                 generator.indent();
+                if (!isMonitor && MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                    generator.writeLine("self.update_assumptions_fail()");
+                    generator.newLine();
+                }
                 generator.writeLine(isMonitor ? "return PLPTermination(False, \" Failed by condition: " + failCond.toString()
                         + "\")" : "return True");
                 generator.dendent();
@@ -322,6 +329,10 @@ public class PLPLogicGenerator {
             if (aplp.hasFailTerminationCond()) {
                 generator.writeLine("if "+generateIFcondition(aplp.getFailTerminationCond())+":");
                 generator.indent();
+                if (!isMonitor && MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                    generator.writeLine("self.update_assumptions_fail()");
+                    generator.newLine();
+                }
                 generator.writeLine(isMonitor ? "return PLPTermination(False, \" Failed by condition: "
                         + aplp.getFailTerminationCond().toString() + "\")" : "return True");
                 generator.dendent();
@@ -334,6 +345,10 @@ public class PLPLogicGenerator {
             for (Condition c: failureConditions) {
                 generator.writeLine("if " + generateIFcondition(c) + ":");
                 generator.indent();
+                if (!isMonitor && MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                    generator.writeLine("self.update_assumptions_fail()");
+                    generator.newLine();
+                }
                 generator.writeLine(isMonitor ? "return PLPTermination(False, \" Failed by condition: " + c.toString()
                         + "\")" : "return True");
                 generator.dendent();
@@ -342,6 +357,10 @@ public class PLPLogicGenerator {
                 Condition failCond = fm.getCondition();
                 generator.writeLine("if " + generateIFcondition(failCond) + ":");
                 generator.indent();
+                if (!isMonitor && MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                    generator.writeLine("self.update_assumptions_fail()");
+                    generator.newLine();
+                }
                 generator.writeLine(isMonitor ? "return PLPTermination(False, \" Failed by condition: " + failCond.toString()
                         + "\")" : "return True");
                 generator.dendent();
@@ -350,15 +369,29 @@ public class PLPLogicGenerator {
         }
         else if (plp.getClass().isAssignableFrom(ObservePLP.class)) {
             ObservePLP oplp = (ObservePLP) plp;
+            if (!isMonitor && !oplp.isGoalParameter() &&
+                MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                generator.writeLine("if self.sense_contradiction:");
+                generator.indent();
+                generator.writeLine("return True");
+                generator.dendent();
+            }
             if (oplp.hasFailTerminationCond()) {
                 generator.writeLine("if "+generateIFcondition(oplp.getFailTerminationCond())+":");
                 generator.indent();
+                if (!isMonitor && MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                    generator.writeLine("self.update_assumptions_fail()");
+                    generator.newLine();
+                }
                 generator.writeLine(isMonitor ? "return PLPTermination(False, \" Failed by condition: "
                         + oplp.getFailTerminationCond().toString() + "\")" : "return True");
                 generator.dendent();
             }
             else {
-                generator.writeLine("# TODO: Implement failure to observe detection. No failed termination conditions specified");
+                generator.writeLine("# TODO: Implement failure to observe condition. No failed termination conditions specified");
+                if (!isMonitor && MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                    generator.writeLine("# And call self.update_assumptions_fail() on failure");
+                }
             }
             generator.writeLine("return None");
         }
@@ -367,12 +400,19 @@ public class PLPLogicGenerator {
             if (dplp.hasFailTerminationCond()) {
                 generator.writeLine("if "+generateIFcondition(dplp.getFailTerminationCond())+":");
                 generator.indent();
+                if (!isMonitor && MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                    generator.writeLine("self.update_assumptions_fail()");
+                    generator.newLine();
+                }
                 generator.writeLine(isMonitor ? "return PLPTermination(False, \" Failed by condition: "
                         + dplp.getFailTerminationCond().toString() + "\")" : "return True");
                 generator.dendent();
             }
             else {
-                generator.writeLine("# TODO: Implement failure to observe detection. No failed termination conditions specified");
+                generator.writeLine("# TODO: Implement failure to detect. No failed termination conditions specified");
+                if (!isMonitor && MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                    generator.writeLine("# And call self.update_assumptions_fail() on failure");
+                }
             }
             generator.writeLine("return None");
         }

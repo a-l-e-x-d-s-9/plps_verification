@@ -31,9 +31,9 @@ from plp_middleware.srv import ChangeOnFailRequest
 from plp_middleware.srv import ChangeOnFailResponse
 from plp_middleware.srv import ChangeOnFail
 
-#from plp_middleware.srv import ChangeOnContradictionRequest
-#from plp_middleware.srv import ChangeOnContradictionResponse
-#from plp_middleware.srv import ChangeOnContradiction
+from plp_middleware.srv import ChangeOnContradictionRequest
+from plp_middleware.srv import ChangeOnContradictionResponse
+from plp_middleware.srv import ChangeOnContradiction
 
 from rosplan_knowledge_msgs.srv import GetDomainOperatorDetailsServiceRequest
 from rosplan_knowledge_msgs.srv import GetDomainOperatorDetailsServiceResponse
@@ -54,6 +54,8 @@ from rosplan_knowledge_msgs.srv import GetInstanceService
 class Manager(object):
 
     def __init__(self):
+    	self.prompt_user = False
+
     	self.update_knowledge_client = rospy.ServiceProxy("/kcl_rosplan/update_knowledge_base", KnowledgeUpdateService)
         self.planner_command_publisher = rospy.Publisher("/kcl_rosplan/planning_commands", String, queue_size=5)
         rospy.Subscriber("/rosout_agg", Log, self.log_callback)
@@ -69,6 +71,7 @@ class Manager(object):
         self.save_initial_state()
 
         rospy.Service('/plp_middleware/change_assumptions_failed_action', ChangeOnFail, self.change_assumption_on_fail)
+        rospy.Service('/plp_middleware/change_assumptions_contradiction', ChangeOnContradiction, self.change_assumption_on_contradiction)
 
         self.init_assumptions = []
         self.assumptions_history = []
@@ -114,6 +117,28 @@ class Manager(object):
         	else:
         		rospy.logerr("Gone over all possible assumptions")
         return False
+
+    def change_assumption_on_contradiction(self, message):
+    	gPred = message.grounded_pred.translate(None,'\n()').split(' ')
+    	gPredList = [gPred[0]] + [gPred[1:len(gPred)]]
+    	gPredIndex = self.gpred_assumption_index(gPredList)
+    	if gPredIndex is -1:
+    		rospy.logerr("Grounded predicate: " + message.grounded_pred + " not in assumption list")
+    		return False
+    	if message.sensed:
+    		if self.current_assumptions[gPredIndex] == 'F':
+    			self.update_assumptions([gPredIndex],['T'])
+    			if self.init_assumptions[gPredIndex][3] == "WEAKNC":
+    				self.static_assumptions.append(gPredIndex)
+    			return True
+    	else:
+    		if self.current_assumptions[gPredIndex] == 'T':
+    			self.update_assumptions([gPredIndex],['F'])
+    			if self.init_assumptions[gPredIndex][3] == "WEAKNC":
+    				self.static_assumptions.append(gPredIndex)
+    			return True
+    	return False
+
 
     def toDictionary(self, pairs):
         result = []
@@ -164,6 +189,9 @@ class Manager(object):
     	return True
 
     def find_possible_values(self, assumptionIndexList):
+    	for staticIndex in self.static_assumptions:
+    		assumptionIndexList.remove(staticIndex)
+
     	for i in range(1,len(assumptionIndexList)+1):
     		#print assumptionIndexList
     		combinations = list(itertools.combinations(assumptionIndexList, i))
@@ -197,10 +225,11 @@ class Manager(object):
     		self.update_assumption(index,values[counter])
     		counter = counter + 1
     	self.add_curr_assumptions_to_history()
-    	print "Would you like to load the initial state (with the new assumptions)? (y/n)"
-    	response = raw_input()
-    	if response == "y":
-    		self.load_initial_state_new_assumptions()
+    	if self.prompt_user:
+    		print "Would you like to load the initial state (with the new assumptions)? (y/n)"
+    		response = raw_input()
+    		if response == "y":
+    			self.load_initial_state_new_assumptions()
 
     def update_assumption(self, index, value):
     	rospy.loginfo("Load assumption: " + self.init_assumptions[index][0] + repr(self.init_assumptions[index][1]) + " to " + value)

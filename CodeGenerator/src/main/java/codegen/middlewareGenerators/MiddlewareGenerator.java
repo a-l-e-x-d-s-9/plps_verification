@@ -6,6 +6,7 @@ import codegen.monitorGenerators.PLPClassesGenerator;
 import codegen.monitorGenerators.PLPHarnessGenerator;
 import codegen.monitorGenerators.PLPLogicGenerator;
 import fr.uga.pddl4j.parser.*;
+import modules.ObservePLP;
 import modules.PLP;
 import plpFields.PLPParameter;
 
@@ -17,11 +18,14 @@ public class MiddlewareGenerator {
 
     // TODO: parameter/variable history
     // TODO: constants
-    // TODO: remove set functions from plp_parameters and comment out irrelevant parameter topics and write "uncomment only if needed for trigger"
 
     // The PDDL domain that contains the relevant actions (Domain from pddl4j)
+    public enum DomainType {
+        NEAR_FULLY_OBSERVABLE, PARTIALLY_OBSERVABLE
+    }
     private static Domain domain;
     private static HashMap<String,List<ParameterGlue>> triggerPublishers; // <topic_name,param_glues>
+    public static DomainType domainType = DomainType.NEAR_FULLY_OBSERVABLE;
 
     public static void setDomain(Domain dom) {
         domain = dom;
@@ -55,6 +59,12 @@ public class MiddlewareGenerator {
         writer.writeLine("self.message_store = mongodb_store.message_store.MessageStoreProxy()");
         writer.writeLine("self.action_feedback_pub = rospy.Publisher(\"/kcl_rosplan/action_feedback\", ActionFeedback, queue_size=10)");
         writer.newLine();
+
+        if (domainType == DomainType.PARTIALLY_OBSERVABLE) {
+            writer.writeLine("self.change_assumptions_fail_client = rospy.ServiceProxy(\"/plp_middleware/change_assumptions_failed_action\", ChangeOnFail)");
+            writer.writeLine("self.change_assumptions_contradiction_client = rospy.ServiceProxy(\"/plp_middleware/change_assumptions_contradiction\", ChangeOnContradiction)");
+            writer.newLine();
+        }
 
         // Create a map of the different trigger publishers
         for (PLPParameter execParam : plp.getExecParams()) {
@@ -94,6 +104,11 @@ public class MiddlewareGenerator {
         writer.writeLine(String.format("self.plp_params = PLP_%s_parameters()",plp.getBaseName()));
         writer.writeLine(String.format("self.plp_vars = PLP_%s_variables()",plp.getBaseName()));
         writer.writeLine("self.current_action = None");
+        if (domainType == DomainType.PARTIALLY_OBSERVABLE &&
+                plp.getClass().isAssignableFrom(ObservePLP.class) &&
+                ((ObservePLP) plp).isGoalParameter()) {
+            writer.writeLine("self.sense_contradiction = None");
+        }
         writer.newLine();
 
         writer.writeLine("rospy.Subscriber(\"/kcl_rosplan/action_dispatch\", ActionDispatch, self.dispatch_action)");
@@ -120,6 +135,28 @@ public class MiddlewareGenerator {
         writer.newLine();
         writer.writeLine("def parameters_updated(self):");
         writer.indent();
+        if (domainType == DomainType.PARTIALLY_OBSERVABLE &&
+                plp.getClass().isAssignableFrom(ObservePLP.class) &&
+                ((ObservePLP) plp).isGoalParameter()) {
+            writer.writeLine("if self.plp_params." + ((ObservePLP) plp).getResultParameter().simpleString()
+                    + " is not None:");
+            writer.indent();
+            writer.writeLine("parametersDic = self.toDictionary(self.current_action.parameters)");
+            writer.writeLine("req = ChangeOnContradiction()");
+            Exp pCond = pddlAction.getEffects().getChildren().get(0).getChildren().get(0);
+            System.out.println(pCond);
+            if (pCond.getConnective() != Connective.ATOM)
+                throw new RuntimeException("Contradiction detection support is currently just for ATOM");
+            StringBuilder sb = new StringBuilder("\"(").append(pCond.getAtom().get(0).getImage()).append("\"");
+            for (int i=1;i<pCond.getAtom().size();i++)
+                sb.append("+ \" \" +").append(" parametersDic[\"").append(pCond.getAtom().get(i).getImage().replace("?","")).append("\"]");
+            sb.append("+ \")\"");
+            writer.writeLine("gPred = " + sb.toString());
+            writer.writeLine("req.grounded_pred = gPred");
+            writer.writeLine("req.sensed = self.plp_params."+((ObservePLP) plp).getResultParameter().simpleString());
+            writer.writeLine("self.sense_contradiction = self.change_assumptions_contradiction_client.call(req)");
+            writer.dendent();
+        }
         writer.writeLine("self.calculate_variables()");
         writer.writeLine("if self.current_action == None:");
         writer.indent();
@@ -295,6 +332,11 @@ public class MiddlewareGenerator {
         writer.writeResourceFileContent("/middleware/KMSUpdateFunction.py");
         //
 
+        if (domainType == DomainType.PARTIALLY_OBSERVABLE) {
+            writer.newLine();
+            writer.writeResourceFileContent("/middleware/assumptionManagerCalls.py");
+        }
+
         // Reset dispatcher function
         writer.newLine();
         writer.writeLine("def reset_dispatcher(self):");
@@ -302,6 +344,11 @@ public class MiddlewareGenerator {
         writer.writeLine(String.format("self.plp_params = PLP_%s_parameters()",plp.getBaseName()));
         writer.writeLine(String.format("self.plp_vars = PLP_%s_variables()",plp.getBaseName()));
         writer.writeLine("self.current_action = None");
+        if (domainType == DomainType.PARTIALLY_OBSERVABLE &&
+                plp.getClass().isAssignableFrom(ObservePLP.class) &&
+                ((ObservePLP) plp).isGoalParameter()) {
+            writer.writeLine("self.sense_contradiction = None");
+        }
         writer.dendent();
 
         // Main Function
