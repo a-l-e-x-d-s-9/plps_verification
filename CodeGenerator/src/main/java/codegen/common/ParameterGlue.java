@@ -38,4 +38,15 @@ public class ParameterGlue {
     }
 
     public boolean hasFieldInMessage() { return !field.equals(""); }
+
+    @Override
+    public String toString() {
+        return "ParameterGlue{" +
+                "parameterName='" + parameterName + '\'' +
+                ", rosTopic='" + rosTopic + '\'' +
+                ", messageType='" + messageType + '\'' +
+                ", field='" + field + '\'' +
+                ", fieldType='" + fieldType + '\'' +
+                '}';
+    }
 }

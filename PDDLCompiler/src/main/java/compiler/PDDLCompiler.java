@@ -53,7 +53,7 @@ public class PDDLCompiler {
 
     public static CompilerPrompts prompts = CompilerPrompts.NO_PROMPTS;
     public static Mode compilerMode;
-    public static ROSPlanFit rosplanFit = ROSPlanFit.DURATIVE_ACTIONS;
+    public static ROSPlanFit rosplanFit = ROSPlanFit.CLASSICAL;
 
     public static List<RequireKey> requirements;
 
@@ -903,7 +903,7 @@ public class PDDLCompiler {
             senseEff = new Exp(Connective.WHEN);
             Exp notCompiledGoal = new Exp(Connective.NOT);
             notCompiledGoal.addChild(compiledGoal);
-            senseEffs.add(notCompiledGoal);
+            senseEff.addChild(notCompiledGoal);
             Exp andExp2 = new Exp(Connective.AND);
             andExp2.addChild(knowFalseExp);
             Exp notExp2 = new Exp(Connective.NOT);

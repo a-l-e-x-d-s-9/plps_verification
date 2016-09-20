@@ -373,6 +373,7 @@ public class PLPLogicGenerator {
                 MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
                 generator.writeLine("if self.sense_contradiction:");
                 generator.indent();
+                generator.writeLine("# Checks if the value sensed is in contradiction with the value assumed");
                 generator.writeLine("return True");
                 generator.dendent();
             }

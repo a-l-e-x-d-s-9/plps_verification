@@ -5,6 +5,7 @@ import codegen.common.PythonWriter;
 import codegen.monitorGenerators.PLPClassesGenerator;
 import codegen.monitorGenerators.PLPHarnessGenerator;
 import codegen.monitorGenerators.PLPLogicGenerator;
+import fr.uga.pddl4j.exceptions.UnexpectedExpressionException;
 import fr.uga.pddl4j.parser.*;
 import modules.ObservePLP;
 import modules.PLP;
@@ -106,7 +107,7 @@ public class MiddlewareGenerator {
         writer.writeLine("self.current_action = None");
         if (domainType == DomainType.PARTIALLY_OBSERVABLE &&
                 plp.getClass().isAssignableFrom(ObservePLP.class) &&
-                ((ObservePLP) plp).isGoalParameter()) {
+                !((ObservePLP) plp).isGoalParameter()) {
             writer.writeLine("self.sense_contradiction = None");
         }
         writer.newLine();
@@ -135,16 +136,28 @@ public class MiddlewareGenerator {
         writer.newLine();
         writer.writeLine("def parameters_updated(self):");
         writer.indent();
+        writer.writeLine("self.calculate_variables()");
+        writer.writeLine("if self.current_action == None:");
+        writer.indent();
+        writer.writeLine("return");
+        writer.dendent();
+        writer.newLine();
         if (domainType == DomainType.PARTIALLY_OBSERVABLE &&
                 plp.getClass().isAssignableFrom(ObservePLP.class) &&
-                ((ObservePLP) plp).isGoalParameter()) {
+                !((ObservePLP) plp).isGoalParameter()) {
+            writer.writeLine("# Validate with the assumption manager that the value sensed is the value assumed");
             writer.writeLine("if self.plp_params." + ((ObservePLP) plp).getResultParameter().simpleString()
                     + " is not None:");
             writer.indent();
             writer.writeLine("parametersDic = self.toDictionary(self.current_action.parameters)");
-            writer.writeLine("req = ChangeOnContradiction()");
-            Exp pCond = pddlAction.getEffects().getChildren().get(0).getChildren().get(0);
-            System.out.println(pCond);
+            writer.writeLine("req = ChangeOnContradictionRequest()");
+            Exp pCond;
+            try {
+                pCond = pddlAction.getEffects().getChildren().get(0).getChildren().get(0);
+            }
+            catch (Exception e) {
+                throw new RuntimeException("PDDL sensing action: "+pddlAction.getName()+" is not of valid compilation result format");
+            }
             if (pCond.getConnective() != Connective.ATOM)
                 throw new RuntimeException("Contradiction detection support is currently just for ATOM");
             StringBuilder sb = new StringBuilder("\"(").append(pCond.getAtom().get(0).getImage()).append("\"");
@@ -153,15 +166,21 @@ public class MiddlewareGenerator {
             sb.append("+ \")\"");
             writer.writeLine("gPred = " + sb.toString());
             writer.writeLine("req.grounded_pred = gPred");
-            writer.writeLine("req.sensed = self.plp_params."+((ObservePLP) plp).getResultParameter().simpleString());
+            PLPParameter resultParam = ((ObservePLP) plp).getResultParameter();
+            ParameterGlue mapping = PLPHarnessGenerator.parameterLocations.get(resultParam.toString());
+            if (mapping == null)
+                throw new RuntimeException("[" + plp.getBaseName() + "] No glue mapping for result parameter: "+resultParam.toString());
+            if (mapping.hasFieldInMessage() && mapping.getFieldType().substring(0,4).equals("bool"))
+                writer.writeLine("req.sensed = self.plp_params."+resultParam.simpleString());
+            else if ((mapping.hasFieldInMessage() && mapping.getFieldType().equals("Bool")) ||
+                    (!mapping.hasFieldInMessage() && mapping.getMessageType().equals("Bool")))
+                writer.writeLine("req.sensed = self.plp_params."+resultParam.simpleString()+".data");
+            else
+                writer.writeLine("req.sensed = # TODO: boolean result value from self.plp_params."+resultParam.simpleString());
             writer.writeLine("self.sense_contradiction = self.change_assumptions_contradiction_client.call(req)");
             writer.dendent();
+            writer.newLine();
         }
-        writer.writeLine("self.calculate_variables()");
-        writer.writeLine("if self.current_action == None:");
-        writer.indent();
-        writer.writeLine("return");
-        writer.dendent();
         writer.writeLine("if self.detect_success():");
         writer.indent();
         writer.writeLine(String.format("rospy.loginfo(\"%s_action_dispatcher: detected success\")", plp.getBaseName()));
@@ -197,6 +216,7 @@ public class MiddlewareGenerator {
         writer.writeLine("return");
         writer.dendent();
         writer.writeLine("self.current_action = action");
+        writer.writeLine("self.sense_contradiction = None");
         writer.newLine();
 
         if (plp.getExecParams().size() > 0) {
@@ -233,10 +253,16 @@ public class MiddlewareGenerator {
                 writer.writeLine("if not self.plp_params." + execParam.simpleString() + ":");
                 writer.indent();
                 ParameterGlue mapping = PLPHarnessGenerator.parameterLocations.get(execParam.toString());
-                writer.writeLine(String.format("self.plp_params.%1$s = self.message_store.query_named(\"output_%1$s\", %2$s._type, False)",
+                writer.writeLine(String.format("query_result = self.message_store.query_named(\"output_%s\", %s._type, False)",
                         execParam.simpleString(), (mapping.hasFieldInMessage() ? mapping.getFieldType() : mapping.getMessageType())));
+                writer.writeLine("if query_result:");
+                writer.indent();
+                writer.writeLine(String.format("self.plp_params.%s = query_result[0][0]", execParam.simpleString()));
+                writer.dendent();
                 writer.dendent();
             }
+            writer.newLine();
+            writer.writeLine("# TODO: if the execution parameters have default values, add them here using self.plp_params.<param_name> = <val>");
             writer.newLine();
             writer.writeLine("# Check if the action can be dispatched (every execution parameter has a value)");
         }
@@ -346,7 +372,7 @@ public class MiddlewareGenerator {
         writer.writeLine("self.current_action = None");
         if (domainType == DomainType.PARTIALLY_OBSERVABLE &&
                 plp.getClass().isAssignableFrom(ObservePLP.class) &&
-                ((ObservePLP) plp).isGoalParameter()) {
+                !((ObservePLP) plp).isGoalParameter()) {
             writer.writeLine("self.sense_contradiction = None");
         }
         writer.dendent();
@@ -486,7 +512,7 @@ public class MiddlewareGenerator {
             writer.indent();
             queryConditionValue(exp.getChildren().get(0), writer, true, inNot);
             writer.dendent();
-            writer.writeLine("result = result & " + (inNot ? "not result_fa" : "result_fa"));
+            writer.writeLine("result = result & " + (inNot ? "(not result_fa" : "result_fa)"));
         }
         else if (exp.getConnective().equals(Connective.NOT)) {
             Exp child = exp.getChildren().get(0);
@@ -510,7 +536,7 @@ public class MiddlewareGenerator {
         //System.out.println(effects.getConnective().toString());
         List<TypedSymbol> predArgs = getPredParams(condition.getAtom().get(0).toString());
         String resParName = (inForAll ? "result_fa" : "result");
-        writer.write((inNot ? resParName + " = " + resParName +" & not " :
+        writer.write((inNot ? resParName + " = " + resParName +" & (not " :
                 resParName + " = " + resParName +" & ")+"self.validateKMSFact(\""+condition.getAtom().get(0).toString()+"\", [");
         for (int i=1;i<condition.getAtom().size();i++) {
             if (inForAll) {
@@ -524,7 +550,7 @@ public class MiddlewareGenerator {
                         "parametersDic[\"" + condition.getAtom().get(i).toString().substring(1) + "\"]]");
             }
         }
-        writer.writeNoIndent("])");
+        writer.writeNoIndent("])" + (inNot ? ")" : ""));
         writer.newLine();
     }
 

@@ -61,9 +61,18 @@ public class CodeGenerator {
             generatePackageXMLFile(path+packageName);
             copyResourceFile("PlpMessage.msg", path+packageName+pathBreak+"msg"+pathBreak);
         }
-        else if (args.length > 2 && args[0].equals("-dispatcher")) {
-            String plpPath = args[1];
-            String pddlPath = args[2];
+        else if (args.length > 3 && args[0].equals("-dispatcher")) {
+            String plpPath = args[2];
+            String pddlPath = args[3];
+
+            if (args[1].equals("-nfo"))
+                MiddlewareGenerator.domainType = MiddlewareGenerator.DomainType.NEAR_FULLY_OBSERVABLE;
+            else if (args[1].equals("-po"))
+                MiddlewareGenerator.domainType = MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE;
+            else {
+                printUsageInstructions();
+                return;
+            }
 
             pathBreak = plpPath.contains("\\") ? "\\" : "/";
 
@@ -87,7 +96,8 @@ public class CodeGenerator {
             PythonWriter launchFileWriter = new PythonWriter();
             launchFileWriter.writeLine("<launch>");
             launchFileWriter.indent();
-
+            if (MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE)
+                launchFileWriter.writeLine("<node name=\"plp_middleware_assumption_manager\" pkg=\"" + packageName + "\" type=\"plp_middleware_assumption_manager.py\" required=\"true\" output=\"screen\"/>");
             // Go over every PDDL action and find the corresponding PLP
             for (Op pddlAction : domain.getOperators()) {
                 boolean generatedMiddleware = false;
@@ -161,7 +171,8 @@ public class CodeGenerator {
     public static void printUsageInstructions() {
         System.out.println("Usage:");
         System.out.println("-monitor <PLP folder path>");
-        System.out.println("-dispatcher <PLP folder path> <PDDL domain path>");
+        System.out.println("-dispatcher -nfo <PLP folder path> <PDDL domain path>");
+        System.out.println("-dispatcher -po <PLP folder path> <PDDL domain path>");
     }
 
     public static void generateROSPackage(String path) {
