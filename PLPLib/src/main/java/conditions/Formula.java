@@ -6,6 +6,8 @@ import plpEtc.ParamHolder;
 import plpEtc.Range;
 import plpFields.PLPParameter;
 
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,11 +86,13 @@ public class Formula implements Condition {
     public boolean sharesParams(ParamHolder c) {
         Pattern p = Pattern.compile("[_a-zA-Z]\\w*");
         Matcher matcher;
-        if (this.rightExpr != null)
+        if (this.rightExpr != null && !Arrays.asList(new String[]{"TRUE","FALSE","NULL"}).contains(this.rightExpr))
             matcher = p.matcher(this.leftExpr.concat("|").concat(this.rightExpr));
-        else
+        else if (this.inRange != null)
             matcher = p.matcher(this.leftExpr.concat("|").concat(this.inRange.getMinValue())
                     .concat("|").concat(this.inRange.getMaxValue()));
+        else
+            matcher = p.matcher(this.leftExpr);
         while (matcher.find()) {
             if (c.containsParam(matcher.group()))
                 return true;
@@ -102,7 +106,8 @@ public class Formula implements Condition {
                 || this.rightExpr == null)
             throw new UnsupportedOperationException("Can't treat condition "+toString()+" as an action effect, " +
                     "the left expression needs to be a parameter");
-        return new AssignmentEffect(new PLPParameter(this.leftExpr),this.rightExpr);
+
+        return new AssignmentEffect(PLPParameter.createParamFromString(this.leftExpr),this.rightExpr);
     }
 
     @Override

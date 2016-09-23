@@ -1,19 +1,12 @@
 #!/usr/bin/env python
 import rospy
 import sys
-from rosplan_dispatch_msgs.msg import ActionDispatch
-from rosplan_dispatch_msgs.msg import ActionFeedback
 from rosplan_knowledge_msgs.msg import KnowledgeItem
 from diagnostic_msgs.msg import KeyValue
 
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceRequest
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceResponse
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateService
-
-
-from rosplan_knowledge_msgs.srv import KnowledgeQueryServiceRequest
-from rosplan_knowledge_msgs.srv import KnowledgeQueryServiceResponse
-from rosplan_knowledge_msgs.srv import KnowledgeQueryService
 
 import mongodb_store.message_store
 
@@ -55,6 +48,7 @@ class Manager(object):
 
     def __init__(self):
     	self.prompt_user = False
+        self.finalize_sensed_nc_values = True
 
     	self.update_knowledge_client = rospy.ServiceProxy("/kcl_rosplan/update_knowledge_base", KnowledgeUpdateService)
         self.planner_command_publisher = rospy.Publisher("/kcl_rosplan/planning_commands", String, queue_size=5)
@@ -70,8 +64,8 @@ class Manager(object):
 
         self.save_initial_state()
 
-        rospy.Service('/plp_middleware/change_assumptions_failed_action', ChangeOnFail, self.change_assumption_on_fail)
-        rospy.Service('/plp_middleware/change_assumptions_contradiction', ChangeOnContradiction, self.change_assumption_on_contradiction)
+        rospy.Service('/plp_middleware/change_assumptions_failed_action', ChangeOnFail, self.change_assumption_on_fail_callback)
+        rospy.Service('/plp_middleware/change_assumptions_contradiction', ChangeOnContradiction, self.change_assumption_on_contradiction_callback)
 
         self.init_assumptions = []
         self.assumptions_history = []
@@ -96,7 +90,7 @@ class Manager(object):
                 else:
 	            	rospy.logerr("Gone over all possible assumptions")
 
-    def change_assumption_on_fail(self, message):
+    def change_assumption_on_fail_callback(self, message):
     	#print message
         actionName = message.name
         parametersDic = self.toDictionary(message.parameters)
@@ -118,7 +112,7 @@ class Manager(object):
         		rospy.logerr("Gone over all possible assumptions")
         return False
 
-    def change_assumption_on_contradiction(self, message):
+    def change_assumption_on_contradiction_callback(self, message):
     	gPred = message.grounded_pred.translate(None,'\n()').split(' ')
     	gPredList = [gPred[0]] + [gPred[1:len(gPred)]]
     	gPredIndex = self.gpred_assumption_index(gPredList)
@@ -127,14 +121,14 @@ class Manager(object):
     		return False
     	if message.sensed:
     		if self.current_assumptions[gPredIndex] == 'F':
-    			self.update_assumptions([gPredIndex],['T'])
-    			if self.init_assumptions[gPredIndex][3] == "WEAKNC":
+    			self.update_assumptions([gPredIndex],['T'],True)
+    			if self.finalize_sensed_nc_values and self.init_assumptions[gPredIndex][3] == "WEAKNC":
     				self.static_assumptions.append(gPredIndex)
     			return True
     	else:
     		if self.current_assumptions[gPredIndex] == 'T':
-    			self.update_assumptions([gPredIndex],['F'])
-    			if self.init_assumptions[gPredIndex][3] == "WEAKNC":
+    			self.update_assumptions([gPredIndex],['F'],True)
+    			if self.finalize_sensed_nc_values and self.init_assumptions[gPredIndex][3] == "WEAKNC":
     				self.static_assumptions.append(gPredIndex)
     			return True
     	return False
@@ -218,11 +212,11 @@ class Manager(object):
     	else:
     		return False
 
-    def update_assumptions(self, indexCombination, values):
+    def update_assumptions(self, indexCombination, values, fromSensed=False):
     	counter = 0
     	for index in indexCombination:
     		self.current_assumptions[index] = values[counter]
-    		self.update_assumption(index,values[counter])
+    		self.update_assumption(index,values[counter],fromSensed)
     		counter = counter + 1
     	self.add_curr_assumptions_to_history()
     	if self.prompt_user:
@@ -231,9 +225,9 @@ class Manager(object):
     		if response == "y":
     			self.load_initial_state_new_assumptions()
 
-    def update_assumption(self, index, value):
+    def update_assumption(self, index, value, fromSensed=False):
     	rospy.loginfo("Load assumption: " + self.init_assumptions[index][0] + repr(self.init_assumptions[index][1]) + " to " + value)
-    	if self.init_assumptions[index][3] == 'STRONG':
+    	if fromSensed or self.init_assumptions[index][3] == 'STRONG':
     		if value == 'T':
     			self.changeKMSFact(self.init_assumptions[index][0], self.init_assumptions[index][1], KnowledgeUpdateServiceRequest.ADD_KNOWLEDGE)
     			self.changeKMSFact("know_"+self.init_assumptions[index][0], self.init_assumptions[index][1], KnowledgeUpdateServiceRequest.ADD_KNOWLEDGE)

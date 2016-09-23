@@ -15,6 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by maorash
@@ -51,7 +53,7 @@ public class PDDLCompiler {
 
     public static Logger logger = Logger.getLogger("PLP->PDDL Logger");;
 
-    public static CompilerPrompts prompts = CompilerPrompts.NO_PROMPTS;
+    public static CompilerPrompts prompts = CompilerPrompts.SOME_PROMPTS;
     public static Mode compilerMode;
     public static ROSPlanFit rosplanFit = ROSPlanFit.CLASSICAL;
 
@@ -365,7 +367,8 @@ public class PDDLCompiler {
         }
 
         /* Add KNOW VALUE preconditions */
-        for (PLPParameter param : plp.getInputParams()) {
+        for (PLPParameter param :
+                Stream.concat(plp.getInputParams().stream(), plp.getExecParams().stream()).collect(Collectors.toList())) {
             for (ObservationGoal og : observableValues) {
                 if (og.getClass().isAssignableFrom(PLPParameter.class) && og.containsParam(param.getName())) {
                     PLPParameter goal = ((PLPParameter) og);
@@ -478,18 +481,30 @@ public class PDDLCompiler {
 
 
     public static Exp compile(Formula formula) {
-        if (formula.getOperator().equals("=") &&
-                formula.getRightExpr().toUpperCase().equals("NULL")&&
-                formula.getLeftExpr().matches(PLPParameter.PLPParameterRegex)) {
-
-            for (PLPParameter param : observableValues) {
-                if (param.containsParam(formula.getLeftExpr())) {
-                    Exp notKnow = new Exp(Connective.NOT);
-                    notKnow.addChild(generateKVPred(formula.getLeftExpr()));
-                    return notKnow;
+        if (formula.getOperator().equals("=") && formula.getLeftExpr().matches(PLPParameter.PLPParameterRegex)) {
+            if (formula.getRightExpr().toUpperCase().equals("NULL")) {
+                for (PLPParameter param : observableValues) {
+                    if (param.containsParam(formula.getLeftExpr())) {
+                        Exp notKnow = new Exp(Connective.NOT);
+                        notKnow.addChild(generateKVPred(formula.getLeftExpr()));
+                        return notKnow;
+                    }
                 }
             }
-
+            else if (formula.getRightExpr().toUpperCase().equals("TRUE")) {
+                if (!canBeEffected(formula))
+                    if (!promptCondNotEffected(formula))
+                        return null;
+                return createPredicateFromPLPParameter(PLPParameter.createParamFromString(formula.getLeftExpr()));
+            }
+            else if (formula.getRightExpr().toUpperCase().equals("FALSE")) {
+                if (!canBeEffected(formula))
+                    if (!promptCondNotEffected(formula))
+                        return null;
+                Exp notExp = new Exp(Connective.NOT);
+                notExp.addChild(createPredicateFromPLPParameter(PLPParameter.createParamFromString(formula.getLeftExpr())));
+                return notExp;
+            }
         }
         if (!formula.getOperator().equals("="))
             throw new IllegalArgumentException("Unsupported formula operator: " + formula.getOperator() + " at " + currentPLP.getBaseName());
@@ -511,6 +526,15 @@ public class PDDLCompiler {
             }
         }
 
+        return result;
+    }
+
+    private static Exp createPredicateFromPLPParameter(PLPParameter plpParam) {
+        Exp result = new Exp(Connective.ATOM);
+        List<Symbol> values = new LinkedList<>();
+        values.add(new Symbol(Symbol.Kind.VARIABLE,plpParam.getName()));
+        values.addAll(plpParam.getParamFieldValues().stream().map(field -> new Symbol(Symbol.Kind.VARIABLE, "?"+field)).collect(Collectors.toList()));
+        result.setAtom(values);
         return result;
     }
 
@@ -539,9 +563,14 @@ public class PDDLCompiler {
     public static Exp compile(Predicate predicate) {
         Exp result = new Exp(Connective.ATOM);
         List<Symbol> tempSymbols = new LinkedList<>();
-        tempSymbols.add(new Symbol(Symbol.Kind.PREDICATE, predicate.getName()));
-        for (String value : predicate.getValues()) {
-            tempSymbols.add(new Symbol(Symbol.Kind.VARIABLE, "?"+value));
+        if (currentPLP.getConstantsNames().containsAll(predicate.getValues())) {
+            tempSymbols.add(new Symbol(Symbol.Kind.PREDICATE, predicate.simpleString()));
+        }
+        else {
+            tempSymbols.add(new Symbol(Symbol.Kind.PREDICATE, predicate.getName()));
+            for (String value : predicate.getValues()) {
+                tempSymbols.add(new Symbol(Symbol.Kind.VARIABLE, "?" + value));
+            }
         }
         result.setAtom(tempSymbols);
 
@@ -680,6 +709,14 @@ public class PDDLCompiler {
                     return notKnow;
                 }
             }
+        }
+        else if (aEffect.getExpression().toUpperCase().equals("TRUE")) {
+                return createPredicateFromPLPParameter(aEffect.getParam());
+        }
+        else if (aEffect.getExpression().toUpperCase().equals("FALSE")) {
+            Exp notExp = new Exp(Connective.NOT);
+            notExp.addChild(createPredicateFromPLPParameter(aEffect.getParam()));
+            return notExp;
         }
         Exp result = new Exp(Connective.EQUAL_ATOM);
         List<Symbol> tempSymbols = new LinkedList<>();

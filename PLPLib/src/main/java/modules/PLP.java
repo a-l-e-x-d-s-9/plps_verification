@@ -7,6 +7,7 @@ import plpFields.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PLP {
 
@@ -90,6 +91,11 @@ public class PLP {
 
     public List<Constant> getConstants() {
         return constants;
+    }
+
+    public List<String> getConstantsNames() {
+        List<String> res = getConstants().stream().map(Constant::getName).collect(Collectors.toCollection(LinkedList::new));
+        return res;
     }
 
     public List<RequiredResource> getRequiredResources() {

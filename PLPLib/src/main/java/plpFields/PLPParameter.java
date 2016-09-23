@@ -2,6 +2,8 @@ package plpFields;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by maorash
@@ -9,7 +11,7 @@ import java.util.List;
  */
 public class PLPParameter implements ObservationGoal {
 
-    public static String PLPParameterRegex = "[_a-zA-Z]\\w*|[_a-zA-Z]\\w*\\([_a-zA-Z]\\w*[\\s[_a-zA-Z]\\w*]*\\)";
+    public static String PLPParameterRegex = "\\b[^()]+\\((.*)\\)$|\\b[^()]+"; //"[_a-zA-Z]\\w*|[_a-zA-Z]\\w*\\([_a-zA-Z]\\w*[\\s[_a-zA-Z]\\w*]*\\)";
 
     private String name;
     private List<String> paramFieldValues;
@@ -76,6 +78,23 @@ public class PLPParameter implements ObservationGoal {
             sb.append("_").append(s);
         }
         return sb.toString();
+    }
+
+    public static PLPParameter createParamFromString(String param) {
+        if (!param.matches(PLPParameterRegex))
+            return null;
+        Pattern p = Pattern.compile("[_a-zA-Z]\\w*");
+        Matcher matcher = p.matcher(param);
+        boolean isFirstMatch = true;
+        PLPParameter resultParam = null;
+        while (matcher.find()) {
+            if (isFirstMatch)
+                resultParam = new PLPParameter(matcher.group());
+            else
+                resultParam.addParamFieldValue(matcher.group());
+            isFirstMatch = false;
+        }
+        return resultParam;
     }
 
 }

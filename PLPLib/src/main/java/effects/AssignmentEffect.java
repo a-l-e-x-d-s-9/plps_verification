@@ -4,6 +4,7 @@ package effects;
 import plpEtc.ParamHolder;
 import plpFields.PLPParameter;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +40,7 @@ public class AssignmentEffect implements Effect {
     }
 
     public boolean containsParam(String paramName) {
-        if (paramName.equals(this.param)){
+        if (paramName.equals(this.param.toString())){
             return true;
         }
         Pattern p = Pattern.compile("[a-zA-Z]\\w*|[_]\\w+");
@@ -53,7 +54,11 @@ public class AssignmentEffect implements Effect {
 
     public boolean sharesParams(ParamHolder c) {
         Pattern p = Pattern.compile("[_a-zA-Z]\\w*");
-        Matcher matcher = p.matcher(this.expression.concat("|").concat(this.param.toString()));
+        Matcher matcher;
+        if (!Arrays.asList(new String[]{"TRUE","FALSE","NULL"}).contains(this.expression))
+            matcher = p.matcher(this.param.toString());
+        else
+            matcher = p.matcher(this.expression.concat("|").concat(this.param.toString()));
         while (matcher.find()) {
             if (c.containsParam(matcher.group()))
                 return true;

@@ -33,14 +33,14 @@ public class PLPHarnessGenerator {
         generator.newLine();
         handleGlueFile(generator, plp, path);
 
-        generator.writeLine(String.format("from %s.msg import PlpMessage", CodeGenerator.packageName));
+        generator.writeLine(String.format("from %s.msg import PLPMessage", CodeGenerator.packageName));
         generator.writeLine(String.format("from PLP%s import *",plp.getBaseName()));
         generator.writeLine(String.format("from PLP%sClasses import *",plp.getBaseName()));
         generator.newLine();
         generator.writeLine(String.format("PLP_TOPIC = \"%s\"",CodeGenerator.outputTopic));
 
         generator.newLine();
-        generator.writeLine(String.format("class Plp%sRosHarness(object):",plp.getBaseName()));
+        generator.writeLine(String.format("class PLP_%s_ros_harness(object):",plp.getBaseName()));
         generator.indent();
         generator.newLine();
         generateInitFunction(generator,plp);
@@ -106,7 +106,7 @@ public class PLPHarnessGenerator {
         generator.writeLine("try:");
         generator.indent();
         generator.writeLine(String.format("rospy.loginfo(\"<PLP:%s> node starting\")",plp.getBaseName()));
-        generator.writeLine("harness = PlpWaypointRosHarness()");
+        generator.writeLine(String.format("harness = PLP_%s_ros_harness()",plp.getBaseName()));
         generator.writeLine("rospy.loginfo(\"<PLP:%s> started\")");
         generator.writeLine("# Progress measures callbacks");
         for (ProgressMeasure pm : plp.getProgressMeasures()) {
@@ -130,7 +130,7 @@ public class PLPHarnessGenerator {
         for (Constant constant : plp.getConstants()) {
             String constantLine = String.format("\"%s\": ",constant.getName());
             if (constant.getValue() == null)
-                constantLine += "''' TODO: wasn't specified ''',";
+                constantLine += "# TODO: wasn't specified ''',";
             else {
                 if (constant.getType().equals(FieldType.String))
                     constantLine += String.format("\"%s\",", constant.getValue());
