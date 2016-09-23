@@ -22,26 +22,26 @@ All of the tools are precompiled and can be used by executing the appropriate ja
 ### PLP->PDDL compiler 
 
 #### For the Near-fully-observable mode:
-> java -jar PDDLCompiler.jar -NFO <plp-folder-path>
+> java -jar PDDLCompiler.jar -NFO [plp-folder-path]
 
 #### For the Partially-observable mode:
-> java -jar PDDLCompiler.jar -PO <plp-folder-path>
+> java -jar PDDLCompiler.jar -PO [plp-folder-path]
 
-After running the following line, fill in the problem.pddl file with the goal and the known facts about the initial state, and run the following:
+After running the previous line, fill in the problem.pddl file with the goal and the known facts about the initial state, and run the following:
 
-> java -jar PDDLCompiler.jar -POprob <plp-folder-path>
+> java -jar PDDLCompiler.jar -POprob [plp-folder-path]
 
 ### ROSPlan middleware generator
 
 #### If the PDDL domain was generated in the Near-fully-observable mode:
-> java -jar CodeGenerator.jar -dispatcher -nfo <plp-folder-path> <pddl-domain-path>
+> java -jar CodeGenerator.jar -dispatcher -nfo [plp-folder-path] [pddl-domain-path]
 
 #### If the PDDL domain was generated in the Partially-observable mode:
-> java -jar CodeGenerator.jar -dispatcher -po <plp-folder-path> <pddl-domain-path>
+> java -jar CodeGenerator.jar -dispatcher -po [plp-folder-path] [pddl-domain-path]
 
 ### Monitoring code generation
 
-> java -jar CodeGenerator.jar -monitor <plp-folder-path>
+> java -jar CodeGenerator.jar -monitor [plp-folder-path]
 
 ## Code Examples
 
