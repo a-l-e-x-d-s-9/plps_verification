@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(plp_package)
+project(%s)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -45,7 +45,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  PlpMessage.msg
+  PLPMessage.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -27,6 +27,7 @@ public class PLPHarnessGenerator {
         parameterLocations = new HashMap<>();
         PythonWriter generator = new PythonWriter();
 
+        generator.writeLine("#!/usr/bin/env python");
         generator.writeLine("import rospy");
         generator.writeLine("import sys");
 
@@ -34,8 +35,8 @@ public class PLPHarnessGenerator {
         handleGlueFile(generator, plp, path);
 
         generator.writeLine(String.format("from %s.msg import PLPMessage", CodeGenerator.packageName));
-        generator.writeLine(String.format("from PLP%s import *",plp.getBaseName()));
-        generator.writeLine(String.format("from PLP%sClasses import *",plp.getBaseName()));
+        generator.writeLine(String.format("from PLP_%s_logic import *",plp.getBaseName()));
+        generator.writeLine(String.format("from PLP_%s_classes import *",plp.getBaseName()));
         generator.newLine();
         generator.writeLine(String.format("PLP_TOPIC = \"%s\"",CodeGenerator.outputTopic));
 
@@ -49,6 +50,35 @@ public class PLPHarnessGenerator {
         generator.writeFileContent(PLPHarnessGenerator.class.getResource("/HarnessMain.txt").getPath(),
                 plp.getBaseName(), plp.getClass().getSimpleName());
 
+        generator.dendent();
+        generator.writeLine("def reset_harness_data(self):");
+        generator.indent();
+        generator.writeLine("self.plp = None");
+        generator.writeLine("self.plp_params.callback = None");
+        generator.writeLine(String.format("self.plp_params = PLP_%s_parameters()",plp.getBaseName()));
+        generator.writeLine("self.triggered = False");
+        int counter = 1;
+        for (ProgressMeasure pm : plp.getProgressMeasures()) {
+            generator.writeLine(String.format("self.timer%d.shutdown()",
+                    counter));
+            counter++;
+        }
+        generator.dendent();
+        generator.newLine();
+        generator.writeLine("def trigger_plp_task(self):");
+        generator.indent();
+        generator.writeLine("# Creates a PLP and starts the monitoring, if there's no PLP yet.");
+        generator.writeLine(String.format("rospy.loginfo(\"<PLP:%s> trigger detected, starting \" + \"monitoring\" if self.monitor else \"capturing\")",plp.getBaseName()));
+        generator.writeLine(String.format("self.plp = PLP_%s_logic(self.plp_constants, self.plp_params, self)",plp.getBaseName()));
+        generator.writeLine("self.plp_params.callback = self.plp");
+        generator.writeLine("# Progress measures callbacks");
+        counter = 1;
+        for (ProgressMeasure pm : plp.getProgressMeasures()) {
+            generator.writeLine(String.format("self.timer%d = rospy.Timer(rospy.Duration(%s), harness.plp.monitor_progress_%s)",
+                    counter,pm.getFrequency(),pm.getCondition().simpleString()));
+            counter++;
+        }
+        generator.writeLine("self.plp.request_estimation()");
         generator.dendent();
         // Capture method
         generator.newLine();
@@ -84,13 +114,13 @@ public class PLPHarnessGenerator {
         generator.writeLine("def check_trigger(self):");
         generator.indent();
         generator.writeLine("# The execution parameters are considered the trigger");
-        generator.writeLine("# If you require that other parameters are assigned add them using self.plp_params.<param_name> and uncomment the relevant line in the update function above");
-        generator.writeLine(String.format("# All the parameters are defined in PLP%sClasses.py",plp.getBaseName()));
-        generator.writeLine("# Any other condition can be added, too");
+        generator.writeLine("# If the trigger includes requirements on other parameters, add them using self.plp_params.<param_name> and uncomment the relevant line in the update functions above");
+        generator.writeLine("# You can also use the defined constants using self.plp_constants[<constant_name>]");
+        generator.writeLine(String.format("# (All the parameters are defined in PLP_%s_classes.py)",plp.getBaseName()));
         StringBuilder triggerCheck = new StringBuilder();
         triggerCheck.append("return not (");
         for (PLPParameter param : plp.getExecParams()) {
-            triggerCheck.append(String.format("(self.parameters.%s is None) or ",param.simpleString()));
+            triggerCheck.append(String.format("(self.plp_params.%s is None) or ",param.simpleString()));
         }
         // TODO: check if no params
         triggerCheck.delete(triggerCheck.length()-4,triggerCheck.length());
@@ -107,16 +137,13 @@ public class PLPHarnessGenerator {
         generator.indent();
         generator.writeLine(String.format("rospy.loginfo(\"<PLP:%s> node starting\")",plp.getBaseName()));
         generator.writeLine(String.format("harness = PLP_%s_ros_harness()",plp.getBaseName()));
-        generator.writeLine("rospy.loginfo(\"<PLP:%s> started\")");
-        generator.writeLine("# Progress measures callbacks");
-        for (ProgressMeasure pm : plp.getProgressMeasures()) {
-            generator.writeLine(String.format("rospy.Timer(rospy.Duration(%s), harness.plp.monitor_progress_%s)",
-                    pm.getFrequency(),pm.getCondition().simpleString()));
-        }
+        //generator.writeLine(String.format("rospy.loginfo(\"<PLP:%s> started\")",plp.getBaseName()));
         generator.writeLine("rospy.spin()");
         generator.dendent();
         generator.writeLine("except rospy.ROSInterruptException:");
+        generator.indent();
         generator.writeLine("pass");
+        generator.dendent();
         generator.dendent();
         return generator.end();
     }
@@ -130,7 +157,7 @@ public class PLPHarnessGenerator {
         for (Constant constant : plp.getConstants()) {
             String constantLine = String.format("\"%s\": ",constant.getName());
             if (constant.getValue() == null)
-                constantLine += "# TODO: wasn't specified ''',";
+                constantLine += "''' TODO: wasn't specified ''',";
             else {
                 if (constant.getType().equals(FieldType.String))
                     constantLine += String.format("\"%s\",", constant.getValue());
@@ -144,12 +171,17 @@ public class PLPHarnessGenerator {
         generator.writeLine("# The following method call is for any initialization code you might need");
         generator.writeLine("self.node_setup()");
         generator.newLine();
+        generator.writeLine("# Setup internal PLP objects.");
+        generator.writeLine("self.plp = None");
+        generator.writeLine(String.format("self.plp_params = PLP_%s_parameters()",plp.getBaseName()));
+        generator.newLine();
         generator.writeFileContent(PLPHarnessGenerator.class.getResource("/HarnessInit.txt").getPath());
+        generator.newLine();
+        generator.writeLine("self.triggered = False");
         generator.newLine();
         generator.writeLine("# ROS related stuff");
         generator.writeLine(String.format("rospy.init_node(\"plp_%s\", anonymous=False)",plp.getBaseName()));
-        generator.writeLine("self.publisher = rospy.Publisher(PLP_TOPIC, PlpMessage, queue_size=5)");
-
+        generator.writeLine("self.publisher = rospy.Publisher(PLP_TOPIC, PLPMessage, queue_size=5)");
         generateAllParamTopics(generator, plp, true);
         generator.newLine();
     }
@@ -221,8 +253,10 @@ public class PLPHarnessGenerator {
      */
     private static void generateParamTopic(PythonWriter generator, PLPParameter param, boolean noComment) {
         ParameterGlue paramGlue = parameterLocations.get(param.toString());
-        if (paramGlue == null)
+        if (paramGlue == null) {
+            generator.writeLine("# No glue mapping for parameter: " + param.toString());
             return;
+        }
             //TODO: throw new RuntimeException("parameter "+param.toString()+" wasn't found in glue file");
 
         // In dispatchers, comment out unless needed by the user

@@ -5,6 +5,9 @@ import modules.PLP;
 import plpFields.PLPParameter;
 import plpFields.Variable;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class PLPClassesGenerator {
 
     /**
@@ -38,7 +41,10 @@ public class PLPClassesGenerator {
 
         // Next, set functions
         if (isMonitor) {
-            for (PLPParameter p : plp.getInputParams()) {
+            List<PLPParameter> allParams = new LinkedList<>(plp.getExecParams());
+            allParams.addAll(plp.getInputParams());
+            allParams.addAll(plp.getOutputParams());
+            for (PLPParameter p : allParams) {
                 String pName = p.simpleString();
                 generator.writeLine(String.format("def set_%1$s(self, a_%1$s):", pName));
                 generator.indent();

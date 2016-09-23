@@ -59,7 +59,7 @@ public class CodeGenerator {
 
             generateCMakeLists(path+packageName);
             generatePackageXMLFile(path+packageName);
-            copyResourceFile("PlpMessage.msg", path+packageName+pathBreak+"msg"+pathBreak);
+            copyResourceFile("PLPMessage.msg", path+packageName+pathBreak+"msg"+pathBreak);
         }
         else if (args.length > 3 && args[0].equals("-dispatcher")) {
             String plpPath = args[2];
@@ -194,11 +194,11 @@ public class CodeGenerator {
         String PLPModule = PLPLogicGenerator.GeneratePLPModule(plp);
         String PLPHarness = PLPHarnessGenerator.GeneratePLPHarness(plp, path);
 
-        writeStringToFile(PLPClasses, path+packageName+pathBreak+"scripts"+pathBreak+"PLP"+plp.getBaseName()+"Classes.py");
+        writeStringToFile(PLPClasses, path+packageName+pathBreak+"scripts"+pathBreak+"PLP_"+plp.getBaseName()+"_classes.py");
 
-        writeStringToFile(PLPModule, path+packageName+pathBreak+"scripts"+pathBreak+"PLP"+plp.getBaseName()+".py");
+        writeStringToFile(PLPModule, path+packageName+pathBreak+"scripts"+pathBreak+"PLP_"+plp.getBaseName()+"_logic.py");
 
-        writeStringToFile(PLPHarness, path+packageName+pathBreak+"scripts"+pathBreak+"PLP"+plp.getBaseName()+"ROSHarness.py");
+        writeStringToFile(PLPHarness, path+packageName+pathBreak+"scripts"+pathBreak+"PLP_"+plp.getBaseName()+"_ros_harness.py");
     }
 
     private static void writeStringToFile(String string, String fullPath) {
@@ -253,7 +253,7 @@ public class CodeGenerator {
         if (messagesSB.length() > 0) messagesSB.deleteCharAt(messagesSB.length()-1);
 
         generator.writeResourceFileContent("/CMakeLists.txt",
-                packagesSB.toString(), messagesSB.toString());
+                packageName, packagesSB.toString(), messagesSB.toString());
         //generator.writeFileContent(CodeGenerator.class.getResource("/CMakeLists.txt").getPath(),
         //        packagesSB.toString(), messagesSB.toString());
 
@@ -285,7 +285,7 @@ public class CodeGenerator {
         }
 
         generator.writeResourceFileContent("/package.xml",
-                packagesSB.toString());
+                packageName, packagesSB.toString());
 
         PrintWriter writer = null;
         try {

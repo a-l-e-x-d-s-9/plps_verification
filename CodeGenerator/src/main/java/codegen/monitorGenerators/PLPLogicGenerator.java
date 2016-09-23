@@ -24,14 +24,14 @@ public class PLPLogicGenerator {
         PythonWriter generator = new PythonWriter();
 
         generator.writeLine("from PLPClasses import *");
-        generator.writeLine(String.format("from PLP%sClasses import *",plp.getBaseName()));
+        generator.writeLine(String.format("from PLP_%s_classes import *",plp.getBaseName()));
         generator.newLine();
         generator.writeLine("# TODO update this variable to the max variable history needed");
         generator.writeLine(String.format("PLP_%s_HISTORY_LENGTH = 2",plp.getBaseName()));
         generator.newLine();
 
 
-        generator.writeLine(String.format("class PLP%s(object):",plp.getBaseName()));
+        generator.writeLine(String.format("class PLP_%s_logic(object):",plp.getBaseName()));
         generator.newLine();
         generator.indent();
         generator.writeLine("def __init__(self, constant_map, parameters, callback):");
@@ -49,10 +49,10 @@ public class PLPLogicGenerator {
         generator.writeIndentedBlock(generateCanEstimate(plp, generator.getCurrentTabLevel()));
         generator.newLine();
         generator.writeLine("# The following methods are used to check the observable conditions of the PLP.");
-        generator.writeLine("# Access parameters using: self.parameters of type PLP"
-                + plp.getBaseName() + "Parameters");
-        generator.writeLine("# Access variables using: self.variables() of type PLP"
-                + plp.getBaseName() + "Variables");
+        generator.writeLine("# Access parameters using: self.plp_params of type PLP_"
+                + plp.getBaseName() + "_parameters");
+        generator.writeLine("# Access variables using: self.variables() of type PLP_"
+                + plp.getBaseName() + "_variables");
         generator.writeLine("# Access variable history using: self.variables_history[index]");
         generator.write("# Access constants using: self.constants[constant_name]");
         generateAllConditionCheckers(generator, plp, true);
@@ -73,7 +73,7 @@ public class PLPLogicGenerator {
 
         // estimations
         generator.newLine();
-        generator.writeIndentedBlock(generateEstimationFunctions(plp,generator.getCurrentTabLevel()));
+        generateEstimationFunctions(plp,generator);
         //
 
         // monitor termination
@@ -127,7 +127,8 @@ public class PLPLogicGenerator {
 
         //progress measures
         for (ProgressMeasure pm : plp.getProgressMeasures()) {
-            generator.writeLine(String.format("def monitor_progress_%s(self):",pm.getCondition().simpleString()));
+            generator.writeLine("# Checks progress measures. Callback function for ROS Timer");
+            generator.writeLine(String.format("def monitor_progress_%s(self, event):",pm.getCondition().simpleString()));
             generator.indent();
             if (pm.getCondition().getClass().isAssignableFrom(BitwiseOperation.class) &&
                     ((BitwiseOperation) pm.getCondition()).getOperation().equals(BitwiseOperation.Operation.AND)) {
@@ -216,7 +217,7 @@ public class PLPLogicGenerator {
 
         generator.newLine();
         generator.writeLine("# The following methods are used to update the variables");
-        generator.writeLine("# Access parameters using: self.parameters of type PLP_"
+        generator.writeLine("# Access parameters using: self.plp_params of type PLP_"
                 + plp.getBaseName() + "_parameters");
         generator.writeLine("# Access constants using: self.constants[constant_name]");
 
@@ -423,115 +424,272 @@ public class PLPLogicGenerator {
         generator.dendent();
     }
 
-    private static String generateEstimationFunctions(PLP plp, int currentTabLevel) {
-        PythonWriter generator = new PythonWriter(currentTabLevel);
+    private static void generateEstimationFunctions(PLP plp, PythonWriter generator) {
+        if (plp.getClass().isAssignableFrom(AchievePLP.class))
+            generateEstimationFunctions((AchievePLP) plp, generator);
+        else if (plp.getClass().isAssignableFrom(ObservePLP.class))
+            generateEstimationFunctions((ObservePLP) plp, generator);
+        else if (plp.getClass().isAssignableFrom(MaintainPLP.class))
+            generateEstimationFunctions((MaintainPLP) plp, generator);
+        else if (plp.getClass().isAssignableFrom(DetectPLP.class))
+            generateEstimationFunctions((DetectPLP) plp, generator);
+        else
+            throw new RuntimeException("Unsupported PLP type");
+    }
 
-        if (AchievePLP.class.isInstance(plp)) {
-            AchievePLP aplp = (AchievePLP) plp;
-            generator.writeLine("def estimate(self):");
+    private static void generateEstimationFunctions(AchievePLP aplp, PythonWriter generator) {
+        generator.writeLine("def estimate(self):");
+        generator.indent();
+        generator.writeLine("result = PLPAchieveEstimation()");
+        generator.writeLine("result.success = self.estimate_success()");
+        generator.writeLine("result.success_time = self.estimate_success_time()");
+        for (Effect sEff : aplp.getSideEffects())
+            generator.writeLine(String.format("result.side_effects[\"%1$s\"] = self.estimate_%1$s_side_effect()",
+                    sEff.simpleString()));
+        for (FailureMode fm : aplp.getFailureModes())
+            generator.writeLine(String.format("result.add_failure(self.estimate_%s_failure())",
+                    fm.getCondition().simpleString()));
+        if (aplp.getFailureModes().size() == 0)
+            generator.writeLine("result.add_failure(PLPFailureMode(\"General Failure Prob\",self.estimate_failure)");
+        generator.writeLine("result.failure_time = self.estimate_failure_time()");
+        generator.writeLine("return result");
+        generator.dendent();
+        generator.newLine();
+
+        generator.writeLine("def estimate_success(self):");
+        generator.indent();
+        writeBodyEstimateProb(aplp.getSuccessProb(), generator);
+        generator.dendent();
+        generator.newLine();
+
+        generator.writeLine("def estimate_success_time(self):");
+        generator.indent();
+        writeBodyEstimateDist(aplp.getSuccessRuntime(), generator);
+        generator.dendent();
+        generator.newLine();
+
+        writeFunctionsEstimateSideEffs(aplp.getSideEffects(), generator);
+
+        if (aplp.getFailureModes().size() > 0)
+            writeFunctionsEstimateFailureModes(aplp.getFailureModes(), generator);
+        else {
+            generator.writeLine("def estimate_failure(self):");
             generator.indent();
-            generator.writeLine("result = PlpAchieveResult()");
-            generator.writeLine("result.success = self.estimate_success()");
-            generator.writeLine("result.success_time = self.estimate_success_time()");
-
-            for (Effect sEff : plp.getSideEffects()) {
-                generator.writeLine(String.format("result.side_effects[\"%1$s\"] = self.estimate_%1$s_side_effect()",
-                        sEff.simpleString()));
-            }
-
-            for (FailureMode fm : aplp.getFailureModes()) {
-                generator.writeLine(String.format("result.add_failure(self.estimate_%s_failure())",
-                        fm.getCondition().simpleString()));
-            }
-            generator.writeLine("return result");
+            writeBodyEstimateProb(aplp.getGeneralFailureProb(), generator);
             generator.dendent();
             generator.newLine();
+        }
+        generator.writeLine("def estimate_failure_time(self):");
+        generator.indent();
+        writeBodyEstimateDist(aplp.getFailRuntime(), generator);
+        generator.dendent();
+        generator.newLine();
+    }
 
-            generator.writeLine("def estimate_success(self):");
+    private static void generateEstimationFunctions(MaintainPLP mplp, PythonWriter generator) {
+        generator.writeLine("def estimate(self):");
+        generator.indent();
+        generator.writeLine("result = PLPAchieveEstimation()");
+        generator.writeLine("result.success = self.estimate_success()");
+        generator.writeLine("result.success_time = self.estimate_success_time()");
+        for (Effect sEff : mplp.getSideEffects())
+            generator.writeLine(String.format("result.side_effects[\"%1$s\"] = self.estimate_%1$s_side_effect()",
+                    sEff.simpleString()));
+        for (FailureMode fm : mplp.getFailureModes())
+            generator.writeLine(String.format("result.add_failure(self.estimate_%s_failure())",
+                    fm.getCondition().simpleString()));
+        if (mplp.getFailureModes().size() == 0)
+            generator.writeLine("result.add_failure(PLPFailureMode(\"General Failure Prob\",self.estimate_failure)");
+        generator.writeLine("result.failure_time = self.estimate_failure_time()");
+        if (!mplp.isInitiallyTrue())
+            generator.writeLine("result.time_until_true = self.estimate_time_until_true()");
+        generator.writeLine("return result");
+        generator.dendent();
+        generator.newLine();
+
+        generator.writeLine("def estimate_success(self):");
+        generator.indent();
+        writeBodyEstimateProb(mplp.getSuccessProb(), generator);
+        generator.dendent();
+        generator.newLine();
+
+        generator.writeLine("def estimate_success_time(self):");
+        generator.indent();
+        writeBodyEstimateDist(mplp.getSuccessRuntime(), generator);
+        generator.dendent();
+        generator.newLine();
+
+        writeFunctionsEstimateSideEffs(mplp.getSideEffects(), generator);
+
+        if (mplp.getFailureModes().size() > 0)
+            writeFunctionsEstimateFailureModes(mplp.getFailureModes(), generator);
+        else {
+            generator.writeLine("def estimate_failure(self):");
             generator.indent();
+            writeBodyEstimateProb(mplp.getGeneralFailureProb(), generator);
+            generator.dendent();
+            generator.newLine();
+        }
+        generator.writeLine("def estimate_failure_time(self):");
+        generator.indent();
+        writeBodyEstimateDist(mplp.getFailRuntime(), generator);
+        generator.dendent();
+        generator.newLine();
+
+        if (!mplp.isInitiallyTrue()) {
+            generator.writeLine("def estimate_time_until_true(self):");
+            generator.indent();
+            writeBodyEstimateDist(mplp.getTimeUntilTrue(), generator);
+            generator.dendent();
+            generator.newLine();
+        }
+    }
+
+    private static void generateEstimationFunctions(ObservePLP oplp, PythonWriter generator) {
+        generator.writeLine("def estimate(self):");
+        generator.indent();
+        generator.writeLine("result = PLPObserveEstimation()");
+        generator.writeLine("result.observation_is_correct_prob = self.estimate_correct_observation()");
+        generator.writeLine("result.success_time = self.estimate_success_time()");
+        for (Effect sEff : oplp.getSideEffects())
+            generator.writeLine(String.format("result.side_effects[\"%1$s\"] = self.estimate_%1$s_side_effect()",
+                    sEff.simpleString()));
+        generator.writeLine("result.failure_to_observe_prob = self.estimate_failure_to_observe()");
+        generator.writeLine("result.failure_time = self.estimate_failure_time()");
+        generator.writeLine("return result");
+        generator.dendent();
+        generator.newLine();
+
+        generator.writeLine("def estimate_correct_observation(self):");
+        generator.indent();
+        writeBodyEstimateProb(oplp.getCorrectObservationProb(), generator);
+        generator.dendent();
+        generator.newLine();
+
+        generator.writeLine("def estimate_success_time(self):");
+        generator.indent();
+        writeBodyEstimateDist(oplp.getSuccessRuntime(), generator);
+        generator.dendent();
+        generator.newLine();
+
+        writeFunctionsEstimateSideEffs(oplp.getSideEffects(), generator);
+
+        generator.writeLine("def estimate_failure_to_observe(self):");
+        generator.indent();
+        writeBodyEstimateProb(oplp.getFailureToObserveProb(),generator);
+        generator.dendent();
+        generator.newLine();
+
+        generator.writeLine("def estimate_failure_time(self):");
+        generator.indent();
+        writeBodyEstimateDist(oplp.getFailureRuntime(), generator);
+        generator.dendent();
+        generator.newLine();
+    }
+
+    private static void generateEstimationFunctions(DetectPLP dplp, PythonWriter generator) {
+        generator.writeLine("def estimate(self):");
+        generator.indent();
+        generator.writeLine("result = PLPDetectEstimation()");
+        generator.writeLine("result.detection_given_condition_prob = self.estimate_detection_given_condition_prob()");
+        for (Effect sEff : dplp.getSideEffects())
+            generator.writeLine(String.format("result.side_effects[\"%1$s\"] = self.estimate_%1$s_side_effect()",
+                    sEff.simpleString()));
+        generator.dendent();
+        generator.newLine();
+
+        generator.writeLine("def estimate_detection_given_condition_prob(self):");
+        generator.indent();
+        writeBodyEstimateProb(dplp.getSuccessProbGivenCondition(), generator);
+        generator.dendent();
+        generator.newLine();
+
+        writeFunctionsEstimateSideEffs(dplp.getSideEffects(), generator);
+    }
+
+
+    private static void writeFunctionsEstimateFailureModes(List<FailureMode> fms, PythonWriter generator) {
+        for (FailureMode fm : fms) {
+            generator.writeLine(String.format("def estimate_%s_failure(self):",
+                    fm.getCondition().simpleString()));
+            generator.indent();
+            generator.writeLine("failureMode = PLPFailureMode()");
+            generator.writeLine("failureMode.name = \"" + fm.getCondition().toString()+"\"");
             generator.writeLine("result = \"\"");
-            for (ConditionalProb cProb : aplp.getSuccessProb()) {
+            for (ConditionalProb cProb : fm.getProbList()) {
                 if (cProb.isConditional()) {
                     generateEstimateProbability(cProb, generator);
+
                 }
                 else {
                     generator.writeLine("# TODO Implement the code that computes and returns the following probability");
                     generator.writeLine("# probability = " + cProb.getProb().toString());
-                    generator.writeLine("result = \"to_implement\"");
+                    generator.writeLine("result = to_implement");
                 }
             }
-            generator.writeLine("return result");
+            generator.writeLine("failureMode.probability = result");
+            generator.writeLine("return failureMode");
             generator.dendent();
             generator.newLine();
+        }
+    }
 
-            generator.writeLine("def estimate_success_time(self):");
+    private static void writeFunctionsEstimateSideEffs(List<Effect> seffs, PythonWriter generator) {
+        for (Effect sEff : seffs) {
+            generator.writeLine(String.format("def estimate_%s_side_effect(self):",sEff.simpleString()));
             generator.indent();
             generator.writeLine("result = \"\"");
-            for (ConditionalDist cDist : aplp.getSuccessRuntime()) {
-                if (cDist.isConditional()) {
-                    generateEstimateTime(cDist, generator);
+            if (ConditionalEffect.class.isInstance(sEff)) {
+                generateEstimateSideEffect(((ConditionalEffect) sEff), generator);
+            }
+            else
+            {
+                if (AssignmentEffect.class.isInstance(sEff)) {
+                    generator.writeLine("#TODO Implement the code that computes the parameters new value \"val\" to be the following:");
+                    generator.writeLine("# new value = " + ((AssignmentEffect) sEff).getExpression());
+                    generator.writeLine("val = to_implement");
+                    generator.writeLine("result += \"" +
+                            ((AssignmentEffect) sEff).getParam() + "  = \" + repr(val) + \",\"");
                 }
                 else {
-                    generator.writeLine("# TODO Implement the code that computes and returns the following distribution");
-                    generator.writeLine("# distribution = " + cDist.getDist().toString());
-                    generator.writeLine("result = \"to_implement\"");
+                    generator.writeLine("result += \"" +
+                            sEff.toString() + "\" + \",\"");
                 }
             }
             generator.writeLine("return result");
             generator.dendent();
             generator.newLine();
+        }
+    }
 
-            for (Effect sEff : plp.getSideEffects()) {
-                generator.writeLine(String.format("def estimate_%s_side_effect(self):",sEff.simpleString()));
-                generator.indent();
-                generator.writeLine("result = \"\"");
-                if (ConditionalEffect.class.isInstance(sEff)) {
-                    generateEstimateSideEffect(((ConditionalEffect) sEff), generator);
-                }
-                else
-                {
-                    if (AssignmentEffect.class.isInstance(sEff)) {
-                        generator.writeLine("#TODO Implement the code that computes the parameters new value \"val\" to be the following:");
-                        generator.writeLine("# new value = " + ((AssignmentEffect) sEff).getExpression());
-                        generator.writeLine("val = to_implement");
-                        generator.writeLine("result += \"" +
-                                ((AssignmentEffect) sEff).getParam() + "  = \" + val + \"\\n\"");
-                    }
-                    else {
-                        generator.writeLine("result += \"" +
-                                sEff.toString() + "\" + \"\\n\"");
-                    }
-                }
-                generator.writeLine("return result");
+    private static void writeBodyEstimateDist(List<ConditionalDist> dists, PythonWriter generator) {
+        generator.writeLine("result = \"\"");
+        for (ConditionalDist cDist : dists) {
+            if (cDist.isConditional()) {
+                generateEstimateTime(cDist, generator);
             }
-            generator.dendent();
-            generator.newLine();
-
-            for (FailureMode fm : aplp.getFailureModes()) {
-                generator.writeLine(String.format("def estimate_%s_failure()",
-                        fm.getCondition().simpleString()));
-                generator.indent();
-                generator.writeLine("result = \"\"");
-                for (ConditionalProb cProb : fm.getProbList()) {
-                    if (cProb.isConditional()) {
-                        generateEstimateProbability(cProb, generator);
-                    }
-                    else {
-                        generator.writeLine("# TODO Implement the code that computes and returns the following probability");
-                        generator.writeLine("# probability = " + cProb.getProb().toString());
-                        generator.writeLine("result = \"to_implement\"");
-                    }
-                }
-                generator.writeLine("return result");
-                generator.dendent();
-                generator.newLine();
+            else {
+                generator.writeLine("# TODO Implement the code that computes and returns the following distribution");
+                generator.writeLine("# distribution = " + cDist.getDist().toString());
+                generator.writeLine("result = to_implement");
             }
         }
-        else {
-            generator.writeLine("# TODO estimation functions for this PLP type"); // TODO
+        generator.writeLine("return result");
+    }
+
+    private static void writeBodyEstimateProb(List<ConditionalProb> probs, PythonWriter generator) {
+        generator.writeLine("result = \"\"");
+        for (ConditionalProb cProb : probs) {
+            if (cProb.isConditional()) {
+                generateEstimateProbability(cProb, generator);
+            }
+            else {
+                generator.writeLine("# TODO Implement the code that computes and returns the following probability");
+                generator.writeLine("# probability = " + cProb.getProb().toString());
+                generator.writeLine("result = to_implement");
+            }
         }
-        generator.setIndent(0);
-        return generator.end();
+        generator.writeLine("return result");
     }
 
     private static void generateEstimateSideEffect(ConditionalEffect condEff, PythonWriter generator) {
@@ -554,16 +712,16 @@ public class PLPLogicGenerator {
             }
             else {
                 if (AssignmentEffect.class.isInstance(condEff.getEffect())) {
-                    generator.writeLine("#TODO Implement the code that computes the parameters new value \"val\" to be the following:");
+                    generator.writeLine("# TODO Implement the code that computes the parameters new value \"val\" to be the following:");
                     generator.writeLine("# new value = " + ((AssignmentEffect) condEff.getEffect()).getExpression());
                     generator.writeLine("val = to_implement");
                     generator.writeLine("result += \"If "+condEff.getCondition().toString()+" : " +
-                            ((AssignmentEffect) condEff.getEffect()).getParam() + "\"  = val + \"\\n\"");
+                            ((AssignmentEffect) condEff.getEffect()).getParam() + "\"  = repr(val) + \",\"");
                     generator.newLine();
                 }
                 else {
                     generator.writeLine("result += \"If "+condEff.getCondition().toString()+" : " +
-                            condEff.getEffect().toString() + "\" + \"\\n\"");
+                            condEff.getEffect().toString() + "\" + \",\"");
                 }
             }
         }
@@ -571,16 +729,16 @@ public class PLPLogicGenerator {
             generator.writeLine("if "+conditionMethods.get(((NotCondition) condEff.getCondition()).getCondition())+":");
             generator.indent();
             if (AssignmentEffect.class.isInstance(condEff.getEffect())) {
-                generator.writeLine("#TODO Implement the code that computes the parameters new value \"val\" to be the following:");
+                generator.writeLine("# TODO Implement the code that computes the parameters new value \"val\" to be the following:");
                 generator.writeLine("# new value = " + ((AssignmentEffect) condEff.getEffect()).getExpression());
                 generator.writeLine("val = to_implement");
                 generator.writeLine("result += \"If " + condEff.getCondition().toString() + " : " +
-                        ((AssignmentEffect) condEff.getEffect()).getParam() + "\"  = val + \"\\n\"");
+                        ((AssignmentEffect) condEff.getEffect()).getParam() + "\"  = repr(val) + \",\"");
                 generator.newLine();
             }
             else {
                 generator.writeLine("result += \"If "+condEff.getCondition().toString()+" : " +
-                        condEff.getEffect().toString() + "\" + \"\\n\"");
+                        condEff.getEffect().toString() + "\" + \",\"");
             }
         }
         else if (BitwiseOperation.class.isInstance(condEff.getCondition())) {
@@ -592,12 +750,12 @@ public class PLPLogicGenerator {
                 generator.writeLine("# new value = " + ((AssignmentEffect) condEff.getEffect()).getExpression());
                 generator.writeLine("val = to_implement");
                 generator.writeLine("result += \"If " + condEff.getCondition().toString() + " : " +
-                        ((AssignmentEffect) condEff.getEffect()).getParam() + "\"  = val + \"\\n\"");
+                        ((AssignmentEffect) condEff.getEffect()).getParam() + "\"  = repr(val) + \",\"");
                 generator.newLine();
             }
             else {
                 generator.writeLine("result += \"If "+condEff.getCondition().toString()+" : " +
-                        condEff.getEffect().toString() + "\" + \"\\n\"");
+                        condEff.getEffect().toString() + "\" + \",\"");
             }
         }
     }
@@ -611,14 +769,14 @@ public class PLPLogicGenerator {
                 generator.indent();
                 generator.writeLine("# TODO Implement the code that computes and returns the following distribution");
                 generator.writeLine("# distribution = " + cDist.getDist().toString());
-                generator.writeLine("result = \"to_implement\"");
+                generator.writeLine("result = to_implement");
                 generator.newLine();
             }
             else {
                 generator.writeLine("# TODO Implement the code that computes \"dist\" to be the following distribution");
                 generator.writeLine("# distribution = " + cDist.getDist().toString());
                 generator.writeLine("dist = to_implement");
-                generator.writeLine("result += \"If "+cDist.getCondition().toString()+" : \" + prob + \"\\n\"");
+                generator.writeLine("result += \"If "+cDist.getCondition().toString()+" : \" + repr(prob) + \",\"");
                 generator.newLine();
             }
         }
@@ -627,7 +785,7 @@ public class PLPLogicGenerator {
             generator.indent();
             generator.writeLine("# TODO Implement the code that computes and returns the following distribution");
             generator.writeLine("# distribution = " + cDist.getDist().toString());
-            generator.writeLine("result = \"to_implement\"");
+            generator.writeLine("result = to_implement");
             generator.newLine();
         }
         else if (BitwiseOperation.class.isInstance(cDist.getCondition())) {
@@ -636,7 +794,7 @@ public class PLPLogicGenerator {
             generator.indent();
             generator.writeLine("# TODO Implement the code that computes and returns the following distribution");
             generator.writeLine("# distribution = " + cDist.getDist().toString());
-            generator.writeLine("result = \"to_implement\"");
+            generator.writeLine("result = to_implement");
             generator.newLine();
         }
     }
@@ -650,23 +808,23 @@ public class PLPLogicGenerator {
                 generator.indent();
                 generator.writeLine("# TODO Implement the code that computes and returns the following probability");
                 generator.writeLine("# probability = " + cProb.getProb());
-                generator.writeLine("result = \"to_implement\"");
+                generator.writeLine("result = to_implement");
                 generator.newLine();
             }
             else {
                 generator.writeLine("# TODO Implement the code that computes \"prob\" to be the following probability");
                 generator.writeLine("# probability = " + cProb.getProb());
                 generator.writeLine("prob = to_implement");
-                generator.writeLine("result += \"If "+cProb.getCondition().toString()+" : \" + prob + \"\\n\"");
+                generator.writeLine("result += \"If "+cProb.getCondition().toString()+" : \" + repr(prob) + \",\"");
                 generator.newLine();
             }
         }
         else if (NotCondition.class.isInstance(cProb.getCondition())) {
-            generator.writeLine("if "+conditionMethods.get(((NotCondition) cProb.getCondition()).getCondition())+":");
+            generator.writeLine("if not "+conditionMethods.get(((NotCondition) cProb.getCondition()).getCondition())+":");
             generator.indent();
             generator.writeLine("# TODO Implement the code that computes and returns the following probability");
             generator.writeLine("# probability = " + cProb.getProb());
-            generator.writeLine("result = \"to_implement\"");
+            generator.writeLine("result = to_implement");
             generator.newLine();
         }
         else if (BitwiseOperation.class.isInstance(cProb.getCondition())) {
@@ -675,7 +833,7 @@ public class PLPLogicGenerator {
             generator.indent();
             generator.writeLine("# TODO Implement the code that computes and returns the following probability");
             generator.writeLine("# probability = " + cProb.getProb());
-            generator.writeLine("result = \"to_implement\"");
+            generator.writeLine("result = to_implement");
             generator.newLine();
         }
     }
@@ -971,14 +1129,15 @@ public class PLPLogicGenerator {
         //generator.setIndent(currentTabLevel);
 
         generator.indent();
-
+        generator.writeLine("# Can estimate if got values for all of the parameters");
+        generator.writeLine("# TODO: if not all parameters needed in order to estimate, remove some of the following conditions:");
         StringBuilder paramsCheck = new StringBuilder();
         paramsCheck.append("return not (");
         for (PLPParameter param : plp.getExecParams()) {
-            paramsCheck.append(String.format("(self.parameters.%s is None) or ",param.simpleString()));
+            paramsCheck.append(String.format("(self.plp_params.%s is None) or ",param.simpleString()));
         }
         for (PLPParameter param : plp.getInputParams()) {
-            paramsCheck.append(String.format("(self.parameters.%s is None) or ",param.simpleString()));
+            paramsCheck.append(String.format("(self.plp_params.%s is None) or ",param.simpleString()));
         }
         // TODO: check if no params
         paramsCheck.delete(paramsCheck.length()-4,paramsCheck.length());

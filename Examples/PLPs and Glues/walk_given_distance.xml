@@ -124,10 +124,6 @@
       <expression value="TRUE"/>
     </formula_condition>
   </achievement_goal>
-  
-  <success_termination_condition>
-  	<predicate_condition name="finished_true" />
-  </success_termination_condition>
 
   <success_probability>
     <conditional_probability>
@@ -172,7 +168,7 @@
           <operator type="="/>
           <expression value="TRUE"/>
         </formula_condition>
-        <probability value="1"/>
+        <probability value="0"/>
       </conditional_probability>
 
       <conditional_probability>
@@ -181,7 +177,7 @@
           <operator type="="/>
           <expression value="FALSE"/>
         </formula_condition>
-        <probability value="0"/>
+        <probability value="1"/>
       </conditional_probability>
     </failure_mode>
 
@@ -195,10 +191,6 @@
     </failure_mode>
   </failure_modes>
   
-  <failure_termination_condition>
-  	<predicate_condition name="finished_false" />
-  </failure_termination_condition>
-
   <runtime_given_failure>
     <distribution>
       <uniform>

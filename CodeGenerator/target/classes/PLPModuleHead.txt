@@ -1,7 +1,7 @@
         # constants and fields
         self.constants = constant_map
         self.callback = callback
-        self.parameters = parameters
+        self.plp_params = parameters
         self.variables_history = list()
 
     def request_estimation(self):
