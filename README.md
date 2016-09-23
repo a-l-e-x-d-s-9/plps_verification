@@ -26,7 +26,9 @@ All of the tools are precompiled and can be used by executing the appropriate ja
 
 #### For the Partially-observable mode:
 > java -jar PDDLCompiler.jar -PO <plp-folder-path>
+
 After running the following line, fill in the problem.pddl file with the goal and the known facts about the initial state, and run the following:
+
 > java -jar PDDLCompiler.jar -POprob <plp-folder-path>
 
 ### ROSPlan middleware generator
