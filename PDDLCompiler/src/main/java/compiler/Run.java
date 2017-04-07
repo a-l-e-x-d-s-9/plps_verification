@@ -53,11 +53,13 @@ public class Run {
                     break;
                 case TRUE_WEAK_NO_CHANGE:
                     sb.append("T WEAKNC");
+                    break;
                 case FALSE_STRONG:
                     sb.append("F STRONG");
                     break;
                 case FALSE_WEAK:
                     sb.append("F WEAK");
+                    break;
                 case FALSE_WEAK_NO_CHANGE:
                     sb.append("F WEAKNC");
                     break;

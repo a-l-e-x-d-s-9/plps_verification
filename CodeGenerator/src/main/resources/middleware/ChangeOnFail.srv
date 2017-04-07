@@ -1,0 +1,4 @@
+string name
+diagnostic_msgs/KeyValue[] parameters
+---
+bool success

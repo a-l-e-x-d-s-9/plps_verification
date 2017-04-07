@@ -5,7 +5,6 @@ import codegen.monitorGenerators.PLPClassesGenerator;
 import codegen.monitorGenerators.PLPHarnessGenerator;
 import codegen.monitorGenerators.PLPLogicGenerator;
 import fr.uga.pddl4j.parser.Domain;
-import fr.uga.pddl4j.parser.Exp;
 import fr.uga.pddl4j.parser.Op;
 import fr.uga.pddl4j.parser.Parser;
 import loader.PLPLoader;
@@ -57,8 +56,8 @@ public class CodeGenerator {
                 CodeGenerator.GenerateMonitoringScripts(dPLP, path);
             }
 
-            generateCMakeLists(path+packageName);
-            generatePackageXMLFile(path+packageName);
+            generateCMakeLists(path+packageName, true);
+            generatePackageXMLFile(path+packageName, true);
             copyResourceFile("PLPMessage.msg", path+packageName+pathBreak+"msg"+pathBreak);
         }
         else if (args.length > 3 && args[0].equals("-dispatcher")) {
@@ -160,8 +159,12 @@ public class CodeGenerator {
 
             // Create Package Files
             writeStringToFile(launchFileWriter.end(),plpPath+packageName+pathBreak+"launch"+pathBreak+"middleware_launch.launch");
-            generateCMakeLists(plpPath+packageName);
-            generatePackageXMLFile(plpPath+packageName);
+            generateCMakeLists(plpPath+packageName, false);
+            generatePackageXMLFile(plpPath+packageName, false);
+            if (MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
+                copyResourceFile("middleware/ChangeOnContradiction.srv",plpPath+packageName+pathBreak+"srv"+pathBreak,"ChangeOnContradiction.srv");
+                copyResourceFile("middleware/ChangeOnFail.srv",plpPath+packageName+pathBreak+"srv"+pathBreak,"ChangeOnFail.srv");
+            }
         }
         else {
             printUsageInstructions();
@@ -184,6 +187,9 @@ public class CodeGenerator {
 
         File msg = new File(path+packageName+pathBreak+"msg");
         msg.mkdir();
+
+        File srv = new File(path+packageName+pathBreak+"srv");
+        srv.mkdir();
 
         File launch = new File(path+packageName+pathBreak+"launch");
         launch.mkdir();
@@ -239,7 +245,7 @@ public class CodeGenerator {
         }
     }
 
-    private static void generateCMakeLists(String resultPath) {
+    private static void generateCMakeLists(String resultPath, boolean isMonitor) {
         PythonWriter generator = new PythonWriter();
 
         StringBuilder packagesSB = new StringBuilder();
@@ -252,8 +258,15 @@ public class CodeGenerator {
         if (packagesSB.length() > 0) packagesSB.deleteCharAt(packagesSB.length()-1);
         if (messagesSB.length() > 0) messagesSB.deleteCharAt(messagesSB.length()-1);
 
-        generator.writeResourceFileContent("/CMakeLists.txt",
+        if (isMonitor)
+            generator.writeResourceFileContent("/CMakeLists.txt",
                 packageName, packagesSB.toString(), messagesSB.toString());
+        else if (MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.NEAR_FULLY_OBSERVABLE)
+            generator.writeResourceFileContent("/middleware/CMakeLists.txt",
+                    packageName, packagesSB.toString(), "", messagesSB.toString());
+        else
+            generator.writeResourceFileContent("/middleware/CMakeLists.txt",
+                    packageName, packagesSB.toString(),"ChangeOnFail.srv \n ChangeOnContradiction.srv", messagesSB.toString());
         //generator.writeFileContent(CodeGenerator.class.getResource("/CMakeLists.txt").getPath(),
         //        packagesSB.toString(), messagesSB.toString());
 
@@ -272,7 +285,7 @@ public class CodeGenerator {
         }
     }
 
-    private static void generatePackageXMLFile(String resultPath) {
+    private static void generatePackageXMLFile(String resultPath, boolean isMonitor) {
         PythonWriter generator = new PythonWriter();
 
         StringBuilder packagesSB = new StringBuilder();

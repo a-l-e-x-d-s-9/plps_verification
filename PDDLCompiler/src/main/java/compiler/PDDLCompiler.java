@@ -130,6 +130,8 @@ public class PDDLCompiler {
 
         // Load requirements into domain
         requirements.forEach(domain::addRequirement);
+        if (compilerMode == Mode.PARTIALLY_OBSERVABLE)
+            domain.addRequirement(RequireKey.ADL);
 
         // Edited PDDL4J to print OBJECT in types
 
@@ -387,6 +389,8 @@ public class PDDLCompiler {
 
 
     private static boolean canBeEffected(Condition cond) {
+        if (possibleEffects == null)
+            return true; // FOR THE PROBLEM GENERATION IN PO MODE ONLY
         for (Effect eff : possibleEffects) {
             if (cond.sharesParams(eff)) {
                 return true;
@@ -454,6 +458,7 @@ public class PDDLCompiler {
         else if (exp.getConnective() == Connective.AT_START) {
             loadParamsAndPreds(exp.getChildren().get(0), excludeParams);
         }
+        else if (exp.getConnective() == Connective.TRUE) {}
         else {
             throw new RuntimeException("Unexpected connective time while loading predicates and parameters for actions: "+exp.getConnective());
         }
@@ -1037,7 +1042,6 @@ public class PDDLCompiler {
 
         Domain domain = pddlParser.getDomain();
         Problem problem = pddlParser.getProblem();
-
         // Set up new problem with old problem values
         Problem resultProblem = new Problem(problem.getName());
         resultProblem.setDomain(problem.getDomain());
@@ -1131,6 +1135,7 @@ public class PDDLCompiler {
                 for (Op action : actions) {
                     // Check if the PLP was compiled to a PDDL action
                     if (action.getName().getImage().equals(oPLP.getBaseName())) {
+                        currentPLP = oPLP;
                         Exp compiledCond = compile((Condition) oPLP.getGoal());
                         if (compiledCond != null && compiledCond.getConnective() == Connective.ATOM &&
                                 compiledCond.getAtom().get(0).getImage().equals(gPred.getAtom().get(0).getImage())) {
@@ -1154,7 +1159,8 @@ public class PDDLCompiler {
     private static boolean inInitialState(Exp gPred, List<Exp> init, boolean holds) {
         for (Exp initPred : init) {
             boolean result = true;
-            if (holds && initPred.getAtom().size() == gPred.getAtom().size()) {
+            if (holds && initPred.getConnective() == Connective.ATOM &&
+                    initPred.getAtom().size() == gPred.getAtom().size()) {
                 for (int i=0;i<initPred.getAtom().size();i++) {
                     if (!initPred.getAtom().get(i).getImage().equals(gPred.getAtom().get(i).getImage())) {
                         result = false;
