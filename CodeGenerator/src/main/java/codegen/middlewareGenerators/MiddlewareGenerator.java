@@ -483,6 +483,8 @@ public class MiddlewareGenerator {
                 writer.writeNoIndent("[\"" + predArgs.get(i - 1).getImage().substring(1) + "\", " +
                         "parametersDic[\"" + effects.getAtom().get(i).toString().substring(1) + "\"]]");
             }
+            if (i != effects.getAtom().size()-1)
+                writer.writeNoIndent(",");
         }
         writer.writeNoIndent("], " + changeType + ")");
         writer.newLine();
@@ -549,6 +551,8 @@ public class MiddlewareGenerator {
                 writer.writeNoIndent("[\"" + predArgs.get(i - 1).getImage().substring(1) + "\", " +
                         "parametersDic[\"" + condition.getAtom().get(i).toString().substring(1) + "\"]]");
             }
+            if (i != condition.getAtom().size()-1)
+                writer.writeNoIndent(",");
         }
         writer.writeNoIndent("])" + (inNot ? ")" : ""));
         writer.newLine();

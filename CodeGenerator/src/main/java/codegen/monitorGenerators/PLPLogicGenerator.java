@@ -282,7 +282,7 @@ public class PLPLogicGenerator {
                     throw new RuntimeException("Observe PLP: " + oplp.getBaseName() + " doesn't have a result parameter");
                 generator.writeLine(String.format("if self.plp_params.%s is not None" +
                         (MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE
-                                ? " and self.sense_contradiction is False:" : ":"),
+                                ? " and self.sense_contradiction.success is False:" : ":"),
                         oplp.getResultParameter().simpleString()));
                 generator.indent();
             }
@@ -372,7 +372,7 @@ public class PLPLogicGenerator {
             ObservePLP oplp = (ObservePLP) plp;
             if (!isMonitor && !oplp.isGoalParameter() &&
                 MiddlewareGenerator.domainType == MiddlewareGenerator.DomainType.PARTIALLY_OBSERVABLE) {
-                generator.writeLine("if self.sense_contradiction:");
+                generator.writeLine("if self.sense_contradiction.success is True:");
                 generator.indent();
                 generator.writeLine("# Checks if the value sensed is in contradiction with the value assumed");
                 generator.writeLine("return True");

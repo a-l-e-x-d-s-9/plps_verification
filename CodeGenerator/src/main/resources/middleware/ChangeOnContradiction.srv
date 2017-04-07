@@ -1,0 +1,4 @@
+string grounded_pred
+bool sensed
+---
+bool success

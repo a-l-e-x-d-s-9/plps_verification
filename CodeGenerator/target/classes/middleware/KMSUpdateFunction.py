@@ -13,7 +13,7 @@ def changeKMSFact(self, name, params, changeType):
     else:
         rospy.loginfo("Updated KMS with attribute: %s", knowledge.attribute_name)
 
-def validateKMSFact(self, name, params, changeType):
+def validateKMSFact(self, name, params):
     knowledge = KnowledgeItem()
     knowledge.knowledge_type = KnowledgeItem.FACT
     knowledge.attribute_name = name
