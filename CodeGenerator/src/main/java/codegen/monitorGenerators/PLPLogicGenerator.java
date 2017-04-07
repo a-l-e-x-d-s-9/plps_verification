@@ -851,28 +851,71 @@ public class PLPLogicGenerator {
                 if (Predicate.class.isInstance(entry.getKey())) {
                     generator.writeLine("# TODO implement code that checks the following predicate condition");
                     generator.writeLine("# Predicate: " + entry.getKey().toString());
+                    generator.writeLine("return False");
                 } else if (Formula.class.isInstance(entry.getKey())) {
-                    generator.writeLine("# TODO implement code that checks the following formula");
-                    generator.writeLine("# Formula: " + entry.getKey().toString());
+                    generator.writeLine("# TODO implement code for the following expressions");
+                    Formula formula = (Formula) entry.getKey();
+                    String leftExpr = ((Formula)entry.getKey()).getLeftExpr();
+                    if (leftExpr.matches("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?")){
+                        generator.writeLine("expr1 = "+leftExpr);
+                    }
+                    else if (leftExpr.toUpperCase().equals("TRUE"))
+                        generator.writeLine("expr1 = True");
+                    else if (leftExpr.toUpperCase().equals("FALSE"))
+                        generator.writeLine("expr1 = False");
+                    else
+                        generator.writeLine("expr1 = #"+leftExpr);
+                    String rightExpr = ((Formula)entry.getKey()).getRightExpr();
+                    if (formula.getRightExpr() != null) {
+                        if (rightExpr.matches("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?")) {
+                            generator.writeLine("expr2 = " + rightExpr);
+                        }
+                        else if (rightExpr.toUpperCase().equals("TRUE"))
+                            generator.writeLine("expr2 = True");
+                        else if (rightExpr.toUpperCase().equals("FALSE"))
+                            generator.writeLine("expr2 = False");
+                        else
+                            generator.writeLine("expr2 = #" + rightExpr);
+
+                        switch (formula.getOperator()) {
+                            case "=":
+                                generator.writeLine("return expr1 == expr2");
+                                break;
+                            case "!=":
+                                generator.writeLine("return not expr1 == expr2");
+                                break;
+                            case ">":
+                                generator.writeLine("return expr1 > expr2");
+                                break;
+                            default:
+                                generator.writeLine("return expr1 " + formula.getOperator() + " expr2");
+                        }
+
+                    }
+                    else {
+                        generator.writeLine("return # check if expr1 is inside the range: "+formula.getRange());
+                    }
                 } else if (QuantifiedCondition.class.isInstance(entry.getKey())) {
                     QuantifiedCondition qCond = (QuantifiedCondition) entry.getKey();
                     generateQuantifiedCode(generator, qCond);
+                    generator.writeLine("return result");
                 } else
                     generator.writeLine("# Unpredictable condition checker function generated");
-                generator.writeLine("return False");
                 generator.dendent();
             }
         }
     }
 
     private static void generateQuantifiedCode(PythonWriter generator, QuantifiedCondition qCond) {
-        generator.writeLine("# TODO implement code that checks the following "+qCond.getQuantifier()+" condition");
+        generator.writeLine("# This method checks the following "+qCond.getQuantifier()+" condition");
         generator.writeLine("# Condition: " + qCond.toString());
-        generator.writeLine("# You can use the following template:");
-        generator.writeLine("'''");
+        generator.writeLine("# TODO: Fill in the possible domain of the parameters");
+        //generator.writeLine("# Use the following template:");
+        //generator.writeLine("'''");
+        generator.writeLine("domain = ['''FILL HERE''']");
         if (qCond.getQuantifier() == QuantifiedCondition.Quantifier.EXISTS) {
             generator.writeLine("result = False");
-            generator.writeLine("for each "+ Arrays.toString(qCond.getParams().toArray()));
+            generator.writeLine("for "+ Arrays.toString(qCond.getParams().toArray()).substring(1).replace("]","") + " in domain:");
             generator.indent();
             generator.writeLine("if "+generateIFcondition(qCond.getCondition())+":");
             generator.indent();
@@ -880,7 +923,7 @@ public class PLPLogicGenerator {
         }
         else {
             generator.writeLine("result = True");
-            generator.writeLine("for each "+ Arrays.toString(qCond.getParams().toArray()));
+            generator.writeLine("for "+ Arrays.toString(qCond.getParams().toArray()).substring(1).replace("]","") + " in domain:");
             generator.indent();
             generator.writeLine("if not "+generateIFcondition(qCond.getCondition())+":");
             generator.indent();
@@ -888,8 +931,8 @@ public class PLPLogicGenerator {
         }
         generator.dendent();
         generator.dendent();
-        generator.writeLine("return result");
-        generator.writeLine("'''");
+        //generator.writeLine("return result");
+        //generator.writeLine("'''");
     }
 
     private static String generateIFcondition(Condition condition) {

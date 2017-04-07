@@ -60,7 +60,7 @@ public class PDDLCompiler {
     public static List<RequireKey> requirements;
 
     public static PLP currentPLP;
-    public static List<TypedSymbol> currentPDDLParameters;
+    public static List<TypedSymbol> currentPDDLParameters; // A list of TypedSymbols
 
     public static Map<String, AssumptionType> assumptions;
 
