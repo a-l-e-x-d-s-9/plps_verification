@@ -1,0 +1,126 @@
+
+	<template>
+		<name x="9" y="9">[<[plp_name]>]</name>
+		<parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+int wait                   = 2;
+
+[<[declarations]>]
+
+		</declaration>
+		<location id="id55" x="1190" y="-170">
+			<name x="1139" y="-204">main_done</name>
+			<urgent/>
+		</location>
+		<location id="id75" x="1649" y="-170">
+			<name x="1550" y="-145">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id56" x="2074" y="-170">
+			<name x="2091" y="-196">end</name>
+			<urgent/>
+		</location>
+		<location id="id57" x="782" y="-170">
+			<name x="773" y="-204">main_success</name>
+			[<[main_success_labels]>]
+		</location>
+
+		<location id="id62" x="68" y="-170">
+			<name x="26" y="-196">start</name>
+		</location>
+		<location id="id63" x="459" y="-170">
+			<name x="382" y="-229">wait_maintain_true</name>
+			[<[wait_maintain_true_labels]>]
+		</location>
+
+		<location id="id74" x="409" y="-170">
+			<name x="332" y="-229">pre_wait_maintain_true</name>
+			<urgent/>
+		</location>
+
+		<location id="id64" x="578" y="-170">
+			<name x="416" y="-229">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id72" x="612" y="-170">
+            <name x="624" y="-229">access_memory_end_0</name>
+            <urgent/>
+        </location>
+
+		<location id="id65" x="1258" y="-170">
+			<name x="1096" y="-238">access_memory_start_1</name>
+			<urgent/>
+		</location>
+		<location id="id73" x="1292" y="-170">
+            <name x="1300" y="-220">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+        <location id="id60" x="187" y="-170">
+            <name x="161" y="-212">synced</name>
+            <urgent/>
+		</location>
+		<location id="id70" x="306" y="-170">
+            <name x="272" y="-212">checked</name>
+            <urgent/>
+        </location>
+
+
+
+[<[locations]>]
+
+[<[branchpoints]>]
+
+		<init ref="id62"/>
+
+[<[transitions]>]
+
+
+
+
+		<transition>
+			<source ref="id74"/>
+			<target ref="id63"/>
+			[<[transition_to_wait_maintain_true_labels]>]
+		</transition>
+		<transition>
+			<source ref="id55"/>
+			<target ref="id65"/>
+		</transition>
+[<[termination_success_notify_transitions]>]
+
+[<[termination_failure_notify_transitions]>]
+
+		<transition controllable="true">
+            <source ref="id60"/>
+            <target ref="id70"/>
+            <label kind="guard" x="51" y="-255">[<[precondition]>]</label>
+            <label kind="assignment" x="180" y="-150">local_time = 0</label>
+        </transition>
+
+		<transition>
+			<source ref="id56"/>
+			<target ref="id62"/>
+			<label kind="synchronisation" x="76" y="314">control_plp_done[id]!</label>
+			<nail x="2074" y="340"/>
+			<nail x="68" y="340"/>
+		</transition>
+
+		<transition>
+			<source ref="id62"/>
+			<target ref="id60"/>
+			<label kind="synchronisation" x="76" y="-195">control_plp_start[id]?</label>
+		</transition>
+
+        <transition>
+            <source ref="id73"/>
+            <target ref="id75"/>
+        </transition>
+	</template>
+
+
+
+
+

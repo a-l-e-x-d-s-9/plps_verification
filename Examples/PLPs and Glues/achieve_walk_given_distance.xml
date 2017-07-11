@@ -1,0 +1,248 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<plps:achieve_plp name="achieve_walk_given_distance" version="1.0" glue_file_location="achieve_walk_given_distance_glue.xml"
+	xmlns:plps="PLP-schemas"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="PLP-schemas AchievePLP_schema.xsd">
+
+  <parameters>
+    <execution_parameters>
+      <param name="linear_distance" />
+      <param name="angular_distance" />
+    </execution_parameters>
+
+    <input_parameters>
+      <param name="laser_scan" read_frequency="5" />
+      <param name="odometry" read_frequency="5" />
+      <param name="energy_level" />
+    </input_parameters>
+
+    <output_parameters>
+      <param name="result" />
+    </output_parameters>
+
+    <non_observable>
+      <param name="clear_path" />
+    </non_observable>
+    
+  </parameters>
+
+  <variables>
+    <var name="current_angle" type="real" />
+    <var name="current_position" type="real" />
+    <var name="current_linear_speed" type="real" />
+    <var name="current_angular_speed" type="real" />
+      
+    <var name="begin_point_angle" type="real" />
+    <var name="begin_point_position" type="real" />
+    
+    <var name="collision_alert" type="boolean" />
+    <var name="arm_moving" type="boolean" />
+    <var name="energy_consumed" type="real" />
+    <var name="distance_to_target" type="real" />
+    <var name="robot_at_target" type="boolean" />
+    <var name="finished_not_at_target" type="boolean" />
+  </variables>
+
+  <constants>
+    <constant name="req_linear_speed"/>
+    <constant name="req_angular_speed"/>
+    <constant name="aspeed_offset" />
+    <constant name="lspeed_offset" />
+    <constant name="distance_offset" />
+    <constant name="angle_offset" />
+    <constant name="timeOffset" value="0.01" />
+  </constants>
+
+  <required_resources>
+    <resource name="robot_wheels" >
+      <status type="exclusive" />
+    </resource>
+  </required_resources>
+
+  <preconditions>
+    <formula_condition key_description="not_moving_linear">
+      <expression value="current_linear_speed" />
+      <operator type="=" />
+      <expression value="0" />
+    </formula_condition>
+
+    <formula_condition key_description="not_moving_angular">
+      <expression value="current_angular_speed"/>
+      <operator type="=" />
+      <expression value="0" />
+    </formula_condition>
+  </preconditions>
+
+  <concurrency_conditions>
+    <formula_condition key_description="not_arm_moving">
+      <expression value="arm_moving" />
+      <operator type="="/>
+      <expression value="FALSE" />
+    </formula_condition>
+  </concurrency_conditions>
+
+  <concurrent_modules>
+  </concurrent_modules>
+
+  <side_effects>
+    <assignment_effect key_description="energy_down">
+      <param name="energy_level" />
+      <expression value="energy_level - energy_consumed"/>
+    </assignment_effect>
+  </side_effects>
+
+  <progress_measures>
+    <progress_measure frequency="2">
+      <formula_condition key_description="closer_to_target">
+        <expression value="distance_to_target" />
+        <operator type="less" />
+        <expression value="distance_to_target@pre"/>
+      </formula_condition>
+    </progress_measure>
+    
+    <progress_measure frequency="3">
+      <OR>
+        <formula_condition key_description="aspeed_in_range">
+          <expression value="current_Aspeed" />
+          <inside_range>
+            <range min_value="angular_speed-aspeed_offset" min_inclusive="true" max_value="angular_speed+aspeed_offset" max_inclusive="true"/>
+          </inside_range>
+        </formula_condition>
+        <formula_condition key_description="lspeed_in_range">
+          <expression value="current_Lspeed" />
+          <inside_range>
+            <range min_value="linear_speed-lspeed_offset" min_inclusive="true" max_value="linear_speed+lspeed_offset" max_inclusive="true"/>
+          </inside_range>
+        </formula_condition>
+      </OR>
+    </progress_measure>
+  </progress_measures>
+
+  <achievement_goal>
+    <formula_condition key_description="at_target">
+      <expression value="robot_at_target"/>
+      <operator type="="/>
+      <expression value="TRUE"/>
+    </formula_condition>
+  </achievement_goal>
+
+  <success_probability>
+    <conditional_probability>
+      <formula_condition key_description="clear_path">
+        <expression value="clear_path"/>
+        <operator type="="/>
+        <expression value="TRUE"/>
+      </formula_condition>
+      <probability value="0.95" />
+    </conditional_probability>
+    
+    <conditional_probability>
+      <formula_condition key_description="not_clear_path">
+        <expression value="clear_path"/>
+        <operator type="="/>
+        <expression value="FALSE"/>
+      </formula_condition>
+      <probability value="0" />
+    </conditional_probability>
+  </success_probability>
+
+  <runtime_given_success>
+    <distribution>
+        <exp>
+            <lambda-rate value="(linear_distance/req_linear_speed) + (angular_distance/req_angular_speed) + timeOffset"/>
+        </exp>
+    </distribution>
+    <!--distribution>
+      <uniform>
+        <lower_bound value="(linear_distance/req_linear_speed) + (angular_distance/req_angular_speed) - timeOffset"/>
+        <upper_bound value="(linear_distance/req_linear_speed) + (angular_distance/req_angular_speed) + timeOffset"/>
+      </uniform>
+    </distribution-->
+  </runtime_given_success>
+
+  <failure_modes>
+    <failure_mode>
+      <formula_condition key_description="has_collision">
+        <expression value="collision_alert"/>
+        <operator type="="/>
+        <expression value="TRUE"/>
+      </formula_condition>
+
+      <conditional_probability>
+        <formula_condition key_description="clear_path">
+          <expression value="clear_path"/>
+          <operator type="="/>
+          <expression value="TRUE"/>
+        </formula_condition>
+        <probability value="0"/>
+      </conditional_probability>
+
+      <conditional_probability>
+        <formula_condition key_description="not_clear_path">
+          <expression value="clear_path"/>
+          <operator type="="/>
+          <expression value="FALSE"/>
+        </formula_condition>
+        <probability value="1"/>
+      </conditional_probability>
+    </failure_mode>
+    
+    <failure_mode>
+      <formula_condition key_description="finished_not_at_target">
+        <expression value="finished_not_at_target"/>
+        <operator type="="/>
+        <expression value="TRUE"/>
+      </formula_condition>
+
+      <conditional_probability>
+        <formula_condition key_description="clear_path">
+          <expression value="clear_path"/>
+          <operator type="="/>
+          <expression value="TRUE"/>
+        </formula_condition>
+        <probability value="0.05"/>
+      </conditional_probability>
+
+      <conditional_probability>
+        <formula_condition key_description="not_clear_path">
+          <expression value="clear_path"/>
+          <operator type="="/>
+          <expression value="FALSE"/>
+        </formula_condition>
+        <probability value="0"/>
+      </conditional_probability>
+    </failure_mode>
+
+  </failure_modes>
+  
+  <runtime_given_failure>
+    <distribution>
+        <exp>
+            <lambda-rate  value="current_angle"/>
+        </exp>
+    </distribution>
+    <!--distribution>
+      <uniform>
+        <lower_bound value="(linear_distance/req_linear_speed) + (angular_distance/req_angular_speed) - timeOffset"/>
+        <upper_bound value="(linear_distance/req_linear_speed) + (angular_distance/req_angular_speed) + timeOffset"/>
+      </uniform>
+    </distribution-->
+  </runtime_given_failure>
+  
+    <success_termination_condition>
+    <formula_condition key_description="at_goal">
+      <expression value="distance_to_goal" />
+      <operator type="less_equal" />
+      <expression value="required_distance" />
+    </formula_condition>
+  </success_termination_condition>
+
+  <failure_termination_condition>
+    <formula_condition key_description="off_road">
+      <expression value="vehicle_off_road" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </failure_termination_condition>
+  
+</plps:achieve_plp>

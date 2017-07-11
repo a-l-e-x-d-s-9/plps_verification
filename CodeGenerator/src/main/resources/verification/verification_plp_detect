@@ -1,0 +1,105 @@
+
+	<template>
+		<name>[<[plp_name]>]</name>
+		<parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+[<[declarations]>]
+
+		</declaration>
+		<location id="id137" x="1105" y="-136">
+			<name x="1049" y="-126">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id124" x="1445" y="-136">
+			<name x="1429" y="-176">end</name>
+			<urgent/>
+		</location>
+
+		<location id="id126" x="-578" y="-136">
+			<name x="-594" y="-176">start</name>
+		</location>
+		<location id="id128" x="-433" y="-136">
+			<name x="-476" y="-178">synced</name>
+			<urgent/>
+		</location>
+		<location id="id129" x="451" y="-136">
+			<name x="408" y="-170">main_done</name>
+			<urgent/>
+		</location>
+		<location id="id130" x="102" y="-136">
+			<name x="93" y="-170">main_success</name>
+[<[main_success_labels]>]
+		</location>
+
+		<location id="id131" x="-136" y="-136">
+			<name x="-331" y="-195">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id135" x="-102" y="-136">
+            <name x="-127" y="-195">access_memory_end_0</name>
+            <urgent/>
+        </location>
+
+		<location id="id132" x="561" y="-136">
+			<name x="416" y="-170">access_memory_start_1</name>
+			<urgent/>
+		</location>
+		<location id="id136" x="595" y="-136">
+            <name x="620" y="-170">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+		<location id="id134" x="-288" y="-136">
+            <name x="-298" y="-146">checked</name>
+            <urgent/>
+        </location>
+[<[locations]>]
+
+[<[branchpoints]>]
+
+
+		<init ref="id126"/>
+[<[transitions]>]
+
+[<[termination_success_notify_transitions]>]
+
+		<!--transition>
+			<source ref="id136"/>
+			<target ref="id124"/>
+			<label kind="assignment" x="646" y="-127">[<[goal]>]</label>
+		</transition-->
+		<transition>
+			<source ref="id124"/>
+			<target ref="id126"/>
+			<label kind="synchronisation" x="-560" y="203">control_plp_done[id]!</label>
+			<nail x="1445" y="238"/>
+			<nail x="-578" y="238"/>
+		</transition>
+		<transition>
+			<source ref="id126"/>
+			<target ref="id128"/>
+			<label kind="synchronisation" x="-561" y="-161">control_plp_start[id]?</label>
+		</transition>
+		<transition controllable="false">
+			<source ref="id128"/>
+			<target ref="id134"/>
+			<label kind="guard" x="-603" y="-212">[<[precondition]>]</label>
+			<label kind="assignment" x="-416" y="-119">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id129"/>
+			<target ref="id132"/>
+		</transition>
+
+		<transition>
+			<source ref="id130"/>
+			<target ref="id129"/>
+		</transition>
+
+		<transition>
+            <source ref="id136"/>
+            <target ref="id137"/>
+        </transition>
+	</template>

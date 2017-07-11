@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<xs:element name="configurations">
+   <xs:complexType>
+    <xs:sequence>
+
+      <xs:element name="setting" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="name"       type="xs:string"  use="required"/>
+          <xs:attribute name="value"      type="xs:string"  use="required"/>
+        </xs:complexType>
+      </xs:element>
+            
+      <xs:element name="variable" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="name"                 type="xs:string"    use="required"/>
+          <xs:attribute name="value"                type="xs:string"    use="required" />
+          <xs:attribute name="min_value"            type="xs:string"    use="optional"/>
+          <xs:attribute name="max_value"            type="xs:string"    use="optional"/>
+          <xs:attribute name="is_exclusive_access"  type="xs:boolean"   use="optional"/>
+        </xs:complexType>
+      </xs:element>
+            
+      <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="plp_name"             type="xs:string"    use="required"/>
+          <xs:attribute name="name"                 type="xs:string"    use="required"/>
+          <xs:attribute name="value"                type="xs:string"    use="required" />
+          <xs:attribute name="min_value"            type="xs:string"    use="optional"/>
+          <xs:attribute name="max_value"            type="xs:string"    use="optional"/>
+          <xs:attribute name="is_exclusive_access"  type="xs:boolean"   use="optional"/>
+        </xs:complexType>
+      </xs:element>
+
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+</xs:schema>

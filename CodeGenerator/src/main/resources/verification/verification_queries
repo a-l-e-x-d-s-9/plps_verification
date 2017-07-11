@@ -1,0 +1,15 @@
+	<queries>
+		<query>
+			<formula>E&lt;&gt; node_condition_2_process.main
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=10000] ( &lt;&gt; node_condition_2_process.main  )
+			</formula>
+			<comment>
+			</comment>
+		</query>
+	</queries>
+</nta>

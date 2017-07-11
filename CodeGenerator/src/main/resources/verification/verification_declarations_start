@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>
+
+typedef struct
+{
+    int     bound_lower;
+    int     bound_upper;
+    bool    is_single_range;
+    bool    is_active;
+    int     variable_id;
+    bool    satisfied;
+    bool    is_exclusive;
+} concurrent_request_type;
+
+typedef struct
+{
+    int     value;
+    bool    is_set;
+} concurrent_data_type;
+
+const int SCHEDULER_PROCESSES_AMOUNT    = [<[processes_amount]>];
+const int CONCURRENT_DATA_AMOUNT        = [<[concurrent_data_amount]>];
+const int CONCURRENT_REQUESTS_AMOUNT    = [<[concurrent_requests_amount]>];
+int concurrent_select = 0;
+const int INVALID_REQUEST_ID            = -1;
+
+typedef struct
+{
+    concurrent_data_type    concurrent_data[ CONCURRENT_DATA_AMOUNT ];
+    concurrent_request_type concurrent_requests[ CONCURRENT_REQUESTS_AMOUNT ];
+    bool                    is_process_would_like_to_access[ SCHEDULER_PROCESSES_AMOUNT ];
+    int                     requests_amount;
+} concurrent_info_type;
+
+broadcast chan concurrent_notify[ CONCURRENT_DATA_AMOUNT ];
+
+concurrent_info_type concurrent_info;
+
+broadcast chan concurrent_lock_process[ SCHEDULER_PROCESSES_AMOUNT ];
+
+broadcast chan concurrent_init_main;
+broadcast chan concurrent_can_run;
+broadcast chan concurrent_lock_release;
+
+bool concurrent_done = false;
+
+
+void concurrent_init()
+{
+    for ( request_id : int[ 0, CONCURRENT_REQUESTS_AMOUNT - 1 ])
+    {
+        concurrent_info.concurrent_requests[ request_id ].is_active     = false;
+        concurrent_info.concurrent_requests[ request_id ].satisfied     = true;
+        concurrent_info.concurrent_requests[ request_id ].is_exclusive  = false;
+    }
+    
+    for ( process_id : int[ 0, SCHEDULER_PROCESSES_AMOUNT - 1 ])
+    {
+        concurrent_info.is_process_would_like_to_access[ process_id ] = false;
+    }
+
+    for ( variable_id : int[ 0, CONCURRENT_DATA_AMOUNT - 1 ])
+    {
+        concurrent_info.concurrent_data[ variable_id ].is_set = false;
+    }
+
+    concurrent_info.requests_amount = 0;
+}
+
+void concurrent_satisfied_update_request_single( int variable_id, int request_index ){
+    int value = concurrent_info.concurrent_data[variable_id].value;
+
+    if ( ( variable_id == concurrent_info.concurrent_requests[request_index].variable_id ) &amp;&amp;
+         ( true == concurrent_info.concurrent_requests[request_index].is_active ) ){
+        
+        if ( true == concurrent_info.concurrent_requests[request_index].is_single_range )
+        {
+            concurrent_info.concurrent_requests[request_index].satisfied = concurrent_info.concurrent_requests[request_index].satisfied &amp;&amp;
+                ( ( concurrent_info.concurrent_requests[request_index].bound_lower &lt;= value ) &amp;&amp;
+                  ( value &lt;= concurrent_info.concurrent_requests[request_index].bound_upper ) );
+        }
+        else
+        {
+            concurrent_info.concurrent_requests[request_index].satisfied = concurrent_info.concurrent_requests[request_index].satisfied &amp;&amp;
+                ( ( value &lt;= concurrent_info.concurrent_requests[request_index].bound_lower  ) ||
+                  ( concurrent_info.concurrent_requests[request_index].bound_upper &lt;= value ) );
+        }
+    }
+    
+}
+
+void concurrent_satisfied_update_request_all( int variable_id ){
+    if ( 0 &lt; concurrent_info.requests_amount ){
+        int value = concurrent_info.concurrent_data[ variable_id ].value;
+
+        for ( i : int[0, CONCURRENT_REQUESTS_AMOUNT - 1] )
+        {
+            concurrent_satisfied_update_request_single( variable_id, i );
+        }
+    }
+}
+
+int concurrent_request_add( int variable_id, concurrent_request_type &amp;request){
+    int     i           = 0;
+    bool    found       = false;
+    int     added_index = INVALID_REQUEST_ID;
+
+    while( ( false == found                      ) &amp;&amp;
+           ( i &lt; CONCURRENT_REQUESTS_AMOUNT ) )
+    {
+        if ( false == concurrent_info.concurrent_requests[ i ].is_active )
+        {
+            concurrent_info.concurrent_requests[i]             = request;
+            concurrent_info.concurrent_requests[i].satisfied   = true;
+            concurrent_info.concurrent_requests[i].is_active   = true;
+            concurrent_info.concurrent_requests[i].variable_id = variable_id;
+
+            concurrent_satisfied_update_request_single( variable_id, i );
+            
+            found = true;
+
+            added_index = i;
+
+            concurrent_info.requests_amount++;
+        }
+        else
+        {
+            i++;
+        }
+    }
+
+    return added_index;
+}
+
+bool concurrent_request_remove_request( int request_index ){
+    if ( true == concurrent_info.concurrent_requests[request_index].is_active ){
+        
+        concurrent_info.concurrent_requests[request_index].is_active = false;
+
+        concurrent_info.requests_amount--;
+    }
+
+    return concurrent_info.concurrent_requests[request_index].satisfied;
+}
+
+bool concurrent_is_satisfied( int request_index ){
+    return concurrent_info.concurrent_requests[request_index].satisfied;
+}
+
+int concurrent_read( int variable_id ){
+    if ( true == concurrent_info.concurrent_data[ variable_id ].is_set )
+    {
+        return concurrent_info.concurrent_data[ variable_id ].value;
+    }
+    else
+    {
+        return 0 / 0;
+    }
+}
+
+void concurrent_write( int variable_id, int value ){
+    concurrent_info.concurrent_data[ variable_id ].is_set = true;
+    concurrent_info.concurrent_data[ variable_id ].value  = value;
+    
+    concurrent_satisfied_update_request_all( variable_id );
+}
+
+void concurrent_signal_access(  int process_id, bool value ){
+    
+    concurrent_info.is_process_would_like_to_access[ process_id ] = value;
+}
+
+const int CONTROL_NODES_AMOUNT          = [<[CONTROL_NODES_AMOUNT]>];
+const int CONTROL_NODES_CAN_RUN_AMOUNT  = [<[CONTROL_NODES_CAN_RUN_AMOUNT]>];
+
+broadcast chan control_plp_start    [ CONCURRENT_DATA_AMOUNT        ];
+broadcast chan control_plp_done     [ CONCURRENT_DATA_AMOUNT        ];
+broadcast chan control_node_notify  [ CONTROL_NODES_AMOUNT          ];
+bool           control_node_can_run [ CONTROL_NODES_CAN_RUN_AMOUNT  ];
+

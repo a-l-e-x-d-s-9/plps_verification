@@ -1,0 +1,222 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<control_graph
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="control_graph.xsd">
+
+<root root_name="node_probability_1"/>
+
+
+<node_probability   node_name="node_probability_1" start_policy="any_predecessor_done" wait_time="1">
+  <probability_for_successor_node probability="0.1" node_name="node_probability_2">
+    <update>
+      <formula_condition key_description="update variables">
+        <expression value="distance_to_goal" />
+        <operator type="="/>
+        <expression value="2" />
+      </formula_condition>
+    </update>
+    <update>
+      <formula_condition key_description="update variables">
+        <expression value="tmp_var" />
+        <operator type="="/>
+        <expression value="11" />
+      </formula_condition>
+    </update>
+  </probability_for_successor_node>
+  <probability_for_successor_node probability="0.8" node_name="node_probability_3"/>
+  <probability_for_successor_node probability="0.03" node_name="node_probability_3"/>
+  <probability_for_successor_node probability="0.03" node_name="node_probability_3"/>
+  <probability_for_successor_node probability="0.04" node_name="node_probability_3"/>
+</node_probability>
+
+<node_probability   node_name="node_probability_2" start_policy="any_predecessor_done" wait_time="2">
+    <probability_for_successor_node probability="1" node_name="node_probability_4"/>
+</node_probability>
+<node_probability   node_name="node_probability_3" start_policy="any_predecessor_done" wait_time="3">
+    <probability_for_successor_node probability="1" node_name="node_probability_4"/>
+</node_probability>
+<node_probability   node_name="node_probability_4" start_policy="node_probability_4" wait_time="4">
+    <probability_for_successor_node probability="1" node_name="node_concurrent_1"/>
+</node_probability>
+
+<node_concurrent   node_name="node_concurrent_1" start_policy="any_predecessor_done" wait_time="3">
+    <run_node node_name="node_concurrent_2"/>
+    <run_node node_name="node_concurrent_3"/>
+    <run_node node_name="node_concurrent_4"/>
+</node_concurrent>
+<node_concurrent   node_name="node_concurrent_2" start_policy="all_predecessor_done" wait_time="2">
+</node_concurrent>
+<node_concurrent   node_name="node_concurrent_3" start_policy="all_predecessor_done" wait_time="5">
+</node_concurrent>
+<node_concurrent   node_name="node_concurrent_4" start_policy="all_predecessor_done" wait_time="1">
+    <update>
+      <formula_condition key_description="update variables">
+        <expression value="energy_consumed" />
+        <operator type="="/>
+        <expression value="3" />
+      </formula_condition>
+    </update>
+    <run_node node_name="node_sequential_1"/>
+    <run_node node_name="node_sequential_2"/>
+</node_concurrent>
+
+<node_sequential   node_name="node_sequential_1" start_policy="any_predecessor_done" next_node_name="node_condition_1">
+    <run_plp plp_name="maintain_direction_on_map" wait_time="4">
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="distance_to_goal" />
+            <operator type="="/>
+            <expression value="9" />
+          </formula_condition>
+        </update>
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="runtime_given_path_length" />
+            <operator type="="/>
+            <expression value="3" />
+          </formula_condition>
+        </update>
+        <update>
+          <formula_condition key_description="free_path">
+            <expression value="_maintain_direction_on_map_path_free" />
+            <operator type="=" />
+            <expression value="TRUE" />
+          </formula_condition>
+        </update>
+    </run_plp>
+    <!--run_plp plp_name="detect_wall" wait_time="0">
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="distance_to_goal" />
+            <operator type="="/>
+            <expression value="8" />
+          </formula_condition>
+        </update>
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="runtime_given_path_length" />
+            <operator type="="/>
+            <expression value="2" />
+          </formula_condition>
+        </update>
+        <update>
+          <formula_condition key_description="free_path">
+            <expression value="_maintain_direction_on_map_path_free" />
+            <operator type="=" />
+            <expression value="TRUE" />
+          </formula_condition>
+        </update>
+    </run_plp-->
+</node_sequential>
+
+<node_sequential   node_name="node_sequential_2" start_policy="any_predecessor_done" next_node_name="node_condition_1">
+    <run_plp plp_name="achieve_walk_given_distance" wait_time="2">
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="distance_to_goal" />
+            <operator type="="/>
+            <expression value="9" />
+          </formula_condition>
+        </update>
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="runtime_given_path_length" />
+            <operator type="="/>
+            <expression value="3" />
+          </formula_condition>
+        </update>
+        <update>
+          <formula_condition key_description="free_path">
+            <expression value="_maintain_direction_on_map_path_free" />
+            <operator type="=" />
+            <expression value="TRUE" />
+          </formula_condition>
+        </update>
+    </run_plp>
+    <run_plp plp_name="observe_gateway" wait_time="1">
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="distance_to_goal" />
+            <operator type="="/>
+            <expression value="8" />
+          </formula_condition>
+        </update>
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="runtime_given_path_length" />
+            <operator type="="/>
+            <expression value="2" />
+          </formula_condition>
+        </update>
+        <update>
+          <formula_condition key_description="free_path">
+            <expression value="_maintain_direction_on_map_path_free" />
+            <operator type="=" />
+            <expression value="TRUE" />
+          </formula_condition>
+        </update>
+    </run_plp>
+</node_sequential>
+
+<node_condition   node_name="node_condition_1" start_policy="all_predecessor_done" wait_time="1">
+    <run_node node_name="node_condition_2">
+        <preconditions>
+            <formula_condition key_description="condition test">
+              <expression value="energy_consumed" />
+              <operator type="="/>
+              <expression value="3" />
+            </formula_condition>
+            <formula_condition key_description="update variables">
+              <expression value="tmp_var" />
+              <operator type="="/>
+              <expression value="11" />
+            </formula_condition>
+        </preconditions>
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="distance_to_goal" />
+            <operator type="="/>
+            <expression value="1" />
+          </formula_condition>
+        </update>
+    </run_node>
+    <run_node node_name="node_condition_2">
+        <preconditions>
+            <OR>
+                <formula_condition key_description="condition test">
+                  <expression value="energy_consumed" />
+                  <operator type="="/>
+                  <expression value="3" />
+                </formula_condition>
+                <formula_condition key_description="update variables">
+                  <expression value="tmp_var" />
+                  <operator type="="/>
+                  <expression value="12" />
+                </formula_condition>
+            </OR>
+        </preconditions>
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="vehicle_off_road" />
+            <operator type="="/>
+            <expression value="1" />
+          </formula_condition>
+        </update>
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="distance_to_goal" />
+            <operator type="="/>
+            <expression value="1" />
+          </formula_condition>
+        </update>
+    </run_node>
+</node_condition>
+
+
+<node_condition   node_name="node_condition_2" start_policy="all_predecessor_done" wait_time="1">
+</node_condition>
+
+
+
+</control_graph>

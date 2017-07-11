@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<configurations
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="configurations.xsd">
+
+<setting   name="precision_multiplier_for_numbers_and_time"         value="100"/>
+<setting   name="observe_variable_samples"                          value="10"/>
+<setting   name="run_time_amount_of_intervals_for_discretization"   value="5"/>
+
+<variable  name="current_angle"                         value="0.15" min_value="0.11"   max_value="0.19"    is_exclusive_access="true"  />
+<variable  name="tmp_var"                               value="7"    min_value="6"      max_value="13"      is_exclusive_access="false" />
+<variable  name="fuel"                                  value="10" />
+<variable  name="req_linear_speed"                      value="1" />
+<variable  name="req_angular_speed"                     value="2" />
+<variable  name="at(areaA)"                             value="1" />
+<variable  name="connected(areaA,areaB,gateway)"        value="1" />
+<variable  name="initial_distance_to_wall"              value="3" />
+<variable  name="required_distance"                     value="0" />
+<variable  name="max_allowed_change_rate"               value="0" />
+<variable  name="wet_path()"                            value="0" />
+<variable  name="current_position"                      value="0" />
+<variable  name="begin_point_angle"                     value="0" />
+<variable  name="begin_point_position"                  value="0" />
+<variable  name="collision_alert"                       value="0" />
+<variable  name="arm_moving"                            value="0" />
+<variable  name="energy_consumed"                       value="0" />
+<variable  name="distance_to_target"                    value="0" />
+<variable  name="robot_at_target"                       value="0" />
+<variable  name="finished_not_at_target"                value="0" />
+<variable  name="aspeed_offset"                         value="0" />
+<variable  name="lspeed_offset"                         value="0" />
+<variable  name="distance_offset"                       value="0" />
+<variable  name="angle_offset"                          value="0" />
+<variable  name="current_linear_speed"                  value="0" />
+<variable  name="current_angular_speed"                 value="0" />
+<variable  name="begin_point_angle"                     value="0" />
+<variable  name="begin_point_position"                  value="0" />
+<variable  name="collision_alert"                       value="0" />
+<variable  name="arm_moving"                            value="0" />
+<variable  name="energy_consumed"                       value="0" />
+<variable  name="distance_to_target"                    value="0" />
+<variable  name="robot_at_target"                       value="0" />
+<variable  name="finished_not_at_target"                value="0" />
+<variable  name="achieve_walk_given_distance_repeat"    value="0" />
+<variable  name="gas_consumed"                          value="0" />
+<variable  name="current_path_direction"                value="0" />
+<variable  name="current_robot_direction"               value="0" />
+<variable  name="distance_to_goal"                      value="0" />
+<variable  name="runtime_given_path_length"             value="0" />
+<variable  name="vehicle_off_road"                      value="0" />
+<variable  name="begin_Aspeed"                          value="0" />
+<variable  name="begin_Lspeed"                          value="0" />
+<variable  name="observe_gateway_repeat"                value="0" />
+<variable  name="distance_to_wall"                      value="0" />
+
+<parameter plp_name="detect_wall"                       name="laser_scan"                       value="0" />
+<parameter plp_name="detect_wall"                       name="output"                           value="0" />
+<parameter plp_name="observe_gateway"                   name="gateway_location"                 value="1.23" min_value="1.23" max_value="1.3"  />
+<parameter plp_name="observe_gateway"                   name="clear_path"                       value="0.01" min_value="0"    max_value="0.01" />
+<parameter plp_name="achieve_walk_given_distance"       name="clear_path"                       value="0.01" min_value="0"    max_value="0.01" />
+<parameter plp_name="achieve_walk_given_distance"       name="linear_distance"                  value="0.01" />
+<parameter plp_name="achieve_walk_given_distance"       name="angular_distance"                 value="0.01" />
+<parameter plp_name="maintain_direction_on_map"         name="max_change_rate_path_tangent"     value="0" />
+<parameter plp_name="observe_gateway"                   name="rgb_image"                        value="0" />
+<parameter plp_name="observe_gateway"                   name="odometry"                         value="0" />
+<parameter plp_name="observe_gateway"                   name="arm_controller"                   value="0" />
+<parameter plp_name="observe_gateway"                   name="areaA"                            value="0" />
+<parameter plp_name="observe_gateway"                   name="areaB"                            value="0" />
+<parameter plp_name="observe_gateway"                   name="gateway"                          value="0" />
+<parameter plp_name="observe_gateway"                   name="gateway_blocked"                  value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="map"                              value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="gas_level"                        value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="odometry"                         value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="goal_location"                    value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="path_free"                        value="0" />
+<parameter plp_name="achieve_walk_given_distance"       name="laser_scan"                       value="0" />
+<parameter plp_name="achieve_walk_given_distance"       name="odometry"                         value="0" />
+<parameter plp_name="achieve_walk_given_distance"       name="energy_level"                     value="0" />
+<parameter plp_name="achieve_walk_given_distance"       name="result"                           value="0" />
+
+</configurations>

@@ -1,0 +1,108 @@
+	<template>
+		<name>concurrent</name>
+		<parameter></parameter>
+		<declaration>
+		int process_access_granted_id = -1;
+		clock time;
+        </declaration>
+		<location id="id68" x="-1156" y="-204">
+			<name x="-1198" y="-246">init_state</name>
+		</location>
+		<location id="id69" x="-408" y="-34">
+			<name x="-433" y="-93">selected</name>
+			<urgent/>
+		</location>
+		<location id="id70" x="0" y="-34">
+			<name x="-68" y="-93">waiting_plp_done</name>
+		</location>
+		<location id="id71" x="-884" y="-34">
+			<name x="-909" y="-93">choose</name>
+			<urgent/>
+		</location>
+		<location id="id72" x="-1020" y="-34">
+			<name x="-1062" y="-93">wait_to_run</name>
+		</location>
+		<location id="id73" x="-374" y="306">
+			<name x="-382" y="255">released</name>
+			<urgent/>
+		</location>
+		<init ref="id68"/>
+		<transition>
+			<source ref="id70"/>
+			<target ref="id73"/>
+			<label kind="synchronisation" x="-348" y="289">concurrent_lock_release?</label>
+			<nail x="0" y="306"/>
+		</transition>
+		<transition>
+			<source ref="id73"/>
+			<target ref="id71"/>
+			<label kind="guard" x="-875" y="127">
+[<[ANY_ONE_WANTS_TO_ACCESS]>]
+            </label>
+			<nail x="-408" y="204"/>
+			<nail x="-884" y="204"/>
+		</transition>
+		<transition>
+			<source ref="id72"/>
+			<target ref="id71"/>
+			<label kind="synchronisation" x="-1028" y="-76">concurrent_can_run?</label>
+		</transition>
+		<transition>
+			<source ref="id68"/>
+			<target ref="id72"/>
+			<label kind="synchronisation" x="-1147" y="-161">concurrent_init_main?</label>
+			<label kind="assignment" x="-1138" y="-34">time = 0</label>
+			<nail x="-1156" y="-34"/>
+		</transition>
+		<transition>
+			<source ref="id69"/>
+			<target ref="id70"/>
+			<label kind="synchronisation" x="-391" y="-68">concurrent_lock_process[process_access_granted_id]!</label>
+		</transition>
+		<transition>
+			<source ref="id73"/>
+			<target ref="id72"/>
+			<label kind="guard" x="-1011" y="331">
+[<[NO_ONE_WANTS_TO_ACCESS]>]
+            </label>
+			<label kind="assignment" x="-1088" y="127">time = 0</label>
+			<nail x="-408" y="408"/>
+			<nail x="-1020" y="408"/>
+		</transition>
+[<[PROCESSES_TRANSITIONS_TO_CRITICAL]>]
+	</template>
+	<template>
+		<name>control_graph_init</name>
+		<declaration>clock local_time;</declaration>
+		<location id="id126" x="-272" y="-34">
+			<name x="-255" y="-51">start</name>
+			<urgent/>
+		</location>
+		<location id="id127" x="-272" y="170">
+			<name x="-255" y="153">concurrent_started</name>
+			<urgent/>
+		</location>
+		<location id="id128" x="-272" y="68">
+			<name x="-255" y="51">concurrent_data_initialized</name>
+			<urgent/>
+		</location>
+		<location id="id129" x="-272" y="272">
+		</location>
+		<init ref="id126"/>
+		<transition>
+			<source ref="id127"/>
+			<target ref="id129"/>
+			<label kind="synchronisation" x="-263" y="204">[<[CONTROL_NODE_ROOT_CHANNEL]>]</label>
+		</transition>
+		<transition>
+			<source ref="id128"/>
+			<target ref="id127"/>
+			<label kind="synchronisation" x="-263" y="110">concurrent_init_main!</label>
+		</transition>
+		<transition>
+			<source ref="id126"/>
+			<target ref="id128"/>
+			<label kind="assignment" x="-263" y="8">concurrent_init(),
+initialize_variables()</label>
+		</transition>
+	</template>

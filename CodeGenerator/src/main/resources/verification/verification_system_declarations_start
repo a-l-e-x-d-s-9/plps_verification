@@ -1,0 +1,4 @@
+	<system>// Place template instantiations here.
+
+concurrent_process         = concurrent();
+control_graph_init_process = control_graph_init();

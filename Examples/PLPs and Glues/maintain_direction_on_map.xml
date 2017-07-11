@@ -41,7 +41,7 @@
   </constants>
 
   <required_resources>
-    <resource name="fuel">
+    <resource name="fuel" quantity="0.12">
       <status type="exclusive"/>
     </resource>
     <resource name="steering_wheel">
@@ -88,13 +88,25 @@
   <maintained_condition>
     
     <formula_condition key_description="correct_path">
-      <expression value="current_path_direction" />
+      <expression value="tmp_var" />
+      <operator type="equal" />
+      <expression value="7.05" />
+      <!--expression value="current_path_direction" />
       <inside_range>
         <range min_value="current_robot_direction-path_offset" min_inclusive="true" max_value="current_robot_direction+path_offset" max_inclusive="true" />
-      </inside_range>
+      </inside_range-->
     </formula_condition>
     
     <initially_true />
+    <!--initially_false />
+    <time_until_true>
+        <distribution>
+          <uniform>
+            <lower_bound value="2" />
+            <upper_bound value="5" />
+          </uniform>
+        </distribution>
+    </time_until_true-->
   </maintained_condition>
 
   <success_termination_condition>
@@ -128,10 +140,14 @@
 
   <runtime_given_success>
     <distribution>
-      <uniform>
+      <!--uniform>
         <lower_bound value="runtime_given_path_length" />
         <upper_bound value="runtime_given_path_length" />
-      </uniform>
+      </uniform-->
+      <gamma>
+        <k-shape value="9" />
+        <alpha-shape value="0.5" />
+      </gamma>
     </distribution>
   </runtime_given_success>
     

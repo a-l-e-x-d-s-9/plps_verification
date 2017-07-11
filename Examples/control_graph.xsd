@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+
+  <xs:complexType name="conditions_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:choice minOccurs="0" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="forall_condition" type="forall_condition_type" />
+        <xs:element name="exists_condition" type="exists_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="and_or_condition_type">
+    <xs:sequence minOccurs="2" maxOccurs="unbounded">
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="forall_condition" type="forall_condition_type" />
+        <xs:element name="exists_condition" type="exists_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="predicate_type">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="field" type="field_type" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="formula_condition_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element name="expression" type="simple_value_type" />
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:sequence minOccurs="1" maxOccurs="1">
+          <xs:element name="operator">
+            <xs:complexType>
+              <xs:attribute name="type" type="operator_type" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="expression" type="simple_value_type" />
+        </xs:sequence>
+        <xs:sequence minOccurs="1" maxOccurs="1">
+          <xs:element name="inside_range">
+            <xs:complexType>
+              <xs:sequence minOccurs="1" maxOccurs="1">
+                <xs:element name="range" type="range_type" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="key_description" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="simple_value_type">
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:simpleType name="operator_type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="=" />
+      <xs:enumeration value="!=" />
+      <xs:enumeration value="less" />
+      <xs:enumeration value="less_equal" />
+      <xs:enumeration value="greater" />
+      <xs:enumeration value="greater_equal" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="not_condition_type">
+    <xs:choice minOccurs="1" maxOccurs="1">
+      <xs:element name="predicate_condition" type="predicate_type" />
+      <xs:element name="forall_condition" type="forall_condition_type" />
+      <xs:element name="exists_condition" type="exists_condition_type" />
+      <xs:element name="AND" type="and_or_condition_type" />
+      <xs:element name="OR" type="and_or_condition_type" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="forall_condition_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="param">
+          <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="exists_condition" type="exists_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="exists_condition_type">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="param">
+          <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element name="predicate_condition" type="predicate_type" />
+        <xs:element name="formula_condition" type="formula_condition_type" />
+        <xs:element name="forall_condition" type="forall_condition_type" />
+        <xs:element name="not_condition" type="not_condition_type" />
+        <xs:element name="AND" type="and_or_condition_type" />
+        <xs:element name="OR" type="and_or_condition_type" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="field_type">
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="range_type">
+    <xs:attribute name="min_value" type="xs:string" use="required" />
+    <xs:attribute name="min_inclusive" type="xs:boolean" use="required" />
+    <xs:attribute name="max_value" type="xs:string" use="required" />
+    <xs:attribute name="max_inclusive" type="xs:boolean" use="required" />
+  </xs:complexType>
+
+
+
+
+
+<xs:simpleType name="type_start_policy">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="all_predecessor_done" />
+    <xs:enumeration value="any_predecessor_done" />
+  </xs:restriction>
+</xs:simpleType>
+  
+<xs:element name="control_graph">
+  <xs:complexType>
+    <xs:sequence>
+      
+      <xs:element name="root">
+        <xs:complexType>
+          <xs:attribute name="root_name" type="xs:string"   use="required"/>
+        </xs:complexType>
+      </xs:element>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        
+        <xs:element name="node_probability">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="probability_for_successor_node" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="update" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="formula_condition" type="formula_condition_type" minOccurs="1" maxOccurs="1" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="probability"  type="xs:string"   use="required"/>
+                  <xs:attribute name="node_name"    type="xs:string"   use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="node_name"      type="xs:ID"                use="required"/>
+            <xs:attribute name="start_policy"   type="type_start_policy"    use="required"/>
+            <xs:attribute name="wait_time"      type="xs:string"            use="optional"/>
+          </xs:complexType>
+        </xs:element>
+                
+        <xs:element name="node_concurrent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="update" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="formula_condition" type="formula_condition_type" minOccurs="1" maxOccurs="1" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="run_node" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="node_name"   type="xs:string"   use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="node_name"      type="xs:ID"                use="required"/>
+            <xs:attribute name="start_policy"   type="type_start_policy"    use="required"/>
+            <xs:attribute name="wait_time"      type="xs:string"            use="optional"/>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="node_sequential">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="run_plp" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="update" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="formula_condition" type="formula_condition_type" minOccurs="1" maxOccurs="1" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="plp_name"   type="xs:string"   use="required"/>
+                  <xs:attribute name="wait_time"  type="xs:string"   use="optional"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="node_name"      type="xs:ID"                use="required"/>
+            <xs:attribute name="start_policy"   type="type_start_policy"    use="required"/>
+            <xs:attribute name="next_node_name" type="xs:string"            use="optional"/>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="node_condition">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="run_node" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="preconditions" type="conditions_type" minOccurs="1" maxOccurs="1" />
+                    <xs:element name="update" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="formula_condition" type="formula_condition_type" minOccurs="1" maxOccurs="1" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="node_name"    type="xs:string"   use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="node_name"             type="xs:ID"                use="required"/>
+            <xs:attribute name="start_policy"   type="type_start_policy"    use="required"/>
+            <xs:attribute name="wait_time"      type="xs:string"            use="optional"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+</xs:schema>

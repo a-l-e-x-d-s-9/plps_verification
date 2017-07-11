@@ -80,7 +80,8 @@
   </concurrency_conditions>
 
   <concurrent_modules>
-    <module name="walk_through_gateway" concurrency_type="mutex" />
+    <module name="achieve_walk_given_distance" concurrency_type="mutex" />
+    <!--module name="detect_wall" concurrency_type="parallel" /-->
   </concurrent_modules>
 
   <side_effects>
@@ -99,7 +100,7 @@
     <conditional_probability>
       <OR>
         <formula_condition key_description="blocked_gateway">
-          <expression value="gateway_blocked "/>
+          <expression value="gateway_blocked"/>
           <operator type="="/>
           <expression value="TRUE" />
         </formula_condition>
@@ -137,6 +138,10 @@
 
   <runtime_given_success>
     <distribution>
+      <!--uniform>
+        <lower_bound value="0" />
+        <upper_bound value="20" />
+      </uniform-->
       <normal>
         <mean value="8" />
         <variance value="5" />
@@ -152,5 +157,14 @@
       </uniform>
     </distribution>
   </runtime_given_failure>
+ 
+
+  <failure_termination_condition>
+    <formula_condition key_description="off_road">
+      <expression value="vehicle_off_road" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </failure_termination_condition>
  
 </plps:observe_plp>
