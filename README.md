@@ -43,7 +43,10 @@ After running the previous line, fill in the problem.pddl file with the goal and
 
 > java -jar CodeGenerator.jar -monitor [plp-folder-path]
 ccc
-### Create verification project for UPPAAL
+
+## Verification
+
+### Generate verification project for UPPAAL
 
 > java -jar CodeGenerator.jar -verify [plp-folder-path] [control-graph] [generated-project-for-uppaal] [configuration-file]
 
