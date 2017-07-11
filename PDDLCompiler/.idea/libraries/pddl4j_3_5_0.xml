@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="pddl4j-3.5.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/pddl4j-3.5.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/pddl4j-3.5.0.jar!/" />
+    </SOURCES>
+  </library>
+</component>

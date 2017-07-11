@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PDDLCompiler:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/PDDLCompiler_jar</output-path>
+    <root id="archive" name="PDDLCompiler.jar">
+      <element id="module-output" name="PDDLCompiler" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../PLPLib/out/artifacts/PLPLib_jar/PLPLib.jar" path-in-jar="/" />
+      <element id="directory" name="META-INF">
+        <element id="dir-copy" path="$PROJECT_DIR$/src/main/java/META-INF" />
+      </element>
+      <element id="extracted-dir" path="$PROJECT_DIR$/pddl4j-3.5.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

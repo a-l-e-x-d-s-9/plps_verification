@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="PLPLib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../PLPLib/out/artifacts/PLPLib_jar/PLPLib.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
