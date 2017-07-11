@@ -9,6 +9,8 @@ import fr.uga.pddl4j.parser.Op;
 import fr.uga.pddl4j.parser.Parser;
 import loader.PLPLoader;
 import modules.*;
+import verification.VerificationException;
+import verification.VerificationManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -59,6 +61,34 @@ public class CodeGenerator {
             generateCMakeLists(path+packageName, true);
             generatePackageXMLFile(path+packageName, true);
             copyResourceFile("PLPMessage.msg", path+packageName+pathBreak+"msg"+pathBreak);
+        }
+        else if ( ( args.length >= 4                  ) &&
+                  ( true == args[0].equals("-verify") ) ) {
+
+            String path = args[1];
+
+            pathBreak = path.contains("\\") ? "\\" : "/";
+
+            // Complete path with with '/' or '\' according to what to OS uses
+            if (!path.endsWith(pathBreak)) {
+                path = path.concat(pathBreak);
+            }
+
+            PLPLoader.loadFromDirectory(path);
+
+            final int ARGUMENT_INDEX_CONTROL_GRAPH      = 2;
+            final int ARGUMENT_INDEX_OUTPUT_UPPAAL_FILE = 3;
+            final int ARGUMENT_INDEX_CONFIGURATION_FILE = 4;
+
+
+            VerificationManager verification = new VerificationManager( args[ARGUMENT_INDEX_CONTROL_GRAPH],
+                    args[ARGUMENT_INDEX_OUTPUT_UPPAAL_FILE], args[ARGUMENT_INDEX_CONFIGURATION_FILE] );
+            try{
+                verification.create_system();
+            } catch ( VerificationException exception ) {
+                System.err.println( "exception:" + exception.get_message() );
+            }
+
         }
         else if (args.length > 3 && args[0].equals("-dispatcher")) {
             String plpPath = args[2];

@@ -622,7 +622,7 @@ public class PLPLoader {
         conditions.forEach(plp::addPreCondition);
     }
 
-    private static List<Condition> parseConditions(Element conditionsNode) {
+    public static List<Condition> parseConditions(Element conditionsNode) {
         List<Condition> result = new LinkedList<>();
         NodeList childNodes = conditionsNode.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
@@ -699,10 +699,12 @@ public class PLPLoader {
             String rightExp = ((Element) expressions.item(1)).getAttribute("value");
             NodeList operators = formulaElement.getElementsByTagName("operator");
             String operator = ((Element) operators.item(0)).getAttribute("type");
-            operator = operator.replace("less","<");
-            operator = operator.replace("greater",">");
+
             operator = operator.replace("less_equal","<=");
             operator = operator.replace("greater_equal",">=");
+            operator = operator.replace("less","<");
+            operator = operator.replace("greater",">");
+
             f = new Formula(leftExp,rightExp,operator);
         }
         f.setDescription(formulaElement.getAttribute("key_description"));
@@ -743,8 +745,8 @@ public class PLPLoader {
                         plpRR.setFrequency(Double.parseDouble(currStatus.getAttribute("frequency")));
                     if (currStatus.hasAttribute("duration"))
                         plpRR.setDuration(Double.parseDouble(currStatus.getAttribute("duration")));
-                    if (currStatus.hasAttribute("quantity"))
-                        plpRR.setQuantity(Double.parseDouble(currStatus.getAttribute("quantity")));
+                    if (currResource.hasAttribute("quantity"))
+                        plpRR.setQuantity(Double.parseDouble(currResource.getAttribute("quantity")));
                 } catch (Exception e) {
                     throw new NumberFormatException("Required Resource " + plpRR.getName() +
                             " has frequency/duration/quantity that is not a real number");

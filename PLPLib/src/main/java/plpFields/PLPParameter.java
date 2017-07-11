@@ -1,7 +1,5 @@
 package plpFields;
 
-import modules.PLP;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -81,7 +79,6 @@ public class PLPParameter implements ObservationGoal {
         }
         return sb.toString();
     }
-
 
     public static PLPParameter createParamFromString(String param) {
         if (!param.matches(PLPParameterRegex))

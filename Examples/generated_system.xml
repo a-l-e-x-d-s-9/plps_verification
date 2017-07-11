@@ -20,9 +20,9 @@ typedef struct
     bool    is_set;
 } concurrent_data_type;
 
-const int SCHEDULER_PROCESSES_AMOUNT    = 17;
-const int CONCURRENT_DATA_AMOUNT        = 82;
-const int CONCURRENT_REQUESTS_AMOUNT    = 12;
+const int SCHEDULER_PROCESSES_AMOUNT    = 18;
+const int CONCURRENT_DATA_AMOUNT        = 91;
+const int CONCURRENT_REQUESTS_AMOUNT    = 14;
 int concurrent_select = 0;
 const int INVALID_REQUEST_ID            = -1;
 
@@ -236,104 +236,115 @@ concurrent_write( 25, 1 );
 // 026: robot_wheels
 // 027: _achieve_walk_given_distance_repeat
 concurrent_write( 27, 0 );
-// 028: gas_consumed
-concurrent_write( 28, 0 );
-// 029: current_path_direction
-concurrent_write( 29, 0 );
-// 030: current_robot_direction
-concurrent_write( 30, 0 );
-// 031: distance_to_goal
-concurrent_write( 31, 0 );
-// 032: runtime_given_path_length
-concurrent_write( 32, 0 );
-// 033: vehicle_off_road
-concurrent_write( 33, 0 );
-// 034: max_allowed_change_rate
-concurrent_write( 34, 0 );
-// 035: required_distance
+// 028: _walk_given_distance_laser_scan
+// 029: _walk_given_distance_odometry
+// 030: _walk_given_distance_energy_level
+// 031: _walk_given_distance_result
+// 032: _walk_given_distance_linear_distance
+// 033: _walk_given_distance_angular_distance
+// 034: _walk_given_distance_clear_path
+// 035: _walk_given_distance_repeat
 concurrent_write( 35, 0 );
-// 036: exception_distance
-// 037: path_offset
-// 038: _maintain_direction_on_map_2_map
-// 039: _maintain_direction_on_map_2_max_change_rate_path_tangent
-// 040: _maintain_direction_on_map_2_gas_level
-// 041: _maintain_direction_on_map_2_odometry
-// 042: _maintain_direction_on_map_2_goal_location
-// 043: _maintain_direction_on_map_2_path_free
-// 044: steering_wheel
-// 045: wet_path()
-concurrent_write( 45, 0 );
-// 046: damaged_vehicle()
-// 047: _maintain_direction_on_map_map
-concurrent_write( 47, 0 );
-// 048: _maintain_direction_on_map_max_change_rate_path_tangent
-concurrent_write( 48, 0 );
-// 049: _maintain_direction_on_map_gas_level
-concurrent_write( 49, 0 );
-// 050: _maintain_direction_on_map_odometry
-concurrent_write( 50, 0 );
-// 051: _maintain_direction_on_map_goal_location
-concurrent_write( 51, 0 );
-// 052: _maintain_direction_on_map_path_free
-concurrent_write( 52, 0 );
-// 053: fuel
-concurrent_write( 53, 1000 );
-// 054: begin_Aspeed
-concurrent_write( 54, 0 );
-// 055: begin_Lspeed
+// 036: gas_consumed
+concurrent_write( 36, 0 );
+// 037: current_path_direction
+concurrent_write( 37, 0 );
+// 038: current_robot_direction
+concurrent_write( 38, 0 );
+// 039: distance_to_goal
+concurrent_write( 39, 0 );
+// 040: runtime_given_path_length
+concurrent_write( 40, 0 );
+// 041: vehicle_off_road
+concurrent_write( 41, 0 );
+// 042: max_allowed_change_rate
+concurrent_write( 42, 0 );
+// 043: required_distance
+concurrent_write( 43, 0 );
+// 044: exception_distance
+// 045: path_offset
+// 046: _maintain_direction_on_map_2_map
+// 047: _maintain_direction_on_map_2_max_change_rate_path_tangent
+// 048: _maintain_direction_on_map_2_gas_level
+// 049: _maintain_direction_on_map_2_odometry
+// 050: _maintain_direction_on_map_2_goal_location
+// 051: _maintain_direction_on_map_2_path_free
+// 052: steering_wheel
+// 053: wet_path()
+concurrent_write( 53, 0 );
+// 054: damaged_vehicle()
+// 055: _maintain_direction_on_map_map
 concurrent_write( 55, 0 );
-// 056: _observe_gateway_rgb_image
+// 056: _maintain_direction_on_map_max_change_rate_path_tangent
 concurrent_write( 56, 0 );
-// 057: _observe_gateway_odometry
+// 057: _maintain_direction_on_map_gas_level
 concurrent_write( 57, 0 );
-// 058: _observe_gateway_arm_controller
+// 058: _maintain_direction_on_map_odometry
 concurrent_write( 58, 0 );
-// 059: _observe_gateway_gateway_location
-concurrent_write( 59, 123 );
-// 060: _observe_gateway_areaA
+// 059: _maintain_direction_on_map_goal_location
+concurrent_write( 59, 0 );
+// 060: _maintain_direction_on_map_path_free
 concurrent_write( 60, 0 );
-// 061: _observe_gateway_areaB
-concurrent_write( 61, 0 );
-// 062: _observe_gateway_gateway
+// 061: fuel
+concurrent_write( 61, 1000 );
+// 062: begin_Aspeed
 concurrent_write( 62, 0 );
-// 063: _observe_gateway_gateway_blocked
+// 063: begin_Lspeed
 concurrent_write( 63, 0 );
-// 064: _observe_gateway_clear_path
-concurrent_write( 64, 1 );
-// 065: at(areaA)
-concurrent_write( 65, 100 );
-// 066: connected(areaA,areaB,gateway)
-concurrent_write( 66, 100 );
-// 067: _observe_gateway_repeat
-concurrent_write( 67, 0 );
-// 068: distance_to_wall
+// 064: _observe_gateway_rgb_image
+concurrent_write( 64, 0 );
+// 065: _observe_gateway_odometry
+concurrent_write( 65, 0 );
+// 066: _observe_gateway_arm_controller
+concurrent_write( 66, 0 );
+// 067: _observe_gateway_gateway_location
+concurrent_write( 67, 123 );
+// 068: _observe_gateway_areaA
 concurrent_write( 68, 0 );
-// 069: initial_distance_to_wall
-concurrent_write( 69, 300 );
-// 070: lower_bound
-concurrent_write( 70, 50 );
-// 071: upper_bound
-concurrent_write( 71, 100 );
-// 072: _detect_wall_laser_scan
-concurrent_write( 72, 0 );
-// 073: _detect_wall_output
-concurrent_write( 73, 0 );
-// 074: _module_achieve_walk_given_distance
-concurrent_write( 74, 0 );
-// 075: _module_maintain_direction_on_map_2
+// 069: _observe_gateway_areaB
+concurrent_write( 69, 0 );
+// 070: _observe_gateway_gateway
+concurrent_write( 70, 0 );
+// 071: _observe_gateway_gateway_blocked
+concurrent_write( 71, 0 );
+// 072: _observe_gateway_clear_path
+concurrent_write( 72, 1 );
+// 073: at(areaA)
+concurrent_write( 73, 100 );
+// 074: connected(areaA,areaB,gateway)
+concurrent_write( 74, 100 );
+// 075: _observe_gateway_repeat
 concurrent_write( 75, 0 );
-// 076: _module_maintain_direction_on_map
+// 076: distance_to_wall
 concurrent_write( 76, 0 );
-// 077: _module_observe_gateway
-concurrent_write( 77, 0 );
-// 078: _module_detect_wall
-concurrent_write( 78, 0 );
-// 079: tmp_var
-concurrent_write( 79, 700 );
-// 080: achieve_walk_given_distance_repeat
+// 077: initial_distance_to_wall
+concurrent_write( 77, 300 );
+// 078: lower_bound
+concurrent_write( 78, 50 );
+// 079: upper_bound
+concurrent_write( 79, 100 );
+// 080: _detect_wall_laser_scan
 concurrent_write( 80, 0 );
-// 081: observe_gateway_repeat
+// 081: _detect_wall_output
 concurrent_write( 81, 0 );
+// 082: _module_achieve_walk_given_distance
+concurrent_write( 82, 0 );
+// 083: _module_walk_given_distance
+concurrent_write( 83, 0 );
+// 084: _module_maintain_direction_on_map_2
+concurrent_write( 84, 0 );
+// 085: _module_maintain_direction_on_map
+concurrent_write( 85, 0 );
+// 086: _module_observe_gateway
+concurrent_write( 86, 0 );
+// 087: _module_detect_wall
+concurrent_write( 87, 0 );
+// 088: tmp_var
+concurrent_write( 88, 700 );
+// 089: achieve_walk_given_distance_repeat
+concurrent_write( 89, 0 );
+// 090: observe_gateway_repeat
+concurrent_write( 90, 0 );
 }
 
 
@@ -573,7 +584,7 @@ int _variable_0008;
 			<source ref="id44"/>
 			<target ref="id31"/>
 			<label kind="guard" x="-601" y="-544">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
 			<nail x="-484" y="-544"/>
 			<nail x="-314" y="-544"/>
 		</transition>
@@ -581,8 +592,8 @@ int _variable_0008;
 			<source ref="id25"/>
 			<target ref="id31"/>
 			<label kind="guard" x="-601" y="-476">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="-493" y="-442">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="-493" y="-442">concurrent_notify[39]?</label>
 			<nail x="-484" y="-476"/>
 			<nail x="-314" y="-476"/>
 		</transition>
@@ -590,8 +601,8 @@ int _variable_0008;
 			<source ref="id25"/>
 			<target ref="id31"/>
 			<label kind="guard" x="-601" y="-408">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="-493" y="-374">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="-493" y="-374">concurrent_notify[43]?</label>
 			<nail x="-484" y="-408"/>
 			<nail x="-314" y="-408"/>
 		</transition>
@@ -599,8 +610,8 @@ int _variable_0008;
 			<source ref="id25"/>
 			<target ref="id43"/>
 			<label kind="guard" x="-535" y="-340">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="-493" y="-306">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="-493" y="-306">concurrent_notify[41]?</label>
 			<nail x="-484" y="-340"/>
 			<nail x="-314" y="-340"/>
 		</transition>
@@ -608,7 +619,7 @@ int _variable_0008;
 			<source ref="id44"/>
 			<target ref="id43"/>
 			<label kind="guard" x="-535" y="-272">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
 			<nail x="-484" y="-272"/>
 		</transition>
 		<transition>
@@ -635,7 +646,7 @@ _request_0001.variable_id        = 26</label>
 		<transition>
 			<source ref="id47"/>
 			<target ref="id48"/>
-			<label kind="synchronisation" x="-595" y="-1020">concurrent_notify[74]!</label>
+			<label kind="synchronisation" x="-595" y="-1020">concurrent_notify[82]!</label>
 		</transition>
 		<transition>
 			<source ref="id46"/>
@@ -645,7 +656,7 @@ _variable_0005 = concurrent_request_add( 7, _request_0000 ) ,
 // Make sure resource: robot_wheels not changing.
 _variable_0006 = concurrent_request_add( 26, _request_0001 ) ,
 // This module is running.
-concurrent_write( 74, 1 )</label>
+concurrent_write( 82, 1 )</label>
 		</transition>
 		<transition>
 			<source ref="id48"/>
@@ -684,7 +695,7 @@ _variable_0008 = 1</label>
 		<transition>
 			<source ref="id54"/>
 			<target ref="id55"/>
-			<label kind="synchronisation" x="-51" y="-1292">concurrent_notify[74]!</label>
+			<label kind="synchronisation" x="-51" y="-1292">concurrent_notify[82]!</label>
 			<nail x="17" y="-1224"/>
 		</transition>
 		<transition>
@@ -698,7 +709,7 @@ concurrent_write( 21, _variable_0007 ) ,
 // robot_at_target
 concurrent_write( 10, _variable_0008 ) ,
 // This module finished running.
-concurrent_write( 74, 0 )</label>
+concurrent_write( 82, 0 )</label>
 		</transition>
 		<transition>
 			<source ref="id55"/>
@@ -760,6 +771,370 @@ concurrent_write( 74, 0 )</label>
 			<source ref="id23"/>
 			<target ref="id28"/>
 			<label kind="guard" x="-1104" y="-331">true == concurrent_read( 27 )</label>
+			<label kind="assignment" x="-1104" y="-306">local_time = 0</label>
+			<nail x="578" y="-306"/>
+		</transition>
+
+        <transition>
+            <source ref="id35"/>
+            <target ref="id36"/>
+        </transition>
+	</template>
+	<template>
+		<name x="5" y="5">walk_given_distance</name>
+		<parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+int _variable_0000;
+int _variable_0001;
+int _variable_0002;
+int _variable_0003;
+int _variable_0004;
+int _variable_0005;
+int _variable_0006;
+concurrent_request_type _request_0000;
+int _variable_0007;
+concurrent_request_type _request_0001;
+int _variable_0008;
+int _variable_0009;
+
+</declaration>
+
+		<location id="id39" x="-717" y="-510">
+			<name x="-748" y="-488">failure_0</name>
+						<label kind="invariant" x="-766" y="-476">( local_time &lt;= _variable_0003 )</label>
+		</location>
+		<location id="id40" x="-581" y="-510">
+			<name x="-630" y="-488">failure_done_0</name>
+		</location>
+		<location id="id42" x="-688" y="-612">
+			<name x="-747" y="-651">check_termination</name>
+			<urgent/>
+		</location>
+		<location id="id43" x="-935" y="-816">
+			<name x="-1097" y="-824">concurrent_waiting_0</name>
+		</location>
+		<location id="id44" x="-935" y="-952">
+			<name x="-1104" y="-960">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id45" x="-629" y="-952">
+			<name x="-607" y="-930">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id46" x="-527" y="-952">
+			<name x="-505" y="-960">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id47" x="-527" y="-816">
+			<name x="-505" y="-824">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id48" x="-391" y="-816">
+			<name x="-553" y="-824">concurrent_waiting_1</name>
+		</location>
+		<location id="id49" x="-391" y="-952">
+			<name x="-560" y="-960">concurrent_got_lock_1</name>
+			<urgent/>
+		</location>
+		<location id="id50" x="-85" y="-952">
+			<name x="-63" y="-930">concurrent_notify_0_1</name>
+			<urgent/>
+		</location>
+		<location id="id51" x="-85" y="-1088">
+			<name x="-63" y="-1066">concurrent_notify_1_1</name>
+			<urgent/>
+		</location>
+		<location id="id52" x="-85" y="-1224">
+			<name x="-63" y="-1202">concurrent_notify_2_1</name>
+			<urgent/>
+		</location>
+		<location id="id53" x="17" y="-952">
+			<name x="39" y="-960">concurrent_unlock_1</name>
+			<urgent/>
+		</location>
+		<location id="id54" x="17" y="-816">
+			<name x="39" y="-824">concurrent_continue_1</name>
+			<urgent/>
+		</location>
+		<location id="id55" x="578" y="-680">
+			<name x="557" y="-719">fail_0</name>
+		</location>
+		<location id="id56" x="578" y="-748">
+			<name x="557" y="-787">fail_1</name>
+		</location>
+
+
+        <location id="id36" x="272" y="-612">
+			<name x="196" y="-578">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id23" x="612" y="-612">
+			<name x="621" y="-646">end</name>
+			<urgent/>
+		</location>
+
+		<location id="id25" x="-552" y="-612">
+			<name x="-600" y="-671">main_success</name>
+						<label kind="invariant" x="-601" y="-578">( local_time &lt;= _variable_0001 )</label>
+
+		</location>
+
+		<location id="id27" x="-1368" y="-612">
+			<name x="-1385" y="-654">start</name>
+		</location>
+		<location id="id28" x="-1130" y="-306">
+			<name x="-1138" y="-357">repeat_wait</name>
+			<label kind="invariant" x="-1104" y="-289">local_time &lt;= 0</label>
+		</location>
+		<location id="id29" x="-1223" y="-612">
+			<name x="-1248" y="-654">synced</name>
+			<urgent/>
+		</location>
+		<location id="id33" x="-1023" y="-612">
+            <name x="-1122" y="-646">checked</name>
+            <urgent/>
+        </location>
+		<location id="id30" x="-748" y="-612">
+			<name x="-957" y="-633">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id34" x="-714" y="-612">
+            <name x="-680" y="-633">access_memory_end_0</name>
+            <urgent/>
+        </location>
+		<location id="id31" x="-204" y="-612">
+			<name x="-386" y="-663">access_memory_start_1</name>
+			<urgent/>
+		</location>
+		<location id="id35" x="-170" y="-612">
+            <name x="-146" y="-663">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+
+			<branchpoint id="id37" x="-853" y="-510"></branchpoint>
+			<branchpoint id="id38" x="-853" y="-408"></branchpoint>
+
+
+        <init ref="id27"/>
+
+		<transition>
+			<source ref="id25"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-539" y="-646">( _variable_0000 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0001 )</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id37"/>
+			<label kind="guard" x="-989" y="-612">// [clear_path = TRUE]
+( concurrent_read( 34 ) == 1 )</label>
+			<nail x="-955" y="-510"/>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id30"/>
+			<label kind="probability" x="-853" y="-544">95</label>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id39"/>
+			<label kind="probability" x="-839" y="-527">0</label>
+						<label kind="assignment" x="-1288" y="-459">_variable_0002 = 0,
+_variable_0003 = (concurrent_read( 32 )/concurrent_read( 12 )) + (concurrent_read( 33 )/concurrent_read( 13 )) + concurrent_read( 18 )</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-1116" y="-646">( _variable_0002 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0003 )</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id38"/>
+			<label kind="guard" x="-989" y="-510">// [clear_path = FALSE]
+( concurrent_read( 34 ) == 0 )</label>
+			<nail x="-955" y="-408"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id30"/>
+			<label kind="probability" x="-853" y="-442">0</label>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id39"/>
+			<label kind="probability" x="-846" y="-425">100</label>
+						<label kind="assignment" x="-1288" y="-459">_variable_0004 = 0,
+_variable_0005 = (concurrent_read( 32 )/concurrent_read( 12 )) + (concurrent_read( 33 )/concurrent_read( 13 )) + concurrent_read( 18 )</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref=""/>
+			<label kind="guard" x="-1116" y="-646">( _variable_0004 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0005 )</label>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id42"/>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id25"/>
+						<label kind="assignment" x="-1126" y="-561">_variable_0000 = (concurrent_read( 32 )/concurrent_read( 12 )) + (concurrent_read( 33 )/concurrent_read( 13 )) - concurrent_read( 18 ),
+_variable_0001 = (concurrent_read( 32 )/concurrent_read( 12 )) + (concurrent_read( 33 )/concurrent_read( 13 )) + concurrent_read( 18 )</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id43"/>
+			<label kind="synchronisation" x="-1068" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-1278" y="-765">concurrent_signal_access( id, true ),
+// [arm_moving = FALSE]
+_request_0000.bound_lower        = 0,
+_request_0000.bound_upper        = 0,
+_request_0000.is_single_range    = true,
+_request_0000.variable_id        = 7,
+// Make sure resource: robot_wheels not changing.
+_request_0001.bound_lower        = 0,
+_request_0001.bound_upper        = 0,
+_request_0001.is_single_range    = true,
+_request_0001.variable_id        = 26</label>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id44"/>
+			<label kind="synchronisation" x="-1165" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id46"/>
+			<label kind="synchronisation" x="-595" y="-1020">concurrent_notify[83]!</label>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id45"/>
+			<label kind="assignment" x="-1063" y="-1020">// [arm_moving = FALSE]
+_variable_0006 = concurrent_request_add( 7, _request_0000 ) ,
+// Make sure resource: robot_wheels not changing.
+_variable_0007 = concurrent_request_add( 26, _request_0001 ) ,
+// This module is running.
+concurrent_write( 83, 1 )</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id47"/>
+			<label kind="synchronisation" x="-493" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="-493" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id34"/>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id48"/>
+			<label kind="synchronisation" x="-524" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-832" y="-765">concurrent_signal_access( id, true ) ,
+_variable_0008 = concurrent_read( 30 ) - concurrent_read( 8 ) ,
+// For Goal:
+_variable_0009 = 1</label>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id49"/>
+			<label kind="synchronisation" x="-621" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id51"/>
+			<label kind="synchronisation" x="-51" y="-1020">concurrent_notify[30]!</label>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id52"/>
+			<label kind="synchronisation" x="-51" y="-1156">concurrent_notify[10]!</label>
+		</transition>
+		<transition>
+			<source ref="id52"/>
+			<target ref="id53"/>
+			<label kind="synchronisation" x="-51" y="-1292">concurrent_notify[83]!</label>
+			<nail x="17" y="-1224"/>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id50"/>
+			<label kind="assignment" x="-575" y="-1020">_variable_0006 = concurrent_request_remove_request( _variable_0006 ) ,
+_variable_0007 = concurrent_request_remove_request( _variable_0007 ) ,
+// Effect: [energy_level = energy_level - energy_consumed]
+concurrent_write( 30, _variable_0008 ) ,
+// For Goal:
+// robot_at_target
+concurrent_write( 10, _variable_0009 ) ,
+// This module finished running.
+concurrent_write( 83, 0 )</label>
+		</transition>
+		<transition>
+			<source ref="id53"/>
+			<target ref="id54"/>
+			<label kind="synchronisation" x="51" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="51" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id54"/>
+			<target ref="id35"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id55"/>
+			<label kind="guard" x="340" y="-680">( _variable_0006 == false )</label>
+			<nail x="340" y="-680"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id56"/>
+			<label kind="guard" x="340" y="-748">( _variable_0007 == false )</label>
+			<nail x="340" y="-748"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id23"/>
+			<label kind="guard" x="340" y="-612">( _variable_0006 == true ) &amp;&amp;
+( _variable_0007 == true )</label>
+		</transition>
+
+
+		<transition>
+			<source ref="id27"/>
+			<target ref="id29"/>
+			<label kind="synchronisation" x="-1359" y="-637">control_plp_start[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id27"/>
+			<label kind="guard" x="-1334" y="-263"> false == concurrent_read( 35 ) </label>
+			<label kind="synchronisation" x="-1334" y="-229">control_plp_done[id]!</label>
+			<nail x="612" y="-204"/>
+			<nail x="-1368" y="-204"/>
+		</transition>
+		<transition controllable="true">
+			<source ref="id29"/>
+			<target ref="id33"/>
+			<label kind="guard" x="-1309" y="-688">// Preconditions: [[current_linear_speed = 0], [current_angular_speed = 0]]
+( ( concurrent_read( 2 ) == 0 ) &amp;&amp;
+( concurrent_read( 3 ) == 0 ) )</label>
+			<label kind="assignment" x="-1189" y="-603">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id29"/>
+			<label kind="guard" x="-1266" y="-442">local_time == 0</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-1104" y="-331">true == concurrent_read( 35 )</label>
 			<label kind="assignment" x="-1104" y="-306">local_time = 0</label>
 			<nail x="578" y="-306"/>
 		</transition>
@@ -1026,7 +1401,7 @@ int _variable_0002;
 			<source ref="id83"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-102">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
 			<nail x="850" y="-102"/>
 			<nail x="1122" y="-102"/>
 		</transition>
@@ -1034,8 +1409,8 @@ int _variable_0002;
 			<source ref="id77"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1043,8 +1418,8 @@ int _variable_0002;
 			<source ref="id78"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1052,8 +1427,8 @@ int _variable_0002;
 			<source ref="id79"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1061,8 +1436,8 @@ int _variable_0002;
 			<source ref="id80"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1070,8 +1445,8 @@ int _variable_0002;
 			<source ref="id81"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1079,8 +1454,8 @@ int _variable_0002;
 			<source ref="id57"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1088,8 +1463,8 @@ int _variable_0002;
 			<source ref="id77"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1097,8 +1472,8 @@ int _variable_0002;
 			<source ref="id78"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1106,8 +1481,8 @@ int _variable_0002;
 			<source ref="id79"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1115,8 +1490,8 @@ int _variable_0002;
 			<source ref="id80"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1124,8 +1499,8 @@ int _variable_0002;
 			<source ref="id81"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1133,8 +1508,8 @@ int _variable_0002;
 			<source ref="id57"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1142,8 +1517,8 @@ int _variable_0002;
 			<source ref="id77"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1151,8 +1526,8 @@ int _variable_0002;
 			<source ref="id78"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1160,8 +1535,8 @@ int _variable_0002;
 			<source ref="id79"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1169,8 +1544,8 @@ int _variable_0002;
 			<source ref="id80"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1178,8 +1553,8 @@ int _variable_0002;
 			<source ref="id81"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1187,8 +1562,8 @@ int _variable_0002;
 			<source ref="id57"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1196,14 +1571,14 @@ int _variable_0002;
 			<source ref="id83"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="170">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
 			<nail x="850" y="170"/>
 		</transition>
 		<transition>
 			<source ref="id70"/>
 			<target ref="id84"/>
 			<label kind="guard" x="340" y="-170">// (wet_path)
-( concurrent_read( 45 ) &gt; 0 )</label>
+( concurrent_read( 53 ) &gt; 0 )</label>
 			<nail x="374" y="-68"/>
 		</transition>
 		<transition>
@@ -1225,7 +1600,7 @@ int _variable_0002;
 			<source ref="id70"/>
 			<target ref="id85"/>
 			<label kind="guard" x="340" y="-68">// [Not (wet_path)]
-! ( concurrent_read( 45 ) &gt; 0 )</label>
+! ( concurrent_read( 53 ) &gt; 0 )</label>
 			<nail x="374" y="34"/>
 		</transition>
 		<transition>
@@ -1252,12 +1627,12 @@ int _variable_0002;
 _request_0000.bound_lower        = 1,
 _request_0000.bound_upper        = 1,
 _request_0000.is_single_range    = true,
-_request_0000.variable_id        = 43,
+_request_0000.variable_id        = 51,
 // Make sure resource: steering_wheel not changing.
 _request_0001.bound_lower        = 0,
 _request_0001.bound_upper        = 0,
 _request_0001.is_single_range    = true,
-_request_0001.variable_id        = 44</label>
+_request_0001.variable_id        = 52</label>
 		</transition>
 		<transition>
 			<source ref="id88"/>
@@ -1267,25 +1642,25 @@ _request_0001.variable_id        = 44</label>
 		<transition>
 			<source ref="id90"/>
 			<target ref="id91"/>
-			<label kind="synchronisation" x="731" y="-578">concurrent_notify[79]!</label>
+			<label kind="synchronisation" x="731" y="-578">concurrent_notify[88]!</label>
 		</transition>
 		<transition>
 			<source ref="id91"/>
 			<target ref="id92"/>
-			<label kind="synchronisation" x="731" y="-714">concurrent_notify[75]!</label>
+			<label kind="synchronisation" x="731" y="-714">concurrent_notify[84]!</label>
 			<nail x="799" y="-646"/>
 		</transition>
 		<transition>
 			<source ref="id89"/>
 			<target ref="id90"/>
 			<label kind="assignment" x="263" y="-578">// [path_free = TRUE]
-_variable_0000 = concurrent_request_add( 43, _request_0000 ) ,
+_variable_0000 = concurrent_request_add( 51, _request_0000 ) ,
 // [tmp_var equal 7.09]
-concurrent_write( 79, 709 ) ,
+concurrent_write( 88, 709 ) ,
 // Make sure resource: steering_wheel not changing.
-_variable_0001 = concurrent_request_add( 44, _request_0001 ) ,
+_variable_0001 = concurrent_request_add( 52, _request_0001 ) ,
 // This module is running.
-concurrent_write( 75, 1 )</label>
+concurrent_write( 84, 1 )</label>
 		</transition>
 		<transition>
 			<source ref="id92"/>
@@ -1302,7 +1677,7 @@ concurrent_write( 75, 1 )</label>
 			<target ref="id94"/>
 			<label kind="synchronisation" x="938" y="-340">concurrent_can_run!</label>
 			<label kind="assignment" x="651" y="-323">concurrent_signal_access( id, true ) ,
-_variable_0002 = concurrent_read( 40 )-concurrent_read( 28 )</label>
+_variable_0002 = concurrent_read( 48 )-concurrent_read( 36 )</label>
 		</transition>
 		<transition>
 			<source ref="id94"/>
@@ -1312,12 +1687,12 @@ _variable_0002 = concurrent_read( 40 )-concurrent_read( 28 )</label>
 		<transition>
 			<source ref="id96"/>
 			<target ref="id97"/>
-			<label kind="synchronisation" x="1411" y="-578">concurrent_notify[40]!</label>
+			<label kind="synchronisation" x="1411" y="-578">concurrent_notify[48]!</label>
 		</transition>
 		<transition>
 			<source ref="id97"/>
 			<target ref="id98"/>
-			<label kind="synchronisation" x="1411" y="-714">concurrent_notify[75]!</label>
+			<label kind="synchronisation" x="1411" y="-714">concurrent_notify[84]!</label>
 			<nail x="1479" y="-646"/>
 		</transition>
 		<transition>
@@ -1326,9 +1701,9 @@ _variable_0002 = concurrent_read( 40 )-concurrent_read( 28 )</label>
 			<label kind="assignment" x="887" y="-578">_variable_0000 = concurrent_request_remove_request( _variable_0000 ) ,
 _variable_0001 = concurrent_request_remove_request( _variable_0001 ) ,
 // Effect: [gas_level = gas_level-gas_consumed]
-concurrent_write( 40, _variable_0002 ) ,
+concurrent_write( 48, _variable_0002 ) ,
 // This module finished running.
-concurrent_write( 75, 0 )</label>
+concurrent_write( 84, 0 )</label>
 		</transition>
 		<transition>
 			<source ref="id98"/>
@@ -1381,7 +1756,7 @@ concurrent_write( 75, 0 )</label>
             <source ref="id60"/>
             <target ref="id70"/>
             <label kind="guard" x="51" y="-255">// Preconditions: [[max_change_rate_path_tangent &lt;= max_allowed_change_rate]]
-( ( concurrent_read( 39 ) &lt;= concurrent_read( 34 ) ) )</label>
+( ( concurrent_read( 47 ) &lt;= concurrent_read( 42 ) ) )</label>
             <label kind="assignment" x="180" y="-150">local_time = 0</label>
         </transition>
 
@@ -1676,7 +2051,7 @@ int _variable_0004;
 			<source ref="id83"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-102">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
 			<nail x="850" y="-102"/>
 			<nail x="1122" y="-102"/>
 		</transition>
@@ -1684,8 +2059,8 @@ int _variable_0004;
 			<source ref="id77"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1693,8 +2068,8 @@ int _variable_0004;
 			<source ref="id78"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1702,8 +2077,8 @@ int _variable_0004;
 			<source ref="id79"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1711,8 +2086,8 @@ int _variable_0004;
 			<source ref="id80"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1720,8 +2095,8 @@ int _variable_0004;
 			<source ref="id81"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1729,8 +2104,8 @@ int _variable_0004;
 			<source ref="id57"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="-34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="0">concurrent_notify[35]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[39]?</label>
 			<nail x="850" y="-34"/>
 			<nail x="1122" y="-34"/>
 		</transition>
@@ -1738,8 +2113,8 @@ int _variable_0004;
 			<source ref="id77"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1747,8 +2122,8 @@ int _variable_0004;
 			<source ref="id78"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1756,8 +2131,8 @@ int _variable_0004;
 			<source ref="id79"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1765,8 +2140,8 @@ int _variable_0004;
 			<source ref="id80"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1774,8 +2149,8 @@ int _variable_0004;
 			<source ref="id81"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1783,8 +2158,8 @@ int _variable_0004;
 			<source ref="id57"/>
 			<target ref="id55"/>
 			<label kind="guard" x="801" y="34">// [distance_to_goal &lt;= required_distance]
-( concurrent_read( 31 ) &lt;= concurrent_read( 35 ) )</label>
-			<label kind="synchronisation" x="909" y="68">concurrent_notify[31]?</label>
+( concurrent_read( 39 ) &lt;= concurrent_read( 43 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[43]?</label>
 			<nail x="850" y="34"/>
 			<nail x="1122" y="34"/>
 		</transition>
@@ -1792,8 +2167,8 @@ int _variable_0004;
 			<source ref="id77"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1801,8 +2176,8 @@ int _variable_0004;
 			<source ref="id78"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1810,8 +2185,8 @@ int _variable_0004;
 			<source ref="id79"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1819,8 +2194,8 @@ int _variable_0004;
 			<source ref="id80"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1828,8 +2203,8 @@ int _variable_0004;
 			<source ref="id81"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1837,8 +2212,8 @@ int _variable_0004;
 			<source ref="id57"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="102">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="909" y="136">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="136">concurrent_notify[41]?</label>
 			<nail x="850" y="102"/>
 			<nail x="1122" y="102"/>
 		</transition>
@@ -1846,14 +2221,14 @@ int _variable_0004;
 			<source ref="id83"/>
 			<target ref="id82"/>
 			<label kind="guard" x="867" y="170">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
 			<nail x="850" y="170"/>
 		</transition>
 		<transition>
 			<source ref="id70"/>
 			<target ref="id84"/>
 			<label kind="guard" x="340" y="-170">// (wet_path)
-( concurrent_read( 45 ) &gt; 0 )</label>
+( concurrent_read( 53 ) &gt; 0 )</label>
 			<nail x="374" y="-68"/>
 		</transition>
 		<transition>
@@ -1875,7 +2250,7 @@ int _variable_0004;
 			<source ref="id70"/>
 			<target ref="id85"/>
 			<label kind="guard" x="340" y="-68">// [Not (wet_path)]
-! ( concurrent_read( 45 ) &gt; 0 )</label>
+! ( concurrent_read( 53 ) &gt; 0 )</label>
 			<nail x="374" y="34"/>
 		</transition>
 		<transition>
@@ -1902,22 +2277,22 @@ int _variable_0004;
 _request_0000.bound_lower        = 1,
 _request_0000.bound_upper        = 1,
 _request_0000.is_single_range    = true,
-_request_0000.variable_id        = 52,
+_request_0000.variable_id        = 60,
 // Required resource: fuel at least: 0.12
 _request_0001.bound_lower        = -1,
 _request_0001.bound_upper        = 12,
 _request_0001.is_single_range    = false,
-_request_0001.variable_id        = 53,
+_request_0001.variable_id        = 61,
 // Make sure resource: fuel not changing.
 _request_0002.bound_lower        = 1000,
 _request_0002.bound_upper        = 1000,
 _request_0002.is_single_range    = true,
-_request_0002.variable_id        = 53,
+_request_0002.variable_id        = 61,
 // Make sure resource: steering_wheel not changing.
 _request_0003.bound_lower        = 0,
 _request_0003.bound_upper        = 0,
 _request_0003.is_single_range    = true,
-_request_0003.variable_id        = 44</label>
+_request_0003.variable_id        = 52</label>
 		</transition>
 		<transition>
 			<source ref="id88"/>
@@ -1927,29 +2302,29 @@ _request_0003.variable_id        = 44</label>
 		<transition>
 			<source ref="id90"/>
 			<target ref="id91"/>
-			<label kind="synchronisation" x="731" y="-578">concurrent_notify[79]!</label>
+			<label kind="synchronisation" x="731" y="-578">concurrent_notify[88]!</label>
 		</transition>
 		<transition>
 			<source ref="id91"/>
 			<target ref="id92"/>
-			<label kind="synchronisation" x="731" y="-714">concurrent_notify[76]!</label>
+			<label kind="synchronisation" x="731" y="-714">concurrent_notify[85]!</label>
 			<nail x="799" y="-646"/>
 		</transition>
 		<transition>
 			<source ref="id89"/>
 			<target ref="id90"/>
 			<label kind="assignment" x="263" y="-578">// [path_free = TRUE]
-_variable_0000 = concurrent_request_add( 52, _request_0000 ) ,
+_variable_0000 = concurrent_request_add( 60, _request_0000 ) ,
 // [tmp_var equal 7.05]
-concurrent_write( 79, 705 ) ,
+concurrent_write( 88, 705 ) ,
 // Required resource: fuel at least: 0.12
-_variable_0001 = concurrent_request_add( 53, _request_0001 ) ,
+_variable_0001 = concurrent_request_add( 61, _request_0001 ) ,
 // Make sure resource: fuel not changing.
-_variable_0002 = concurrent_request_add( 53, _request_0002 ) ,
+_variable_0002 = concurrent_request_add( 61, _request_0002 ) ,
 // Make sure resource: steering_wheel not changing.
-_variable_0003 = concurrent_request_add( 44, _request_0003 ) ,
+_variable_0003 = concurrent_request_add( 52, _request_0003 ) ,
 // This module is running.
-concurrent_write( 76, 1 )</label>
+concurrent_write( 85, 1 )</label>
 		</transition>
 		<transition>
 			<source ref="id92"/>
@@ -1966,7 +2341,7 @@ concurrent_write( 76, 1 )</label>
 			<target ref="id94"/>
 			<label kind="synchronisation" x="938" y="-340">concurrent_can_run!</label>
 			<label kind="assignment" x="651" y="-323">concurrent_signal_access( id, true ) ,
-_variable_0004 = concurrent_read( 49 )-concurrent_read( 28 )</label>
+_variable_0004 = concurrent_read( 57 )-concurrent_read( 36 )</label>
 		</transition>
 		<transition>
 			<source ref="id94"/>
@@ -1976,12 +2351,12 @@ _variable_0004 = concurrent_read( 49 )-concurrent_read( 28 )</label>
 		<transition>
 			<source ref="id96"/>
 			<target ref="id97"/>
-			<label kind="synchronisation" x="1411" y="-578">concurrent_notify[49]!</label>
+			<label kind="synchronisation" x="1411" y="-578">concurrent_notify[57]!</label>
 		</transition>
 		<transition>
 			<source ref="id97"/>
 			<target ref="id98"/>
-			<label kind="synchronisation" x="1411" y="-714">concurrent_notify[76]!</label>
+			<label kind="synchronisation" x="1411" y="-714">concurrent_notify[85]!</label>
 			<nail x="1479" y="-646"/>
 		</transition>
 		<transition>
@@ -1992,9 +2367,9 @@ _variable_0001 = concurrent_request_remove_request( _variable_0001 ) ,
 _variable_0002 = concurrent_request_remove_request( _variable_0002 ) ,
 _variable_0003 = concurrent_request_remove_request( _variable_0003 ) ,
 // Effect: [gas_level = gas_level-gas_consumed]
-concurrent_write( 49, _variable_0004 ) ,
+concurrent_write( 57, _variable_0004 ) ,
 // This module finished running.
-concurrent_write( 76, 0 )</label>
+concurrent_write( 85, 0 )</label>
 		</transition>
 		<transition>
 			<source ref="id98"/>
@@ -2061,7 +2436,7 @@ concurrent_write( 76, 0 )</label>
             <source ref="id60"/>
             <target ref="id70"/>
             <label kind="guard" x="51" y="-255">// Preconditions: [[max_change_rate_path_tangent &lt;= max_allowed_change_rate]]
-( ( concurrent_read( 48 ) &lt;= concurrent_read( 34 ) ) )</label>
+( ( concurrent_read( 56 ) &lt;= concurrent_read( 42 ) ) )</label>
             <label kind="assignment" x="180" y="-150">local_time = 0</label>
         </transition>
 
@@ -2338,8 +2713,8 @@ concurrent_request_type _request_0002;
 			<source ref="id101"/>
 			<target ref="id114"/>
 			<label kind="guard" x="-348" y="-272">// [OR [gateway_blocked = TRUE] [clear_path = FALSE]]
-( ( concurrent_read( 63 ) == 1 ) ||
-( concurrent_read( 64 ) == 0 ) )</label>
+( ( concurrent_read( 71 ) == 1 ) ||
+( concurrent_read( 72 ) == 0 ) )</label>
 			<nail x="-314" y="-170"/>
 		</transition>
 		<transition>
@@ -2364,8 +2739,8 @@ _variable_0001 = 20</label>
 			<source ref="id101"/>
 			<target ref="id115"/>
 			<label kind="guard" x="-348" y="-170">// [AND [gateway_blocked = FALSE] [clear_path = TRUE]]
-( ( concurrent_read( 63 ) == 0 ) &amp;&amp;
-( concurrent_read( 64 ) == 1 ) )</label>
+( ( concurrent_read( 71 ) == 0 ) &amp;&amp;
+( concurrent_read( 72 ) == 1 ) )</label>
 			<nail x="-314" y="-68"/>
 		</transition>
 		<transition>
@@ -2398,8 +2773,8 @@ _variable_0003 = 20</label>
 			<source ref="id109"/>
 			<target ref="id120"/>
 			<label kind="guard" x="9" y="-204">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="51" y="-170">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="51" y="-170">concurrent_notify[41]?</label>
 			<nail x="-8" y="-204"/>
 			<nail x="264" y="-204"/>
 		</transition>
@@ -2407,8 +2782,8 @@ _variable_0003 = 20</label>
 			<source ref="id110"/>
 			<target ref="id120"/>
 			<label kind="guard" x="9" y="-204">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="51" y="-170">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="51" y="-170">concurrent_notify[41]?</label>
 			<nail x="-8" y="-204"/>
 			<nail x="264" y="-204"/>
 		</transition>
@@ -2416,8 +2791,8 @@ _variable_0003 = 20</label>
 			<source ref="id111"/>
 			<target ref="id120"/>
 			<label kind="guard" x="9" y="-204">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="51" y="-170">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="51" y="-170">concurrent_notify[41]?</label>
 			<nail x="-8" y="-204"/>
 			<nail x="264" y="-204"/>
 		</transition>
@@ -2425,8 +2800,8 @@ _variable_0003 = 20</label>
 			<source ref="id112"/>
 			<target ref="id120"/>
 			<label kind="guard" x="9" y="-204">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="51" y="-170">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="51" y="-170">concurrent_notify[41]?</label>
 			<nail x="-8" y="-204"/>
 			<nail x="264" y="-204"/>
 		</transition>
@@ -2434,8 +2809,8 @@ _variable_0003 = 20</label>
 			<source ref="id113"/>
 			<target ref="id120"/>
 			<label kind="guard" x="9" y="-204">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="51" y="-170">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="51" y="-170">concurrent_notify[41]?</label>
 			<nail x="-8" y="-204"/>
 			<nail x="264" y="-204"/>
 		</transition>
@@ -2443,8 +2818,8 @@ _variable_0003 = 20</label>
 			<source ref="id96"/>
 			<target ref="id120"/>
 			<label kind="guard" x="9" y="-204">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="51" y="-170">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="51" y="-170">concurrent_notify[41]?</label>
 			<nail x="-8" y="-204"/>
 			<nail x="264" y="-204"/>
 		</transition>
@@ -2452,7 +2827,7 @@ _variable_0003 = 20</label>
 			<source ref="id121"/>
 			<target ref="id120"/>
 			<label kind="guard" x="9" y="-136">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
 			<nail x="-8" y="-136"/>
 		</transition>
 		<transition>
@@ -2464,7 +2839,7 @@ _variable_0003 = 20</label>
 _request_0000.bound_lower        = 0,
 _request_0000.bound_upper        = 0,
 _request_0000.is_single_range    = true,
-_request_0000.variable_id        = 74,
+_request_0000.variable_id        = 82,
 // [arm_moving = FALSE]
 _request_0001.bound_lower        = 0,
 _request_0001.bound_upper        = 0,
@@ -2484,19 +2859,19 @@ _request_0002.variable_id        = 26</label>
 		<transition>
 			<source ref="id124"/>
 			<target ref="id125"/>
-			<label kind="synchronisation" x="-76" y="-680">concurrent_notify[77]!</label>
+			<label kind="synchronisation" x="-76" y="-680">concurrent_notify[86]!</label>
 		</transition>
 		<transition>
 			<source ref="id123"/>
 			<target ref="id124"/>
 			<label kind="assignment" x="-544" y="-680">// achieve_walk_given_distance
-_variable_0004 = concurrent_request_add( 74, _request_0000 ) ,
+_variable_0004 = concurrent_request_add( 82, _request_0000 ) ,
 // [arm_moving = FALSE]
 _variable_0005 = concurrent_request_add( 7, _request_0001 ) ,
 // Make sure resource: robot_wheels not changing.
 _variable_0006 = concurrent_request_add( 26, _request_0002 ) ,
 // This module is running.
-concurrent_write( 77, 1 )</label>
+concurrent_write( 86, 1 )</label>
 		</transition>
 		<transition>
 			<source ref="id125"/>
@@ -2522,12 +2897,12 @@ concurrent_write( 77, 1 )</label>
 		<transition>
 			<source ref="id129"/>
 			<target ref="id130"/>
-			<label kind="synchronisation" x="840" y="-680">concurrent_notify[59]!</label>
+			<label kind="synchronisation" x="840" y="-680">concurrent_notify[67]!</label>
 		</transition>
 		<transition>
 			<source ref="id130"/>
 			<target ref="id131"/>
-			<label kind="synchronisation" x="840" y="-816">concurrent_notify[77]!</label>
+			<label kind="synchronisation" x="840" y="-816">concurrent_notify[86]!</label>
 			<nail x="908" y="-748"/>
 		</transition>
 		<transition>
@@ -2537,9 +2912,9 @@ concurrent_write( 77, 1 )</label>
 _variable_0005 = concurrent_request_remove_request( _variable_0005 ) ,
 _variable_0006 = concurrent_request_remove_request( _variable_0006 ) ,
 // This module finished running.
-concurrent_write( 77, 0 ) ,
+concurrent_write( 86, 0 ) ,
 // Observation:
-concurrent_write( 59, 123 )</label>
+concurrent_write( 67, 123 )</label>
 			<nail x="534" y="-1084"/>
 			<nail x="772" y="-1084"/>
 		</transition>
@@ -2550,9 +2925,9 @@ concurrent_write( 59, 123 )</label>
 _variable_0005 = concurrent_request_remove_request( _variable_0005 ) ,
 _variable_0006 = concurrent_request_remove_request( _variable_0006 ) ,
 // This module finished running.
-concurrent_write( 77, 0 ) ,
+concurrent_write( 86, 0 ) ,
 // Observation:
-concurrent_write( 59, 124 )</label>
+concurrent_write( 67, 124 )</label>
 			<nail x="534" y="-966"/>
 			<nail x="772" y="-966"/>
 		</transition>
@@ -2563,9 +2938,9 @@ concurrent_write( 59, 124 )</label>
 _variable_0005 = concurrent_request_remove_request( _variable_0005 ) ,
 _variable_0006 = concurrent_request_remove_request( _variable_0006 ) ,
 // This module finished running.
-concurrent_write( 77, 0 ) ,
+concurrent_write( 86, 0 ) ,
 // Observation:
-concurrent_write( 59, 125 )</label>
+concurrent_write( 67, 125 )</label>
 			<nail x="534" y="-848"/>
 			<nail x="772" y="-848"/>
 		</transition>
@@ -2576,9 +2951,9 @@ concurrent_write( 59, 125 )</label>
 _variable_0005 = concurrent_request_remove_request( _variable_0005 ) ,
 _variable_0006 = concurrent_request_remove_request( _variable_0006 ) ,
 // This module finished running.
-concurrent_write( 77, 0 ) ,
+concurrent_write( 86, 0 ) ,
 // Observation:
-concurrent_write( 59, 126 )</label>
+concurrent_write( 67, 126 )</label>
 			<nail x="534" y="-730"/>
 			<nail x="772" y="-730"/>
 		</transition>
@@ -2589,9 +2964,9 @@ concurrent_write( 59, 126 )</label>
 _variable_0005 = concurrent_request_remove_request( _variable_0005 ) ,
 _variable_0006 = concurrent_request_remove_request( _variable_0006 ) ,
 // This module finished running.
-concurrent_write( 77, 0 ) ,
+concurrent_write( 86, 0 ) ,
 // Observation:
-concurrent_write( 59, 127 )</label>
+concurrent_write( 67, 127 )</label>
 			<nail x="534" y="-612"/>
 			<nail x="772" y="-612"/>
 		</transition>
@@ -2602,9 +2977,9 @@ concurrent_write( 59, 127 )</label>
 _variable_0005 = concurrent_request_remove_request( _variable_0005 ) ,
 _variable_0006 = concurrent_request_remove_request( _variable_0006 ) ,
 // This module finished running.
-concurrent_write( 77, 0 ) ,
+concurrent_write( 86, 0 ) ,
 // Observation:
-concurrent_write( 59, 128 )</label>
+concurrent_write( 67, 128 )</label>
 			<nail x="534" y="-494"/>
 			<nail x="772" y="-494"/>
 		</transition>
@@ -2615,9 +2990,9 @@ concurrent_write( 59, 128 )</label>
 _variable_0005 = concurrent_request_remove_request( _variable_0005 ) ,
 _variable_0006 = concurrent_request_remove_request( _variable_0006 ) ,
 // This module finished running.
-concurrent_write( 77, 0 ) ,
+concurrent_write( 86, 0 ) ,
 // Observation:
-concurrent_write( 59, 129 )</label>
+concurrent_write( 67, 129 )</label>
 			<nail x="534" y="-376"/>
 			<nail x="772" y="-376"/>
 		</transition>
@@ -2628,9 +3003,9 @@ concurrent_write( 59, 129 )</label>
 _variable_0005 = concurrent_request_remove_request( _variable_0005 ) ,
 _variable_0006 = concurrent_request_remove_request( _variable_0006 ) ,
 // This module finished running.
-concurrent_write( 77, 0 ) ,
+concurrent_write( 86, 0 ) ,
 // Observation:
-concurrent_write( 59, 130 )</label>
+concurrent_write( 67, 130 )</label>
 			<nail x="534" y="-258"/>
 			<nail x="772" y="-258"/>
 		</transition>
@@ -2679,7 +3054,7 @@ concurrent_write( 59, 130 )</label>
 		<transition>
 			<source ref="id93"/>
 			<target ref="id91"/>
-			<label kind="guard" x="-458" y="76">true == concurrent_read( 67 )</label>
+			<label kind="guard" x="-458" y="76">true == concurrent_read( 75 )</label>
 			<label kind="assignment" x="-458" y="102">local_time = 0</label>
 			<nail x="1436" y="102"/>
 		</transition>
@@ -2687,16 +3062,16 @@ concurrent_write( 59, 130 )</label>
 			<source ref="id92"/>
 			<target ref="id101"/>
 			<label kind="guard" x="-595" y="-382">// Preconditions: [(at areaA), (connected areaA areaB gateway), [begin_Aspeed = 0], [begin_Lspeed = 0]]
-( ( concurrent_read( 65 ) &gt; 0 ) &amp;&amp;
-( concurrent_read( 66 ) &gt; 0 ) &amp;&amp;
-( concurrent_read( 54 ) == 0 ) &amp;&amp;
-( concurrent_read( 55 ) == 0 ) )</label>
+( ( concurrent_read( 73 ) &gt; 0 ) &amp;&amp;
+( concurrent_read( 74 ) &gt; 0 ) &amp;&amp;
+( concurrent_read( 62 ) == 0 ) &amp;&amp;
+( concurrent_read( 63 ) == 0 ) )</label>
 			<label kind="assignment" x="-502" y="-263">local_time = 0</label>
 		</transition>
 		<transition>
 			<source ref="id93"/>
 			<target ref="id98"/>
-			<label kind="guard" x="-638" y="127">false == concurrent_read( 67 )</label>
+			<label kind="guard" x="-638" y="127">false == concurrent_read( 75 )</label>
 			<label kind="synchronisation" x="-638" y="161">control_plp_done[id]!</label>
 			<nail x="1469" y="187"/>
 			<nail x="-654" y="187"/>
@@ -2867,8 +3242,8 @@ int _variable_0001;
 			<source ref="id130"/>
 			<target ref="id140"/>
 			<label kind="guard" x="153" y="-68">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="195" y="-34">concurrent_notify[33]?</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
+			<label kind="synchronisation" x="195" y="-34">concurrent_notify[41]?</label>
 			<nail x="170" y="-68"/>
 			<nail x="374" y="-68"/>
 		</transition>
@@ -2876,7 +3251,7 @@ int _variable_0001;
 			<source ref="id141"/>
 			<target ref="id140"/>
 			<label kind="guard" x="153" y="0">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
+( ( concurrent_read( 41 ) == 1 ) )</label>
 			<nail x="170" y="0"/>
 		</transition>
 		<transition>
@@ -2888,7 +3263,7 @@ int _variable_0001;
 _request_0000.bound_lower        = 1,
 _request_0000.bound_upper        = 1,
 _request_0000.is_single_range    = true,
-_request_0000.variable_id        = 77</label>
+_request_0000.variable_id        = 86</label>
 		</transition>
 		<transition>
 			<source ref="id142"/>
@@ -2898,15 +3273,15 @@ _request_0000.variable_id        = 77</label>
 		<transition>
 			<source ref="id144"/>
 			<target ref="id145"/>
-			<label kind="synchronisation" x="17" y="-544">concurrent_notify[78]!</label>
+			<label kind="synchronisation" x="17" y="-544">concurrent_notify[87]!</label>
 		</transition>
 		<transition>
 			<source ref="id143"/>
 			<target ref="id144"/>
 			<label kind="assignment" x="-451" y="-544">// observe_gateway
-_variable_0000 = concurrent_request_add( 77, _request_0000 ) ,
+_variable_0000 = concurrent_request_add( 86, _request_0000 ) ,
 // This module is running.
-concurrent_write( 78, 1 )</label>
+concurrent_write( 87, 1 )</label>
 		</transition>
 		<transition>
 			<source ref="id145"/>
@@ -2924,7 +3299,7 @@ concurrent_write( 78, 1 )</label>
 			<label kind="synchronisation" x="241" y="-306">concurrent_can_run!</label>
 			<label kind="assignment" x="108" y="-289">concurrent_signal_access( id, true ) ,
 // For Goal:
-_variable_0001 = concurrent_read( 71 )</label>
+_variable_0001 = concurrent_read( 79 )</label>
 		</transition>
 		<transition>
 			<source ref="id147"/>
@@ -2934,12 +3309,12 @@ _variable_0001 = concurrent_read( 71 )</label>
 		<transition>
 			<source ref="id149"/>
 			<target ref="id150"/>
-			<label kind="synchronisation" x="714" y="-544">concurrent_notify[68]!</label>
+			<label kind="synchronisation" x="714" y="-544">concurrent_notify[76]!</label>
 		</transition>
 		<transition>
 			<source ref="id150"/>
 			<target ref="id151"/>
-			<label kind="synchronisation" x="714" y="-680">concurrent_notify[78]!</label>
+			<label kind="synchronisation" x="714" y="-680">concurrent_notify[87]!</label>
 			<nail x="782" y="-612"/>
 		</transition>
 		<transition>
@@ -2948,9 +3323,9 @@ _variable_0001 = concurrent_read( 71 )</label>
 			<label kind="assignment" x="190" y="-544">_variable_0000 = concurrent_request_remove_request( _variable_0000 ) ,
 // For Goal:
 // distance_to_wall
-concurrent_write( 68, _variable_0001 ) ,
+concurrent_write( 76, _variable_0001 ) ,
 // This module finished running.
-concurrent_write( 78, 0 )</label>
+concurrent_write( 87, 0 )</label>
 		</transition>
 		<transition>
 			<source ref="id151"/>
@@ -2998,7 +3373,7 @@ concurrent_write( 78, 0 )</label>
 			<source ref="id128"/>
 			<target ref="id134"/>
 			<label kind="guard" x="-603" y="-212">// Preconditions: [[initial_distance_to_wall &gt; lower_bound]]
-( ( concurrent_read( 69 ) &gt; concurrent_read( 70 ) ) )</label>
+( ( concurrent_read( 77 ) &gt; concurrent_read( 78 ) ) )</label>
 			<label kind="assignment" x="-416" y="-119">local_time = 0</label>
 		</transition>
 		<transition>
@@ -3103,19 +3478,19 @@ clock local_time;
 		<transition>
 			<source ref="id4"/>
 			<target ref="id5"/>
-			<label kind="synchronisation" x="501" y="510">concurrent_notify[31]!</label>
+			<label kind="synchronisation" x="501" y="510">concurrent_notify[39]!</label>
 		</transition>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id6"/>
-			<label kind="synchronisation" x="705" y="510">concurrent_notify[79]!</label>
+			<label kind="synchronisation" x="705" y="510">concurrent_notify[88]!</label>
 			<nail x="680" y="578"/>
 		</transition>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id4"/>
-			<label kind="assignment" x="510" y="408">concurrent_write( 31, 200 ) ,
-concurrent_write( 79, 1100 )</label>
+			<label kind="assignment" x="510" y="408">concurrent_write( 39, 200 ) ,
+concurrent_write( 88, 1100 )</label>
 		</transition>
 		<transition>
 			<source ref="id6"/>
@@ -3653,25 +4028,25 @@ clock local_time;
 		<transition>
 			<source ref="id4"/>
 			<target ref="id5"/>
-			<label kind="synchronisation" x="501" y="374">concurrent_notify[31]!</label>
+			<label kind="synchronisation" x="501" y="374">concurrent_notify[39]!</label>
 		</transition>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id6"/>
-			<label kind="synchronisation" x="705" y="374">concurrent_notify[32]!</label>
+			<label kind="synchronisation" x="705" y="374">concurrent_notify[40]!</label>
 		</transition>
 		<transition>
 			<source ref="id6"/>
 			<target ref="id7"/>
-			<label kind="synchronisation" x="909" y="374">concurrent_notify[52]!</label>
+			<label kind="synchronisation" x="909" y="374">concurrent_notify[60]!</label>
 			<nail x="884" y="442"/>
 		</transition>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id4"/>
-			<label kind="assignment" x="510" y="272">concurrent_write( 31, 900 ) ,
-concurrent_write( 32, 300 ) ,
-concurrent_write( 52, 1 )</label>
+			<label kind="assignment" x="510" y="272">concurrent_write( 39, 900 ) ,
+concurrent_write( 40, 300 ) ,
+concurrent_write( 60, 1 )</label>
 		</transition>
 		<transition>
 			<source ref="id7"/>
@@ -3682,7 +4057,7 @@ concurrent_write( 52, 1 )</label>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id1"/>
-			<label kind="synchronisation" x="91" y="442">control_plp_start[2]!</label>
+			<label kind="synchronisation" x="91" y="442">control_plp_start[3]!</label>
 		</transition>
 		<transition>
 			<source ref="id9"/>
@@ -3699,7 +4074,7 @@ concurrent_write( 52, 1 )</label>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id11"/>
-			<label kind="synchronisation" x="-140" y="476">control_plp_done[2]?</label>
+			<label kind="synchronisation" x="-140" y="476">control_plp_done[3]?</label>
 		</transition>
 		<transition>
 			<source ref="id11"/>
@@ -3824,25 +4199,25 @@ clock local_time;
 		<transition>
 			<source ref="id4"/>
 			<target ref="id5"/>
-			<label kind="synchronisation" x="501" y="374">concurrent_notify[31]!</label>
+			<label kind="synchronisation" x="501" y="374">concurrent_notify[39]!</label>
 		</transition>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id6"/>
-			<label kind="synchronisation" x="705" y="374">concurrent_notify[32]!</label>
+			<label kind="synchronisation" x="705" y="374">concurrent_notify[40]!</label>
 		</transition>
 		<transition>
 			<source ref="id6"/>
 			<target ref="id7"/>
-			<label kind="synchronisation" x="909" y="374">concurrent_notify[52]!</label>
+			<label kind="synchronisation" x="909" y="374">concurrent_notify[60]!</label>
 			<nail x="884" y="442"/>
 		</transition>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id4"/>
-			<label kind="assignment" x="510" y="272">concurrent_write( 31, 900 ) ,
-concurrent_write( 32, 300 ) ,
-concurrent_write( 52, 1 )</label>
+			<label kind="assignment" x="510" y="272">concurrent_write( 39, 900 ) ,
+concurrent_write( 40, 300 ) ,
+concurrent_write( 60, 1 )</label>
 		</transition>
 		<transition>
 			<source ref="id7"/>
@@ -3870,25 +4245,25 @@ concurrent_write( 52, 1 )</label>
 		<transition>
 			<source ref="id13"/>
 			<target ref="id14"/>
-			<label kind="synchronisation" x="501" y="782">concurrent_notify[31]!</label>
+			<label kind="synchronisation" x="501" y="782">concurrent_notify[39]!</label>
 		</transition>
 		<transition>
 			<source ref="id14"/>
 			<target ref="id15"/>
-			<label kind="synchronisation" x="705" y="782">concurrent_notify[32]!</label>
+			<label kind="synchronisation" x="705" y="782">concurrent_notify[40]!</label>
 		</transition>
 		<transition>
 			<source ref="id15"/>
 			<target ref="id16"/>
-			<label kind="synchronisation" x="909" y="782">concurrent_notify[52]!</label>
+			<label kind="synchronisation" x="909" y="782">concurrent_notify[60]!</label>
 			<nail x="884" y="850"/>
 		</transition>
 		<transition>
 			<source ref="id12"/>
 			<target ref="id13"/>
-			<label kind="assignment" x="510" y="680">concurrent_write( 31, 800 ) ,
-concurrent_write( 32, 200 ) ,
-concurrent_write( 52, 1 )</label>
+			<label kind="assignment" x="510" y="680">concurrent_write( 39, 800 ) ,
+concurrent_write( 40, 200 ) ,
+concurrent_write( 60, 1 )</label>
 		</transition>
 		<transition>
 			<source ref="id16"/>
@@ -3899,7 +4274,7 @@ concurrent_write( 52, 1 )</label>
 		<transition>
 			<source ref="id17"/>
 			<target ref="id10"/>
-			<label kind="synchronisation" x="91" y="850">control_plp_start[3]!</label>
+			<label kind="synchronisation" x="91" y="850">control_plp_start[4]!</label>
 		</transition>
 		<transition>
 			<source ref="id18"/>
@@ -3926,7 +4301,7 @@ concurrent_write( 52, 1 )</label>
 		<transition>
 			<source ref="id10"/>
 			<target ref="id21"/>
-			<label kind="synchronisation" x="-140" y="884">control_plp_done[3]?</label>
+			<label kind="synchronisation" x="-140" y="884">control_plp_done[4]?</label>
 		</transition>
 		<transition>
 			<source ref="id21"/>
@@ -4017,7 +4392,7 @@ clock local_time;
 			<source ref="id0"/>
 			<target ref="id2"/>
 			<label kind="guard" x="-36" y="408">( ( concurrent_read( 8 ) == 300 ) &amp;&amp;
-( concurrent_read( 79 ) == 1100 ) )</label>
+( concurrent_read( 88 ) == 1100 ) )</label>
 			<label kind="synchronisation" x="139" y="442">concurrent_can_run!</label>
 			<label kind="assignment" x="-113" y="459">concurrent_signal_access( concurrent_process_id, true )</label>
 		</transition>
@@ -4029,12 +4404,12 @@ clock local_time;
 		<transition>
 			<source ref="id4"/>
 			<target ref="id5"/>
-			<label kind="synchronisation" x="501" y="510">concurrent_notify[31]!</label>
+			<label kind="synchronisation" x="501" y="510">concurrent_notify[39]!</label>
 		</transition>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id4"/>
-			<label kind="assignment" x="510" y="408">concurrent_write( 31, 100 )</label>
+			<label kind="assignment" x="510" y="408">concurrent_write( 39, 100 )</label>
 		</transition>
 		<transition>
 			<source ref="id5"/>
@@ -4051,7 +4426,7 @@ clock local_time;
 			<source ref="id0"/>
 			<target ref="id8"/>
 			<label kind="guard" x="1026" y="408">( ( ( concurrent_read( 8 ) == 300 ) ||
-( concurrent_read( 79 ) == 1200 ) ) )</label>
+( concurrent_read( 88 ) == 1200 ) ) )</label>
 			<label kind="synchronisation" x="1159" y="442">concurrent_can_run!</label>
 			<label kind="assignment" x="907" y="459">concurrent_signal_access( concurrent_process_id, true )</label>
 		</transition>
@@ -4063,19 +4438,19 @@ clock local_time;
 		<transition>
 			<source ref="id10"/>
 			<target ref="id11"/>
-			<label kind="synchronisation" x="1521" y="510">concurrent_notify[33]!</label>
+			<label kind="synchronisation" x="1521" y="510">concurrent_notify[41]!</label>
 		</transition>
 		<transition>
 			<source ref="id11"/>
 			<target ref="id12"/>
-			<label kind="synchronisation" x="1725" y="510">concurrent_notify[31]!</label>
+			<label kind="synchronisation" x="1725" y="510">concurrent_notify[39]!</label>
 			<nail x="1700" y="578"/>
 		</transition>
 		<transition>
 			<source ref="id9"/>
 			<target ref="id10"/>
-			<label kind="assignment" x="1530" y="408">concurrent_write( 33, 100 ) ,
-concurrent_write( 31, 100 )</label>
+			<label kind="assignment" x="1530" y="408">concurrent_write( 41, 100 ) ,
+concurrent_write( 39, 100 )</label>
 		</transition>
 		<transition>
 			<source ref="id12"/>
@@ -4198,7 +4573,8 @@ clock local_time;
 (concurrent_info.is_process_would_like_to_access[13] == true) ||
 (concurrent_info.is_process_would_like_to_access[14] == true) ||
 (concurrent_info.is_process_would_like_to_access[15] == true) ||
-(concurrent_info.is_process_would_like_to_access[16] == true)
+(concurrent_info.is_process_would_like_to_access[16] == true) ||
+(concurrent_info.is_process_would_like_to_access[17] == true)
             </label>
 			<nail x="-408" y="204"/>
 			<nail x="-884" y="204"/>
@@ -4240,7 +4616,8 @@ clock local_time;
 (concurrent_info.is_process_would_like_to_access[13] == false) &amp;&amp;
 (concurrent_info.is_process_would_like_to_access[14] == false) &amp;&amp;
 (concurrent_info.is_process_would_like_to_access[15] == false) &amp;&amp;
-(concurrent_info.is_process_would_like_to_access[16] == false)
+(concurrent_info.is_process_would_like_to_access[16] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[17] == false)
             </label>
 			<label kind="assignment" x="-1088" y="127">time = 0</label>
 			<nail x="-408" y="408"/>
@@ -4399,6 +4776,15 @@ clock local_time;
 			<nail x="-860" y="180"/>
 			<nail x="-420" y="180"/>
 		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="190">concurrent_info.is_process_would_like_to_access[17]</label>
+			<label kind="assignment" x="-755" y="210">process_access_granted_id = 17</label>
+			<nail x="-860" y="210"/>
+			<nail x="-420" y="210"/>
+		</transition>
 
 	</template>
 	<template>
@@ -4441,29 +4827,30 @@ initialize_variables()</label>
 concurrent_process         = concurrent();
 control_graph_init_process = control_graph_init();
 achieve_walk_given_distance_process = achieve_walk_given_distance( 0 );
-maintain_direction_on_map_2_process = maintain_direction_on_map_2( 1 );
-maintain_direction_on_map_process = maintain_direction_on_map( 2 );
-observe_gateway_process = observe_gateway( 3 );
-detect_wall_process = detect_wall( 4 );
-node_probability_1_process = node_probability_1( 0, 5 );
-node_probability_2_process = node_probability_2( 1, 6 );
-node_probability_3_process = node_probability_3( 2, 7 );
-node_probability_4_process = node_probability_4( 3, 8 );
-node_concurrent_1_process = node_concurrent_1( 4, 9 );
-node_concurrent_2_process = node_concurrent_2( 5, 10 );
-node_concurrent_3_process = node_concurrent_3( 6, 11 );
-node_concurrent_4_process = node_concurrent_4( 7, 12 );
-node_sequential_1_process = node_sequential_1( 8, 13 );
-node_sequential_2_process = node_sequential_2( 9, 14 );
-node_condition_1_process = node_condition_1( 10, 15 );
-node_condition_2_process = node_condition_2( 11, 16 );
+walk_given_distance_process = walk_given_distance( 1 );
+maintain_direction_on_map_2_process = maintain_direction_on_map_2( 2 );
+maintain_direction_on_map_process = maintain_direction_on_map( 3 );
+observe_gateway_process = observe_gateway( 4 );
+detect_wall_process = detect_wall( 5 );
+node_probability_1_process = node_probability_1( 0, 6 );
+node_probability_2_process = node_probability_2( 1, 7 );
+node_probability_3_process = node_probability_3( 2, 8 );
+node_probability_4_process = node_probability_4( 3, 9 );
+node_concurrent_1_process = node_concurrent_1( 4, 10 );
+node_concurrent_2_process = node_concurrent_2( 5, 11 );
+node_concurrent_3_process = node_concurrent_3( 6, 12 );
+node_concurrent_4_process = node_concurrent_4( 7, 13 );
+node_sequential_1_process = node_sequential_1( 8, 14 );
+node_sequential_2_process = node_sequential_2( 9, 15 );
+node_condition_1_process = node_condition_1( 10, 16 );
+node_condition_2_process = node_condition_2( 11, 17 );
 system concurrent_process, control_graph_init, achieve_walk_given_distance_process, 
-       maintain_direction_on_map_2_process, maintain_direction_on_map_process, observe_gateway_process, 
-       detect_wall_process, node_probability_1_process, node_probability_2_process, 
-       node_probability_3_process, node_probability_4_process, node_concurrent_1_process, 
-       node_concurrent_2_process, node_concurrent_3_process, node_concurrent_4_process, 
-       node_sequential_1_process, node_sequential_2_process, node_condition_1_process, 
-       node_condition_2_process;
+       walk_given_distance_process, maintain_direction_on_map_2_process, maintain_direction_on_map_process, 
+       observe_gateway_process, detect_wall_process, node_probability_1_process, 
+       node_probability_2_process, node_probability_3_process, node_probability_4_process, 
+       node_concurrent_1_process, node_concurrent_2_process, node_concurrent_3_process, 
+       node_concurrent_4_process, node_sequential_1_process, node_sequential_2_process, 
+       node_condition_1_process, node_condition_2_process;
 </system>
 	<queries>
 		<query>

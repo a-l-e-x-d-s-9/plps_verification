@@ -529,7 +529,7 @@
         <xs:complexType>
           <xs:sequence minOccurs="1" maxOccurs="1">
             <xs:element name="k-shape" type="simple_value_type" />
-            <xs:element name="&#920;-scale" type="simple_value_type" />
+            <xs:element name="alpha-shape" type="simple_value_type" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>

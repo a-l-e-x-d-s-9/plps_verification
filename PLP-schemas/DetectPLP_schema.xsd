@@ -23,6 +23,7 @@
       <!-- SPECIFIC TO DETECT -->
       <xs:element name="detection_goal" type="detection_goal_type" />
       <xs:element name="success_prob_given_condition" type="success_given_condition_type" />
+      <xs:element name="failure_termination_condition" type="conditions_type" use="optional" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="version" type="xs:double" use="optional" />
