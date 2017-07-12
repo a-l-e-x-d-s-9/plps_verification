@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<control_graph
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="control_graph.xsd">
+
+<root root_name="node_sequential_start"/>
+
+<node_sequential   node_name="node_sequential_start" start_policy="any_predecessor_done" next_node_name="">
+    <run_plp plp_name="achieve_move_to" wait_time="2">
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="distance_to_goal" />
+            <operator type="="/>
+            <expression value="9" />
+          </formula_condition>
+        </update>
+    </run_plp>
+    <run_plp plp_name="achieve_key_take" wait_time="1">
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="distance_to_goal" />
+            <operator type="="/>
+            <expression value="8" />
+          </formula_condition>
+        </update>
+    </run_plp>
+</node_sequential>
+
+
+
+</control_graph>
