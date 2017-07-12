@@ -809,6 +809,8 @@ public class VerificationManager {
                 }
 
                 try {
+                    this.variable_manager.local_parameters_init( plp_id );
+
                     this.xml_to_uppaal_converter.parameters_add( plp_id, current_plp.getInputParams(),           VerificationParameter.VerificationParameterType.type_input );
                     this.xml_to_uppaal_converter.parameters_add( plp_id, current_plp.getOutputParams(),          VerificationParameter.VerificationParameterType.type_output );
                     this.xml_to_uppaal_converter.parameters_add( plp_id, current_plp.getExecParams(),            VerificationParameter.VerificationParameterType.type_execution );

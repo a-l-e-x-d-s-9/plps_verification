@@ -101,12 +101,16 @@ public class VerificationVariableManager {
         }
     }
 
+    public void local_parameters_init( int plp_id )
+    {
+        this.plp_parameters.add( plp_id, new VerificationPLPParameters() );
+    }
+
     public int local_parameters_add( int plp_id, String parameter_name, VerificationParameter parameter_data ) {
         int parameter_id;
 
         if ( plp_id >= this.plp_parameters.size() )
         {
-            this.plp_parameters.add( plp_id, new VerificationPLPParameters() );
             parameter_id = 0;
         }
         else
