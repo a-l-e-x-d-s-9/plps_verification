@@ -1655,7 +1655,7 @@ _request_0001.variable_id        = 52</label>
 			<target ref="id90"/>
 			<label kind="assignment" x="263" y="-578">// [path_free = TRUE]
 _variable_0000 = concurrent_request_add( 51, _request_0000 ) ,
-// [tmp_var equal 7.09]
+// [tmp_var = 7.09]
 concurrent_write( 88, 709 ) ,
 // Make sure resource: steering_wheel not changing.
 _variable_0001 = concurrent_request_add( 52, _request_0001 ) ,

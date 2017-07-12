@@ -86,7 +86,7 @@
     
     <formula_condition key_description="correct_path">
       <expression value="tmp_var" />
-      <operator type="equal" />
+      <operator type="=" />
       <expression value="7.09" />
     </formula_condition>
     
