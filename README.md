@@ -48,7 +48,7 @@ ccc
 
 ### Generate verification project for UPPAAL
 
-> java -jar CodeGenerator.jar -verify [plp-folder-path] [control-graph] [generated-project-for-uppaal] [configuration-file]
+> java -jar CodeGenerator.jar -verify [plp-folder-path] [control-graph-file] [generated-uppaal-system-file] [configuration-file]
 
 ## Code Examples
 
