@@ -173,7 +173,7 @@ public class VerificationGenerator {
             PLPParameter observation_goal_parameter = (PLPParameter)observation_goal;
             //String goal_string = convert_xml_condition_to_uppaal( plp_id, "", (Condition)plp_observe.getGoal(), observation_goal_variables );
 
-            int variable_id                     = this.variable_manager.variable_or_parameter_get_variable_id( plp_id, observation_goal_parameter.getName() );
+            int variable_id                     = this.variable_manager.variable_or_parameter_get_variable_id( plp_id, XMLtoUppaalConverter.parameter_get_first_field( observation_goal_parameter ) );
             VerificationVariable variable_data  = this.variable_manager.global_variable_get_data(variable_id);
 
 
@@ -294,84 +294,6 @@ public class VerificationGenerator {
 
         return transitions;
     }
-     /*
-    public void plp_observe_add_observations(int plp_id, ObservePLP plp_observe, UppaalPLP plp_uppaal ) throws VerificationException
-    {
-        //Set<Integer> observation_goal_variables = new HashSet<>();
-        ObservationGoal observation_goal = plp_observe.getGoal();
-
-        if ( PLPParameter.class.isInstance(observation_goal) )
-        {
-            PLPParameter observation_goal_parameter = (PLPParameter)observation_goal;
-            //String goal_string = convert_xml_condition_to_uppaal( plp_id, "", (Condition)plp_observe.getGoal(), observation_goal_variables );
-
-            int variable_id                     = this.variable_manager.variable_or_parameter_get_variable_id( plp_id, observation_goal_parameter.getName() );
-            VerificationVariable variable_data  = this.variable_manager.global_variable_get_data(variable_id);
-            String variable_uppaal              = XMLtoUppaalConverter.variable_id_to_uppaal_string(variable_id);
-
-            // TODO: Make user know if range for observed variable hasn’t been configured.
-            if ( false == variable_data.is_in_range )
-            {
-                throw new VerificationException("Variable to observe needs to has min and max values defined.");
-            }
-            Vector<Integer> sample_values = new Vector<>();
-            int max_samples = settings.get_int(settings.SETTING_OBSERVE_VARIABLE_SAMPLES);
-            int values_range = variable_data.max_value - variable_data.min_value + 1;
-
-            if ( values_range <= max_samples )
-            {
-                for (int i = variable_data.min_value; i <= variable_data.max_value; i++ )
-                {
-                    sample_values.add(new Integer(i));
-                }
-            }
-            else
-            {
-                final int SAMPLES_USED_1 = 1;
-                final int SAMPLES_USED_2 = 2;
-
-                if ( SAMPLES_USED_1 == max_samples )
-                {
-                    sample_values.add(new Integer(variable_data.min_value));
-                }
-                else if ( SAMPLES_USED_2 <= max_samples )
-                {
-                    sample_values.add(new Integer(variable_data.min_value));
-                    sample_values.add(new Integer(variable_data.max_value));
-
-                    int remained_samples        = max_samples  - SAMPLES_USED_2;
-                    int remained_values_range   = values_range - SAMPLES_USED_2;
-                    int remained_intervals      = remained_samples + 1;
-                    int sample_interval = remained_values_range / remained_intervals;
-
-                    for (int i = 1; i <= remained_samples; i++ )
-                    {
-                        sample_values.add(new Integer(variable_data.min_value + sample_interval * i));
-                    }
-                }
-            }
-
-            int i = 0;
-            for ( Integer sample_value : sample_values ) {
-                plp_uppaal.transitions.append("\t\t<transition>\n" +
-                        "\t\t\t<source ref=\"id94\"/>\n" +
-                        "\t\t\t<target ref=\"id106\"/>\n" +
-                        "\t\t\t<label kind=\"assignment\" x=\"151\" y=\"" + String.valueOf(-399 + (i * 20)) + "\">" + UppaalBuilder.binary_expression_enclosed( variable_uppaal, UppaalBuilder.STR_ASSIGNMENT, sample_value.toString() ) + "</label>\n" +
-                        "\t\t\t<nail x=\"262\" y=\"" + String.valueOf(-374 + (i * 20)) + "\"/>\n" +
-                        "\t\t\t<nail x=\"483\" y=\"" + String.valueOf(-374 + (i * 20)) + "\"/>\n" +
-                        "\t\t</transition>\n");
-                i++;
-            }
-        }
-        else
-        {
-            throw new VerificationException("Problem with observation.");
-        }
-
-
-
-    }
-    */
 
     public int failure_levels_height_in_squares( int level )
     {
@@ -601,6 +523,15 @@ public class VerificationGenerator {
             }
 
             success_id++;
+        }
+
+        if ( ( true == success_conditions.isEmpty() ) &&
+             ( true == failure_modes.isEmpty()      ) )
+        {
+            sub_graph_probabilities.transitions.add( new UppaalTransition( location_source_id, location_target_id,
+                    base_top_left,
+                    UppaalBuilder.Side.top_left,
+                    "", "", "", "", null, null ) );
         }
 
         sub_graph_probabilities.add_sub_graph( plp_uppaal, new Point( base_top_left.x, base_top_left.y ), "" );
@@ -1116,7 +1047,8 @@ public class VerificationGenerator {
         UppaalPLP plp_uppaal    = new UppaalPLP( plp, plp_id, this.variable_manager );
         plp_uppaal.name         = plp.getBaseName();
 
-        if ( null != plp.getPreConditions() )
+        if ( ( null  != plp.getPreConditions()           ) &&
+             ( false == plp.getPreConditions().isEmpty() ) )
         {
             plp_uppaal.precondition.append( "// Preconditions: " + UppaalBuilder.comply_string_single_line( plp.getPreConditions().toString() ) + "\n");
             plp_uppaal.precondition.append( this.xml_to_uppaal_converter.convert_xml_conditions_to_uppaal(plp_id, plp.getPreConditions(), UppaalBuilder.STR_AND, null ) );
@@ -1499,9 +1431,13 @@ public class VerificationGenerator {
             */
             //verification_declarations_start.append( String.format( "// <variable  name=\"%s\n", i, UppaalBuilder.comply_string_single_line( this.variable_manager.global_variable_get_name(i) ) ) );
             if ( true == variable_data.is_set ){
-
                 verification_declarations_start.append( UppaalBuilder.uppaal_variable_write( i, variable_data.value) + ";\n" );
             }
+
+            if ( true == variable_data.is_in_range ){
+                verification_declarations_start.append( UppaalBuilder.uppaal_variable_set_range( i, variable_data.min_value, variable_data.max_value ) + ";\n" );
+            }
+
         }
         verification_declarations_start.append("}\n");
     }
@@ -2170,7 +2106,12 @@ public class VerificationGenerator {
         }
 
         StringBufferExtra.replace_all( this.verification_declarations_start, "[<[CONTROL_NODES_AMOUNT]>]",         String.valueOf( control_graph.contron_nodes_amount() ) );
-        StringBufferExtra.replace_all( this.verification_declarations_start, "[<[CONTROL_NODES_CAN_RUN_AMOUNT]>]", String.valueOf( control_graph.contron_transitions_amount() ) );
+        int transitions_amount = control_graph.contron_transitions_amount();
+        if ( 0 == transitions_amount )
+        {
+            transitions_amount = 1;
+        }
+        StringBufferExtra.replace_all( this.verification_declarations_start, "[<[CONTROL_NODES_CAN_RUN_AMOUNT]>]", String.valueOf( transitions_amount ) );
         StringBufferExtra.replace_all( this.verification_modules_end, "[<[CONTROL_NODE_ROOT_CHANNEL]>]", UppaalSystem.uppaal_sync_signal_send( UppaalControlNode.uppaal_channel_notify_by_id( control_graph.get_root_id() ) ) );
     }
 

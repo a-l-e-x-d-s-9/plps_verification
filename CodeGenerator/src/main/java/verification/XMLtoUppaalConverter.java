@@ -733,8 +733,22 @@ public class XMLtoUppaalConverter {
         return UppaalBuilder.comply_string_single_line( result_formula.toString() );
     }
 
+    static public String parameter_get_first_field( PLPParameter parameter )
+    {
+        if ( true == parameter.getParamFieldValues().isEmpty() )
+        {
+            return parameter.getName();
+        }
+        else
+        {
+            return parameter_and_field_to_name( parameter.getName(), parameter.getParamFieldValues().get(0) );
+        }
+    }
 
-
+    static public String parameter_and_field_to_name( String parameter_name, String field_name )
+    {
+        return parameter_name + "_" + field_name;
+    }
 
     public void parameters_add(int plp_id, List<PLPParameter> parameters, VerificationParameter.VerificationParameterType parameters_type ) throws VerificationException
     {
@@ -743,12 +757,25 @@ public class XMLtoUppaalConverter {
 
                 if ( false == this.variable_manager.local_parameters_is_exist( plp_id, current_parameter.getName() ) ) {
 
-                    VerificationParameter parameter_data    = new VerificationParameter();
-                    parameter_data.parameter_type           = parameters_type;
-                    //parameter_data.value_type               = VerificationParameter.VerificationValueType.value_integer;
-                    //parameter_data.value                    = current_parameter.getParamFieldValues();
+                    if ( true == current_parameter.getParamFieldValues().isEmpty() )
+                    {
+                        VerificationParameter parameter_data    = new VerificationParameter();
+                        parameter_data.parameter_type           = parameters_type;
 
-                    this.variable_manager.local_parameters_add( plp_id, current_parameter.getName(), parameter_data );
+                        this.variable_manager.local_parameters_add( plp_id, current_parameter.getName(), parameter_data );
+                    }
+                    else
+                    {
+                        for ( String field_name : current_parameter.getParamFieldValues() )
+                        {
+                            VerificationParameter parameter_data    = new VerificationParameter();
+                            parameter_data.parameter_type           = parameters_type;
+
+                            this.variable_manager.local_parameters_add( plp_id, parameter_and_field_to_name( current_parameter.getName(), field_name ), parameter_data );
+                        }
+                    }
+
+
                 }
                 else
                 {

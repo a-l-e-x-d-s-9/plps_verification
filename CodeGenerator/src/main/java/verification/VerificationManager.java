@@ -143,7 +143,7 @@ public class VerificationManager {
 
                     if ( true == this.plp_catalog.plp_name_is_exist(got_plp_name) )
                     {
-                        plp_id      = this.plp_catalog.find_plp_id_by_name( got_plp_name );
+                        plp_id           = this.plp_catalog.find_plp_id_by_name( got_plp_name );
                         int parameter_id = this.variable_manager.local_parameters_get_id( plp_id, got_name );
                         VerificationParameter parameter_data = this.variable_manager.local_parameters_get_data(plp_id, parameter_id);
 
@@ -724,8 +724,8 @@ public class VerificationManager {
         Element configuration_root = file_open( this.configuration_file);
         configuration_file_load_settings( configuration_root );
 
-        if (null != all_plps) {
-            for (PLP current_plp : all_plps) {
+        if (null != this.all_plps) {
+            for (PLP current_plp : this.all_plps) {
                 int plp_id = this.plp_catalog.plp_map_add( current_plp.getBaseName() );
 
                 List<Variable> plp_variables = current_plp.getVariables();
@@ -949,8 +949,8 @@ public class VerificationManager {
             configuration_file_load_variables( configuration_root );
 
 
-            if ( null != all_plps ) {
-                for (PLP current_plp : all_plps) {
+            if ( null != this.all_plps ) {
+                for (PLP current_plp : this.all_plps) {
                     this.generator.uppaal_file_add_plp(current_plp);
                 }
             }

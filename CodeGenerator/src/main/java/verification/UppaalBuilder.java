@@ -295,6 +295,11 @@ public class UppaalBuilder {
         return String.format( "concurrent_write( %s, %s )", variable_id, value );
     }
 
+    public static String uppaal_variable_set_range( String variable_id, String min, String max )
+    {
+        return String.format( "concurrent_set_range( %s, %s, %s )", variable_id, min, max );
+    }
+
     public static String uppaal_variable_write( int variable_id, String value )
     {
         return uppaal_variable_write( String.valueOf( variable_id), value );
@@ -308,6 +313,11 @@ public class UppaalBuilder {
     public static String uppaal_variable_write( int variable_id, int value )
     {
         return uppaal_variable_write( String.valueOf( variable_id), String.valueOf( value ) );
+    }
+
+    public static String uppaal_variable_set_range( int variable_id, int min, int max )
+    {
+        return uppaal_variable_set_range( String.valueOf( variable_id), String.valueOf( min ), String.valueOf( max ) );
     }
 
     public static String uppaal_variable_read( String variable_id )

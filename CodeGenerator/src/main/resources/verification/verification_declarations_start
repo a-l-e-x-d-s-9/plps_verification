@@ -18,6 +18,9 @@ typedef struct
 {
     int     value;
     bool    is_set;
+    bool    in_range;
+    int     min;
+    int     max;
 } concurrent_data_type;
 
 const int SCHEDULER_PROCESSES_AMOUNT    = [<[processes_amount]>];
@@ -63,7 +66,8 @@ void concurrent_init()
 
     for ( variable_id : int[ 0, CONCURRENT_DATA_AMOUNT - 1 ])
     {
-        concurrent_info.concurrent_data[ variable_id ].is_set = false;
+        concurrent_info.concurrent_data[ variable_id ].is_set   = false;
+        concurrent_info.concurrent_data[ variable_id ].in_range = false;
     }
 
     concurrent_info.requests_amount = 0;
@@ -156,15 +160,33 @@ int concurrent_read( int variable_id ){
     }
     else
     {
-        return 0 / 0;
+        // Error trying to read variable without ever writing to it:
+        return ( variable_id - variable_id ) / 0;
     }
 }
 
 void concurrent_write( int variable_id, int value ){
     concurrent_info.concurrent_data[ variable_id ].is_set = true;
+
+    if ( true == concurrent_info.concurrent_data[ variable_id ].in_range )
+    {
+        if ( ( value &lt; concurrent_info.concurrent_data[ variable_id ].min ) ||
+             ( value &gt; concurrent_info.concurrent_data[ variable_id ].max ) )
+        {
+             // Error variable value out of range:
+             concurrent_info.concurrent_data[ variable_id ].value = (variable_id - variable_id) / (value - value );
+        }
+    }
+
     concurrent_info.concurrent_data[ variable_id ].value  = value;
     
     concurrent_satisfied_update_request_all( variable_id );
+}
+
+void concurrent_set_range( int variable_id, int min, int max ){
+    concurrent_info.concurrent_data[ variable_id ].in_range = true;
+    concurrent_info.concurrent_data[ variable_id ].min      = min;
+    concurrent_info.concurrent_data[ variable_id ].max      = max;
 }
 
 void concurrent_signal_access(  int process_id, bool value ){
