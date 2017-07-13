@@ -56,7 +56,7 @@ xsi:schemaLocation="configurations.xsd">
 
 <parameter plp_name="detect_wall"                       name="laser_scan"                       value="0" />
 <parameter plp_name="detect_wall"                       name="output"                           value="0" />
-<parameter plp_name="observe_gateway"                   name="gateway_location"                 value="1.23" min_value="1.23" max_value="1.3"  />
+<parameter plp_name="observe_gateway"                   name="gateway_location_gateway"         value="1.23" min_value="1.23" max_value="1.3"  />
 <parameter plp_name="observe_gateway"                   name="clear_path"                       value="0.01" min_value="0"    max_value="0.01" />
 <parameter plp_name="achieve_walk_given_distance"       name="clear_path"                       value="0.01" min_value="0"    max_value="0.01" />
 <parameter plp_name="achieve_walk_given_distance"       name="linear_distance"                  value="0.01" />
