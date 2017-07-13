@@ -308,7 +308,9 @@ public class PLPLoader {
         currentNode = rootElement.getElementsByTagName("failure_termination_condition").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
             List<Condition> condList = parseConditions((Element) currentNode);
-            plp.setFailTerminationCond(condList.get(0));
+            if ( false == condList.isEmpty() ) {
+                plp.setFailTerminationCond(condList.get(0));
+            }
         }
         currentNode = rootElement.getElementsByTagName("runtime_given_success").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {

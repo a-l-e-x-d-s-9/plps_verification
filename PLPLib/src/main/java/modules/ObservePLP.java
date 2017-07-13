@@ -34,10 +34,11 @@ public class ObservePLP extends PLP {
 
     public ObservePLP(String baseName) {
         super(baseName);
-        failureToObserveProb = new LinkedList<>();
-        correctObservationProb = new LinkedList<>();
-        successRuntime = new LinkedList<>();
-        failureRuntime = new LinkedList<>();
+        failureToObserveProb    = new LinkedList<>();
+        correctObservationProb  = new LinkedList<>();
+        successRuntime          = new LinkedList<>();
+        failureRuntime          = new LinkedList<>();
+        failTerminationCond     = null;
         this.goal = new Predicate("empty-goal");
     }
 
