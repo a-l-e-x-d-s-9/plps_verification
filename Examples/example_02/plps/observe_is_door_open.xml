@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<plps:observe_plp name="observe_is_door_locked" version="1.0" glue_file_location=""
+<plps:observe_plp name="observe_is_door_open" version="1.0" glue_file_location=""
 	xmlns:plps="PLP-schemas"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="PLP-schemas ObservePLP_schema.xsd">
@@ -13,9 +13,7 @@
     </input_parameters>
 
     <output_parameters>
-      <param name="gateway_location">
-        <field value="gateway"/>
-      </param>
+      <param name="t1"/>
     </output_parameters>
 
     <non_observable>
@@ -47,9 +45,7 @@
   </progress_measures>
   
   <observation_goal_parameter>
-    <param name="gateway_location">
-      <field value="gateway" />
-    </param>
+    <param name="t1"/>
   </observation_goal_parameter>
   
   <failure_to_observe_probability>
