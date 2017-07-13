@@ -13,6 +13,7 @@ xsi:schemaLocation="configurations.xsd">
 <variable  name="fuel"                                              value="10" />
 
 
-<!--parameter plp_name="observe_gateway" name="gateway_location"                 value="1.23" min_value="1.23" max_value="1.3"  /-->
+<parameter plp_name="observe_is_door_locked" name="gateway_location" value="0" min_value="0" max_value="1"  />
+<parameter plp_name="observe_is_door_open"   name="t1" value="0" min_value="0" max_value="1"  />
 
 </configurations>

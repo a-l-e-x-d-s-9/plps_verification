@@ -9,14 +9,13 @@ xmllint --xinclude --schema ../../PLP-schemas/AchievePLP_schema.xsd     plps/ach
 xmllint --xinclude --schema ../../PLP-schemas/AchievePLP_schema.xsd     plps/achieve_key_take.xml
 xmllint --xinclude --schema ../../PLP-schemas/AchievePLP_schema.xsd     plps/achieve_move_through_doorway.xml
 xmllint --xinclude --schema ../../PLP-schemas/AchievePLP_schema.xsd     plps/achieve_move_to.xml
-#xmllint --xinclude --schema ../../PLP-schemas/ObservePLP_schema.xsd     plps/observe_is_door_locked.xml
-#xmllint --xinclude --schema ../../PLP-schemas/ObservePLP_schema.xsd     plps/observe_is_door_open.xml
+xmllint --xinclude --schema ../../PLP-schemas/ObservePLP_schema.xsd     plps/observe_is_door_locked.xml
+xmllint --xinclude --schema ../../PLP-schemas/ObservePLP_schema.xsd     plps/observe_is_door_open.xml
 xmllint --xinclude --schema ../../PLP-schemas/MaintainPLP_schema.xsd    plps/maintain_key_hold.xml
 
 
 # java -jar ../../CodeGenerator/out/artifacts/CodeGenerator_jar/CodeGenerator.jar -verify plps control_graph.xml generated_system.xml configurations.xml
 
-# java -jar ../../CodeGenerator/out/artifacts/CodeGenerator_jar/CodeGenerator.jar -verify ../PLPs\ and\ Glues/ ../control_graph.xml ../generated_system.xml ../configurations.xml
 
-#-verify "/home/alexds9/Thesis/plps_verification/Examples/PLPs and Glues" "/home/alexds9/Thesis/plps_verification/Examples/control_graph.xml" "/home/alexds9/Thesis/plps_verification/Examples/generated_system.xml" "/home/alexds9/Thesis/plps_verification/Examples/configurations.xml" 
+#~/Thesis/plps_verification/Examples/example_00
 #~/Thesis/plps_verification/Examples/example_02
