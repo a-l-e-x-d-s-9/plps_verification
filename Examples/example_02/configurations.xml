@@ -8,15 +8,18 @@ xsi:schemaLocation="configurations.xsd">
 <setting   name="observe_variable_samples"                          value="10"/>
 <setting   name="run_time_amount_of_intervals_for_discretization"   value="5"/>
 
-<parameter plp_name="observe_is_door_locked" name="gateway_location" value="0" min_value="0" max_value="1"  />
-<parameter plp_name="observe_is_door_open"   name="t1" value="0" min_value="0" max_value="1"  />
+<variable  name="robot_location"                                    value="at_a"        is_exclusive_access="true"  />
+<variable  name="key_location"                                      value="at_a_key"    is_exclusive_access="true"  />
+<variable  name="holding_key"                                       value="FALSE"       is_exclusive_access="true"  />
+<variable  name="key_dropped"                                       value="FALSE"       is_exclusive_access="true"  />
+<variable  name="key_can_drop"                                      value="FALSE"       is_exclusive_access="true"  />
 
 
-<variable  name="robot_location"                                    value="at_a" is_exclusive_access="true"  />
-<variable  name="key_location"                                      value="at_a" is_exclusive_access="true"  />
 <variable  name="tmp_var"                                           value="7"    min_value="1"      max_value="13"      is_exclusive_access="false" />
 <variable  name="fuel"                                              value="10" />
 
+<parameter plp_name="observe_is_door_locked" name="gateway_location" value="0" min_value="0" max_value="1"  />
+<parameter plp_name="observe_is_door_open"   name="door_is_open" min_value="0" max_value="1"  />
 
 
 </configurations>
