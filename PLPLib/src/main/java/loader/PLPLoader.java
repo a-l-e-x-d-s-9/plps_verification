@@ -4,6 +4,7 @@ package loader;
 import conditions.*;
 import distributions.*;
 import effects.*;
+import org.xml.sax.SAXException;
 import plpEtc.ConfidenceInterval;
 import plpEtc.FieldType;
 import plpEtc.Predicate;
@@ -14,6 +15,7 @@ import plpFields.*;
 
 import javax.xml.parsers.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -57,7 +59,7 @@ public class PLPLoader {
         }*/
     }
 
-    public static void loadFromDirectory(String dir) {
+    public static void loadFromDirectory(String dir) throws ParserConfigurationException, SAXException, IOException {
         achievePLPs = new LinkedList<>();
         observePLPs = new LinkedList<>();
         detectPLPs = new LinkedList<>();
@@ -83,7 +85,7 @@ public class PLPLoader {
         }
     }
 
-    private static void loadFromFile(String fileName) {
+    private static void loadFromFile(String fileName) throws ParserConfigurationException, SAXException, IOException {
         try {
             File plpFile = new File(fileName);
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -96,7 +98,7 @@ public class PLPLoader {
             String PLPname = rootElement.getAttribute("name");
 
             PLP plp;
-            String nodeNameWithoutNS = rootElement.getNodeName().substring(rootElement.getNodeName().indexOf(':')+1);
+            String nodeNameWithoutNS = rootElement.getNodeName().substring(rootElement.getNodeName().indexOf(':') + 1);
             switch (nodeNameWithoutNS) {
                 case "achieve_plp":
                     plp = new AchievePLP(PLPname);
@@ -191,6 +193,7 @@ public class PLPLoader {
                         throw new RuntimeException("Observe PLP: " + oplp.getBaseName() + " has a parameter observation goal that isn't listed as an output parameter");
                 }
             }
+            /*
             // Validate Detect PLPs
             for (DetectPLP dplp : getDetectPLPs()) {
                 // Check to see if there is a detect PLP that doesn't have a result param
@@ -198,19 +201,21 @@ public class PLPLoader {
                     throw new RuntimeException("Detect PLP: " + dplp.getBaseName() + " is missing the result parameter from the parameter list");
                 }
             }
-        }
-        catch (Exception e) {
+            */
+       }
+        catch ( ParserConfigurationException e ) {
             e.printStackTrace();
+            throw e;
         }
 
     }
 
     private static void LoadDetectFields(Element rootElement, DetectPLP plp) {
         Node currentNode = rootElement.getElementsByTagName("detection_goal").item(0);
-        if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
+        /*if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
             plp.setGoal(parseConditions((Element) currentNode).get(0));
             plp.setResultParameterName(((Element) currentNode).getAttribute("result_parameter_name"));
-        }
+        }*/
         currentNode = rootElement.getElementsByTagName("success_prob_given_condition").item(0);
         if (currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE) {
             List<ConditionalProb> condProbList = parseProb((Element) currentNode);

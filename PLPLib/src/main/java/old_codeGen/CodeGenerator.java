@@ -23,8 +23,13 @@ public class CodeGenerator {
         else {
             String path = args[0];
             if (!path.endsWith("\\")) { path = path.concat("\\"); }
-            PLPLoader.loadFromDirectory(args[0]);
-
+            try {
+                PLPLoader.loadFromDirectory(args[0]);
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+                return;
+            }
             File pack = new File(path+"plp_package");
             pack.mkdir();
 
