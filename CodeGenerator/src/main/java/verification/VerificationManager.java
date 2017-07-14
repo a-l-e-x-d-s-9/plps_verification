@@ -114,6 +114,9 @@ public class VerificationManager {
             String set_overwrite            = "NO";
             String set_min_value            = "";
             String set_max_value            = "";
+            boolean is_min_set              = false;
+            boolean is_max_set              = false;
+
 
             Node node_min_value = currentNode.getAttributes().getNamedItem("min_value");
             if ( node_min_value != null && node_min_value.getNodeType() == Node.ATTRIBUTE_NODE) {
@@ -183,7 +186,29 @@ public class VerificationManager {
             }
 
             variable_data.is_set = true;
-            variable_data.value = this.xml_to_uppaal_converter.convert_xml_value_to_uppaal_int(got_value);
+
+            if ( XMLtoUppaalConverter.xml_is_numeric_or_boolean(got_value) ) {
+                variable_data.value  = this.xml_to_uppaal_converter.convert_xml_value_to_uppaal_int(got_value);
+            }
+            else
+            {
+                if ( this.variable_manager.global_variable_is_exist( got_value ) )
+                {
+                    VerificationVariable use_data = this.variable_manager.global_variable_get_data( got_value );
+                    if ( true == use_data.is_set ) {
+                        variable_data.value = use_data.value;
+                    }
+                    else
+                    {
+                        throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set to uninitialized variable: \"" + got_value + "\"." );
+                    }
+                }
+                else
+                {
+                    throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set to unknown variable: \"" + got_value + "\"." );
+                }
+            }
+
             if ( ( VerificationVariable.VerificationValueType.value_boolean == variable_data.value_type) &&
                  ( 0 != variable_data.value ) )
             {
@@ -193,11 +218,33 @@ public class VerificationManager {
 
             if ( false == got_min_value.isEmpty() )
             {
-                variable_data.min_value = this.xml_to_uppaal_converter.convert_xml_value_to_uppaal_int(got_min_value);
-                set_min_value = String.valueOf( variable_data.min_value );
-                variable_data.is_in_range = true;
+                if ( XMLtoUppaalConverter.xml_is_numeric_or_boolean(got_min_value) ) {
+                    variable_data.min_value = this.xml_to_uppaal_converter.convert_xml_value_to_uppaal_int(got_min_value);
+                    set_min_value   = String.valueOf(variable_data.min_value);
+                    is_min_set      = true;
+                }
+                else
+                {
+                    if ( this.variable_manager.global_variable_is_exist( got_min_value ) )
+                    {
+                        VerificationVariable min_data = this.variable_manager.global_variable_get_data( got_min_value );
+                        if ( true == min_data.is_set ) {
+                            set_min_value = String.valueOf(min_data.value);
+                            is_min_set = true;
+                        }
+                        else
+                        {
+                            throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set min to uninitialized variable: \"" + got_min_value + "\"." );
+                        }
+                    }
+                    else
+                    {
+                        throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set min to unknown variable: \"" + got_min_value + "\"." );
+                    }
+                }
 
-                if ( variable_data.value < variable_data.min_value )
+                if ( ( true == is_min_set                            ) &&
+                     ( variable_data.value < variable_data.min_value ) )
                 {
                     variable_data.value = variable_data.min_value;
                 }
@@ -205,14 +252,46 @@ public class VerificationManager {
 
             if ( false == got_max_value.isEmpty() )
             {
-                variable_data.max_value = this.xml_to_uppaal_converter.convert_xml_value_to_uppaal_int(got_max_value);
-                set_max_value = String.valueOf( variable_data.max_value );
-                variable_data.is_in_range = true;
+                if ( XMLtoUppaalConverter.xml_is_numeric_or_boolean(got_max_value) ) {
+                    variable_data.max_value = this.xml_to_uppaal_converter.convert_xml_value_to_uppaal_int(got_max_value);
+                    set_max_value   = String.valueOf(variable_data.max_value);
+                    is_max_set      = true;
+                }
+                else
+                {
+                    if ( this.variable_manager.global_variable_is_exist(got_max_value) )
+                    {
+                        VerificationVariable max_data = this.variable_manager.global_variable_get_data( got_max_value );
+                        if ( true == max_data.is_set )
+                        {
+                            set_max_value   = String.valueOf( max_data.value );
+                            is_max_set      = true;
+                        }
+                        else
+                        {
+                            throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set max to uninitialized variable: \"" + got_max_value + "\"." );
+                        }
+                    }
+                    else
+                    {
+                        throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set max to unknown variable: \"" + got_max_value + "\"." );
+                    }
+                }
 
-                if ( variable_data.value > variable_data.max_value )
+                if ( ( true == is_max_set                            ) &&
+                     ( variable_data.value > variable_data.max_value ) )
                 {
                     variable_data.value = variable_data.max_value;
                 }
+            }
+
+            if ( is_min_set && is_max_set )
+            {
+                variable_data.is_in_range = true;
+            }
+            else
+            {
+                variable_data.is_in_range = false;
             }
 
             set_value = String.valueOf(variable_data.value);
