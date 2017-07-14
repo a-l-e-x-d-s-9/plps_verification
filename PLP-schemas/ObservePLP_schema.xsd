@@ -522,7 +522,7 @@
       <xs:element name="exp">
         <xs:complexType>
           <xs:sequence minOccurs="1" maxOccurs="1">
-            <xs:element name="&#955;-rate" type="simple_value_type" />
+            <xs:element name="lambda-rate" type="simple_value_type" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>

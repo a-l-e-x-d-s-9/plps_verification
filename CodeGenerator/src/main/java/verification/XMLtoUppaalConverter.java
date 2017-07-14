@@ -99,7 +99,7 @@ public class XMLtoUppaalConverter {
 
     public int convert_xml_double_to_uppaal_int( double number )
     {
-        return (int)( number * this.settings.get_int( settings.SETTING_PRECISION_MULTIPLIER_FOR_NUMBERS_AND_TIME ) );
+        return (int)( number * this.settings.get_int( this.settings.SETTING_PRECISION_MULTIPLIER_FOR_NUMBERS_AND_TIME ) );
     }
 
     public int plp_maximum_run_time()

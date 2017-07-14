@@ -1604,7 +1604,30 @@ public class VerificationGenerator {
         else if ( ExpDistribution.class.isInstance( run_time_distribution.getDist() ) )
         {
             ExpDistribution distribution_exp    = (ExpDistribution)distribution;
-            String          variable_exp_lambda = plp_uppaal.local_variable_add();
+            //String          variable_exp_lambda = plp_uppaal.local_variable_add();
+            String lambda_input                  = distribution_exp.getLambda();
+            //String lambda_output                = lambda_input;
+/*
+            if ( false == XMLtoUppaalConverter.xml_is_numeric( lambda_input ) )
+            {
+                if ( this.variable_manager.variable_or_parameter_is_exist( plp_id, lambda_input ) )
+                {
+                    int variable_id                     = this.variable_manager.variable_or_parameter_get_variable_id( plp_id, lambda_input );
+                    lambda_output =  UppaalBuilder.binary_expression(
+                                            UppaalBuilder.uppaal_variable_read(variable_id),
+                                            UppaalBuilder.STR_DIVIDE,
+                                            this.settings.get_string( this.settings.SETTING_PRECISION_MULTIPLIER_FOR_NUMBERS_AND_TIME ));
+                }
+                else
+                {
+                    throw new VerificationException("PLP: " + String.valueOf(plp_id) + ", Unknown variable: \"" + lambda_input + "\" in run time distribution: " + distribution.toString() );
+                }
+            }
+*/
+            String lambda_output =  UppaalBuilder.binary_expression(
+                    UppaalBuilder.add_brackets( this.xml_to_uppaal_converter.convert_xml_formula_to_uppaal( plp_id, lambda_input ) ),
+                    UppaalBuilder.STR_DIVIDE,
+                    this.settings.get_string( this.settings.SETTING_PRECISION_MULTIPLIER_FOR_NUMBERS_AND_TIME ));
 
             labels_at_main.append(
                     (new UppaalLabel(
@@ -1613,7 +1636,7 @@ public class VerificationGenerator {
                             UppaalBuilder.binary_expression( "local_time", UppaalBuilder.STR_LESS_THAN_EQUAL, String.valueOf(this.xml_to_uppaal_converter.plp_maximum_run_time()) )
                     )).toString() );
 
-
+/*
             String label_assignment_content = UppaalBuilder.binary_expression(
                     variable_exp_lambda,
                     UppaalBuilder.STR_ASSIGNMENT,
@@ -1623,15 +1646,15 @@ public class VerificationGenerator {
                     source_place_absolute.x + UppaalBuilder.label_center_at_x( UppaalBuilder.direction_left( UppaalBuilder.squares_length(1)), label_assignment_content ),
                     source_place_absolute.y + UppaalBuilder.direction_down(UppaalBuilder.squares_length(1.5)) );
 
-
-            transition_labels_before_main.append(new UppaalLabel("assignment", label_assignment_place, label_assignment_content ).toString());
+*/
+            //transition_labels_before_main.append(new UppaalLabel("assignment", label_assignment_place, label_assignment_content ).toString());
 
 
             Point label_exponentialrate_place = new Point(
-                    source_place_absolute.x + UppaalBuilder.label_center_at_x( 0, variable_exp_lambda ),
+                    source_place_absolute.x,
                     source_place_absolute.y + UppaalBuilder.direction_down(UppaalBuilder.squares_length(1)) );
 
-            labels_at_main.append(new UppaalLabel("exponentialrate", label_exponentialrate_place, variable_exp_lambda ).toString());
+            labels_at_main.append(new UppaalLabel("exponentialrate", label_exponentialrate_place, lambda_output ).toString());
 
 
             sub_graph.transitions.add( new UppaalTransition( source_location_id, target_location_id,
