@@ -8,6 +8,32 @@ xsi:schemaLocation="configurations.xsd">
 <setting   name="observe_variable_samples"                          value="10"/>
 <setting   name="run_time_amount_of_intervals_for_discretization"   value="5"/>
 
+<parameter plp_name="detect_wall"                       name="laser_scan"                       value="0" />
+<parameter plp_name="detect_wall"                       name="output"                           value="0" />
+<parameter plp_name="observe_gateway"                   name="gateway_location_gateway"         value="1.23" min_value="1.23" max_value="1.3"  />
+<parameter plp_name="observe_gateway"                   name="clear_path"                       value="0.01" min_value="0"    max_value="0.01" />
+<parameter plp_name="achieve_walk_given_distance"       name="clear_path"                       value="0.01" min_value="0"    max_value="0.01" />
+<parameter plp_name="achieve_walk_given_distance"       name="linear_distance"                  value="0.01" />
+<parameter plp_name="achieve_walk_given_distance"       name="angular_distance"                 value="0.01" />
+<parameter plp_name="maintain_direction_on_map"         name="max_change_rate_path_tangent"     value="0" />
+<parameter plp_name="observe_gateway"                   name="rgb_image"                        value="0" />
+<parameter plp_name="observe_gateway"                   name="odometry"                         value="0" />
+<parameter plp_name="observe_gateway"                   name="arm_controller"                   value="0" />
+<parameter plp_name="observe_gateway"                   name="areaA"                            value="0" />
+<parameter plp_name="observe_gateway"                   name="areaB"                            value="0" />
+<parameter plp_name="observe_gateway"                   name="gateway"                          value="0" />
+<parameter plp_name="observe_gateway"                   name="gateway_blocked"                  value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="map"                              value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="gas_level"                        value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="odometry"                         value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="goal_location"                    value="0" />
+<parameter plp_name="maintain_direction_on_map"         name="path_free"                        value="0" />
+<parameter plp_name="achieve_walk_given_distance"       name="laser_scan"                       value="0" />
+<parameter plp_name="achieve_walk_given_distance"       name="odometry"                         value="0" />
+<parameter plp_name="achieve_walk_given_distance"       name="energy_level"                     value="0" />
+<parameter plp_name="achieve_walk_given_distance"       name="result"                           value="0" />
+
+
 <variable  name="current_angle"                         value="0.15" min_value="0.11"   max_value="0.19"    is_exclusive_access="true"  />
 <variable  name="tmp_var"                               value="7"    min_value="6"      max_value="13"      is_exclusive_access="false" />
 <variable  name="fuel"                                  value="10" />
@@ -54,29 +80,5 @@ xsi:schemaLocation="configurations.xsd">
 <variable  name="observe_gateway_repeat"                value="0" />
 <variable  name="distance_to_wall"                      value="0" />
 
-<parameter plp_name="detect_wall"                       name="laser_scan"                       value="0" />
-<parameter plp_name="detect_wall"                       name="output"                           value="0" />
-<parameter plp_name="observe_gateway"                   name="gateway_location_gateway"         value="1.23" min_value="1.23" max_value="1.3"  />
-<parameter plp_name="observe_gateway"                   name="clear_path"                       value="0.01" min_value="0"    max_value="0.01" />
-<parameter plp_name="achieve_walk_given_distance"       name="clear_path"                       value="0.01" min_value="0"    max_value="0.01" />
-<parameter plp_name="achieve_walk_given_distance"       name="linear_distance"                  value="0.01" />
-<parameter plp_name="achieve_walk_given_distance"       name="angular_distance"                 value="0.01" />
-<parameter plp_name="maintain_direction_on_map"         name="max_change_rate_path_tangent"     value="0" />
-<parameter plp_name="observe_gateway"                   name="rgb_image"                        value="0" />
-<parameter plp_name="observe_gateway"                   name="odometry"                         value="0" />
-<parameter plp_name="observe_gateway"                   name="arm_controller"                   value="0" />
-<parameter plp_name="observe_gateway"                   name="areaA"                            value="0" />
-<parameter plp_name="observe_gateway"                   name="areaB"                            value="0" />
-<parameter plp_name="observe_gateway"                   name="gateway"                          value="0" />
-<parameter plp_name="observe_gateway"                   name="gateway_blocked"                  value="0" />
-<parameter plp_name="maintain_direction_on_map"         name="map"                              value="0" />
-<parameter plp_name="maintain_direction_on_map"         name="gas_level"                        value="0" />
-<parameter plp_name="maintain_direction_on_map"         name="odometry"                         value="0" />
-<parameter plp_name="maintain_direction_on_map"         name="goal_location"                    value="0" />
-<parameter plp_name="maintain_direction_on_map"         name="path_free"                        value="0" />
-<parameter plp_name="achieve_walk_given_distance"       name="laser_scan"                       value="0" />
-<parameter plp_name="achieve_walk_given_distance"       name="odometry"                         value="0" />
-<parameter plp_name="achieve_walk_given_distance"       name="energy_level"                     value="0" />
-<parameter plp_name="achieve_walk_given_distance"       name="result"                           value="0" />
 
 </configurations>

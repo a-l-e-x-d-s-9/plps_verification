@@ -21,9 +21,7 @@
   </parameters>
 
   <variables>
-    <var name="robot_location"  type="integer" />
-    <var name="clear_path"      type="boolean"/>
-    <var name="robot_at_target" type="boolean"/>
+    <var name="robot_location"  type="integer"/>
   </variables>
 
   <constants>
@@ -53,10 +51,10 @@
   </progress_measures>
 
   <achievement_goal>
-    <formula_condition key_description="at_target">
-      <expression value="robot_at_target"/>
+    <formula_condition key_description="at_destination">
+      <expression value="robot_location"/>
       <operator type="="/>
-      <expression value="TRUE"/>
+      <expression value="destination"/>
     </formula_condition>
   </achievement_goal>
 
@@ -95,6 +93,66 @@
             <expression value="destination"/>
             <operator type="="/>
             <expression value="at_a_doorway"/>
+          </formula_condition>
+        </OR>
+      </AND>
+      <probability value="1" />
+    </conditional_probability>
+    
+    <conditional_probability>
+      <AND>
+        <OR>
+          <formula_condition key_description="">
+            <expression value="robot_location"/>
+            <operator type="="/>
+            <expression value="at_a_doorway"/>
+          </formula_condition>
+          <formula_condition key_description="">
+            <expression value="robot_location"/>
+            <operator type="="/>
+            <expression value="at_b_doorway"/>
+          </formula_condition>
+        </OR>
+        <OR>
+          <formula_condition key_description="">
+            <expression value="destination"/>
+            <operator type="="/>
+            <expression value="at_a_doorway"/>
+          </formula_condition>
+          <formula_condition key_description="">
+            <expression value="destination"/>
+            <operator type="="/>
+            <expression value="at_b_doorway"/>
+          </formula_condition>
+        </OR>
+      </AND>
+      <probability value="1" />
+    </conditional_probability>
+    
+    <conditional_probability>
+      <AND>
+        <OR>
+          <formula_condition key_description="">
+            <expression value="robot_location"/>
+            <operator type="="/>
+            <expression value="at_b_doorway"/>
+          </formula_condition>
+          <formula_condition key_description="">
+            <expression value="robot_location"/>
+            <operator type="="/>
+            <expression value="at_b_target"/>
+          </formula_condition>
+        </OR>
+        <OR>
+          <formula_condition key_description="">
+            <expression value="destination"/>
+            <operator type="="/>
+            <expression value="at_b_doorway"/>
+          </formula_condition>
+          <formula_condition key_description="">
+            <expression value="destination"/>
+            <operator type="="/>
+            <expression value="at_b_target"/>
           </formula_condition>
         </OR>
       </AND>

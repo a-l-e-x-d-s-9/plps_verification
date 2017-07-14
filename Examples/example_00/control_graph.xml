@@ -36,7 +36,7 @@ xsi:schemaLocation="control_graph.xsd">
 <node_probability   node_name="node_probability_3" start_policy="any_predecessor_done" wait_time="3">
     <probability_for_successor_node probability="1" node_name="node_probability_4"/>
 </node_probability>
-<node_probability   node_name="node_probability_4" start_policy="node_probability_4" wait_time="4">
+<node_probability   node_name="node_probability_4" start_policy="any_predecessor_done" wait_time="4">
     <probability_for_successor_node probability="1" node_name="node_concurrent_1"/>
 </node_probability>
 

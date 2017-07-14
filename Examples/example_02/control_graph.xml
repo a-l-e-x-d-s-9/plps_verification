@@ -7,12 +7,12 @@ xsi:schemaLocation="control_graph.xsd">
 <root root_name="node_sequential_start"/>
 
 <node_sequential   node_name="node_sequential_start" start_policy="any_predecessor_done" next_node_name="">
-    <run_plp plp_name="achieve_move_to" wait_time="2">
+    <run_plp plp_name="achieve_move_to">
         <update>
           <formula_condition key_description="update variables">
-            <expression value="distance_to_goal" />
+            <expression value="_achieve_move_to_destination" />
             <operator type="="/>
-            <expression value="9" />
+            <expression value="at_a_key" />
           </formula_condition>
         </update>
     </run_plp>

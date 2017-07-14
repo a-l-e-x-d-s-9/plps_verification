@@ -125,6 +125,15 @@
       <expression value="TRUE"/>
     </formula_condition>
   </achievement_goal>
+  
+  <success_termination_condition>
+    <formula_condition key_description="at_goal">
+      <expression value="distance_to_goal" />
+      <operator type="less_equal" />
+      <expression value="required_distance" />
+    </formula_condition>
+  </success_termination_condition>
+
 
   <success_probability>
     <conditional_probability>
@@ -215,6 +224,14 @@
 
   </failure_modes>
   
+  <failure_termination_condition>
+    <formula_condition key_description="off_road">
+      <expression value="vehicle_off_road" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </failure_termination_condition>
+  
   <runtime_given_failure>
     <distribution>
         <exp>
@@ -229,20 +246,6 @@
     </distribution-->
   </runtime_given_failure>
   
-    <success_termination_condition>
-    <formula_condition key_description="at_goal">
-      <expression value="distance_to_goal" />
-      <operator type="less_equal" />
-      <expression value="required_distance" />
-    </formula_condition>
-  </success_termination_condition>
 
-  <failure_termination_condition>
-    <formula_condition key_description="off_road">
-      <expression value="vehicle_off_road" />
-      <operator type="=" />
-      <expression value="TRUE" />
-    </formula_condition>
-  </failure_termination_condition>
   
 </plps:achieve_plp>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.1" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <plps:maintain_plp name="maintain_direction_on_map_2" version="1.0" glue_file_location="maintain_direction_on_map_glue.xml"
   xmlns:plps="PLP-schemas"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

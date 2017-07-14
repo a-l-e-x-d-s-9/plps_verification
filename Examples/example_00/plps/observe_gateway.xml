@@ -129,6 +129,14 @@
       <probability value="0.1" />
     </conditional_probability>
   </failure_to_observe_probability>
+  
+  <failure_termination_condition>
+    <formula_condition key_description="off_road">
+      <expression value="vehicle_off_road" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </failure_termination_condition>
 
   <correct_param_observation_probability>
     <probability_given_observed_value>
@@ -158,13 +166,5 @@
     </distribution>
   </runtime_given_failure>
  
-
-  <failure_termination_condition>
-    <formula_condition key_description="off_road">
-      <expression value="vehicle_off_road" />
-      <operator type="=" />
-      <expression value="TRUE" />
-    </formula_condition>
-  </failure_termination_condition>
  
 </plps:observe_plp>

@@ -20,8 +20,9 @@
   </parameters>
 
   <variables>
-    <var name="clear_path"      type="boolean"/>
-    <var name="robot_at_target" type="boolean"/>
+    <var name="holding_key"     type="boolean"/>
+    <var name="key_location"    type="integer"/>
+    <var name="robot_location"  type="integer"/>
   </variables>
 
   <constants>

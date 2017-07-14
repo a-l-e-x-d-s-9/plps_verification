@@ -1,11 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
-    elementFormDefault="qualified"
-    xmlns="http://tempuri.org/XMLSchema.xsd"
-    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+<xs:schema targetNamespace="PLP-schemas"
+    xmlns="PLP-schemas"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
-
   <!-- MAIN ELEMENT AND TYPE-->
   <xs:element name="detect_plp" type="detect_plp_type" />
 
@@ -23,7 +20,7 @@
       <!-- SPECIFIC TO DETECT -->
       <xs:element name="detection_goal" type="detection_goal_type" />
       <xs:element name="success_prob_given_condition" type="success_given_condition_type" />
-      <xs:element name="failure_termination_condition" type="conditions_type" use="optional" />
+      <xs:element name="failure_termination_condition" type="conditions_type" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="version" type="xs:double" use="optional" />

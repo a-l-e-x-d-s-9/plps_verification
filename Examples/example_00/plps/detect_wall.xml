@@ -52,7 +52,7 @@
   <progress_measures>
   </progress_measures>
 
-  <detection_goal result_parameter_name="output">
+  <detection_goal>
     <formula_condition key_description="close_to_wall">
       <expression value="distance_to_wall" />
       <operator type="less_equal" />

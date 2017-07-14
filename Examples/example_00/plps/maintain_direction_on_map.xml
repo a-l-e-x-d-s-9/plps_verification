@@ -1,4 +1,4 @@
-﻿<?xml version="1.1" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <plps:maintain_plp name="maintain_direction_on_map" version="1.0" glue_file_location="maintain_direction_on_map_glue.xml"
   xmlns:plps="PLP-schemas"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -89,7 +89,7 @@
     
     <formula_condition key_description="correct_path">
       <expression value="tmp_var" />
-      <operator type="equal" />
+      <operator type="=" />
       <expression value="7.05" />
       <!--expression value="current_path_direction" />
       <inside_range>
