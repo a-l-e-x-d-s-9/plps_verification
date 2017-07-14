@@ -32,6 +32,7 @@ public class UppaalBuilder {
     static public final int    INT_NUMERIC_TRUE             = 1;
     static public final int    INT_NUMERIC_FALSE            = 0;
     static public final int    INT_RESOURCE_INVALID         = -1;
+    static public final String STR_DIVIDE                   = "/";
 
     static void add_to_cumulative_assignment(StringBuffer cumulative_results_string, CharSequence addition )
     {
