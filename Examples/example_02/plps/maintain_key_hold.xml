@@ -8,11 +8,9 @@
   </parameters>
 
   <variables>
-    <var name="tmp_var"             type="real"/>
-    <var name="clear_path"          type="boolean"/>
-    <var name="robot_at_target"     type="boolean"/>
-    <var name="path_free"           type="boolean"/>
-    <var name="distance_to_goal"    type="integer"/>
+    <var name="holding_key"     type="boolean"/>
+    <var name="key_dropped"     type="boolean"/>
+    <var name="key_can_drop"    type="boolean"/>
   </variables>
 
   <constants>
@@ -22,14 +20,14 @@
   </required_resources>
 
   <preconditions>
-  </preconditions>
-
-  <concurrency_conditions>
-    <formula_condition key_description="free_path">
-      <expression value="path_free" />
+    <formula_condition key_description="holding_key">
+      <expression value="holding_key" />
       <operator type="=" />
       <expression value="TRUE" />
     </formula_condition>
+  </preconditions>
+
+  <concurrency_conditions>
   </concurrency_conditions>
 
   <concurrent_modules>
@@ -42,42 +40,28 @@
   </progress_measures>
 
   <maintained_condition>
-    
-    <formula_condition key_description="correct_path">
-      <expression value="tmp_var" />
+    <formula_condition key_description="holding_key">
+      <expression value="holding_key" />
       <operator type="=" />
-      <expression value="7.05" />
-      <!--expression value="current_path_direction" />
-      <inside_range>
-        <range min_value="current_robot_direction-path_offset" min_inclusive="true" max_value="current_robot_direction+path_offset" max_inclusive="true" />
-      </inside_range-->
+      <expression value="TRUE" />
     </formula_condition>
     
     <initially_true />
-    <!--initially_false />
-    <time_until_true>
-        <distribution>
-          <uniform>
-            <lower_bound value="2" />
-            <upper_bound value="5" />
-          </uniform>
-        </distribution>
-    </time_until_true-->
   </maintained_condition>
 
   <success_termination_condition>
-    <formula_condition key_description="at_goal">
-      <expression value="distance_to_goal" />
-      <operator type="less_equal" />
-      <expression value="2" />
+    <formula_condition key_description="key_can_drop">
+      <expression value="key_can_drop" />
+      <operator type="=" />
+      <expression value="TRUE" />
     </formula_condition>
   </success_termination_condition>
 
   <failure_termination_conditions>
-    <formula_condition key_description="at_goal">
-      <expression value="distance_to_goal" />
-      <operator type="less_equal" />
-      <expression value="3" />
+    <formula_condition key_description="key_dropped">
+      <expression value="key_dropped" />
+      <operator type="=" />
+      <expression value="TRUE" />
     </formula_condition>
   </failure_termination_conditions>
 
@@ -86,10 +70,9 @@
 
   <runtime_given_success>
     <distribution>
-      <uniform>
-        <lower_bound value="4" />
-        <upper_bound value="6" />
-      </uniform>
+        <exp>
+            <lambda-rate  value="0.025"/>
+        </exp>
     </distribution>
   </runtime_given_success>
     

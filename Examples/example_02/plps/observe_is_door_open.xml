@@ -13,7 +13,7 @@
     </input_parameters>
 
     <output_parameters>
-      <param name="t1"/>
+      <param name="door_is_open"/>
     </output_parameters>
 
     <non_observable>
@@ -45,7 +45,7 @@
   </progress_measures>
   
   <observation_goal_parameter>
-    <param name="t1"/>
+    <param name="door_is_open"/>
   </observation_goal_parameter>
   
   <failure_to_observe_probability>

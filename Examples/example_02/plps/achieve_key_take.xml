@@ -32,6 +32,11 @@
   </required_resources>
 
   <preconditions>
+    <formula_condition key_description="Robot at the location of the key">
+      <expression value="key_location"/>
+      <operator type="="/>
+      <expression value="robot_location"/>
+    </formula_condition>
   </preconditions>
 
   <concurrency_conditions>
@@ -47,38 +52,28 @@
   </progress_measures>
 
   <achievement_goal>
-    <formula_condition key_description="at_target">
-      <expression value="robot_at_target"/>
-      <operator type="="/>
-      <expression value="TRUE"/>
-    </formula_condition>
+    <AND>
+        <formula_condition key_description="Robot holding the key">
+          <expression value="holding_key"/>
+          <operator type="="/>
+          <expression value="TRUE"/>
+        </formula_condition>
+        <formula_condition key_description="Robot holding the key">
+          <expression value="key_location"/>
+          <operator type="="/>
+          <expression value="at_unknown"/>
+        </formula_condition>
+    </AND>
   </achievement_goal>
 
   <success_probability>
-    <conditional_probability>
-      <formula_condition key_description="clear_path">
-        <expression value="clear_path"/>
-        <operator type="="/>
-        <expression value="TRUE"/>
-      </formula_condition>
-      <probability value="0.95" />
-    </conditional_probability>
-    
-    <conditional_probability>
-      <formula_condition key_description="not_clear_path">
-        <expression value="clear_path"/>
-        <operator type="="/>
-        <expression value="FALSE"/>
-      </formula_condition>
-      <probability value="0" />
-    </conditional_probability>
   </success_probability>
 
   <runtime_given_success>
     <distribution>
       <uniform>
-        <lower_bound value="4" />
-        <upper_bound value="6" />
+        <lower_bound value="1" />
+        <upper_bound value="2" />
       </uniform>
     </distribution>
   </runtime_given_success>

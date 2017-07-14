@@ -25,11 +25,12 @@
   </variables>
 
   <constants>
-    <constant name="at_a"               value="0"/>
-    <constant name="at_a_key"           value="1"/>
-    <constant name="at_a_doorway"       value="2"/>
-    <constant name="at_b_doorway"       value="3"/>
-    <constant name="at_b_target"        value="4"/>
+    <constant name="at_unknown"         value="0"/>
+    <constant name="at_a"               value="1"/>
+    <constant name="at_a_key"           value="2"/>
+    <constant name="at_a_doorway"       value="3"/>
+    <constant name="at_b_doorway"       value="4"/>
+    <constant name="at_b_target"        value="5"/>
   </constants>
 
   <required_resources>

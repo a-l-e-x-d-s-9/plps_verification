@@ -6,7 +6,7 @@ xsi:schemaLocation="control_graph.xsd">
 
 <root root_name="node_sequential_start"/>
 
-<node_sequential   node_name="node_sequential_start" start_policy="any_predecessor_done" next_node_name="">
+<node_sequential   node_name="node_sequential_start" start_policy="any_predecessor_done" next_node_name="node_concurrent_1">
     <run_plp plp_name="achieve_move_to">
         <update>
           <formula_condition key_description="update variables">
@@ -17,16 +17,31 @@ xsi:schemaLocation="control_graph.xsd">
         </update>
     </run_plp>
     <run_plp plp_name="achieve_key_take" wait_time="1">
-        <update>
-          <formula_condition key_description="update variables">
-            <expression value="distance_to_goal" />
-            <operator type="="/>
-            <expression value="8" />
-          </formula_condition>
-        </update>
     </run_plp>
 </node_sequential>
 
+<node_concurrent   node_name="node_concurrent_1" start_policy="any_predecessor_done">
+    <run_node node_name="node_sequential_key_holding"/>
+    <run_node node_name="node_sequential_move_to_door"/>
+</node_concurrent>
 
+<node_sequential   node_name="node_sequential_key_holding" start_policy="any_predecessor_done" next_node_name="">
+    <run_plp plp_name="maintain_key_hold">
+    </run_plp>
+</node_sequential>
+
+<node_sequential   node_name="node_sequential_move_to_door" start_policy="any_predecessor_done" next_node_name="">
+    <run_plp plp_name="achieve_move_to">
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="_achieve_move_to_destination" />
+            <operator type="="/>
+            <expression value="at_a_key" />
+          </formula_condition>
+        </update>
+    </run_plp>
+    <run_plp plp_name="observe_is_door_open">
+    </run_plp>
+</node_sequential>
 
 </control_graph>
