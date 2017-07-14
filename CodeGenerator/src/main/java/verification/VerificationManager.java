@@ -104,7 +104,7 @@ public class VerificationManager {
         if ( currentNode != null && currentNode.getNodeType() == Node.ELEMENT_NODE ) {
             String got_name                 = currentNode.getAttributes().getNamedItem("name").getNodeValue();
             String got_plp_name             = "";
-            String got_value                = currentNode.getAttributes().getNamedItem("value").getNodeValue();
+            String got_value                = "";
             String got_min_value            = "";
             String got_max_value            = "";
             String got_is_exclusive_access  = "";
@@ -117,6 +117,10 @@ public class VerificationManager {
             boolean is_min_set              = false;
             boolean is_max_set              = false;
 
+            Node node_value = currentNode.getAttributes().getNamedItem("value");
+            if ( node_value != null && node_value.getNodeType() == Node.ATTRIBUTE_NODE) {
+                got_value = node_value.getNodeValue();
+            }
 
             Node node_min_value = currentNode.getAttributes().getNamedItem("min_value");
             if ( node_min_value != null && node_min_value.getNodeType() == Node.ATTRIBUTE_NODE) {
@@ -147,11 +151,19 @@ public class VerificationManager {
                     if ( true == this.plp_catalog.plp_name_is_exist(got_plp_name) )
                     {
                         plp_id           = this.plp_catalog.find_plp_id_by_name( got_plp_name );
-                        int parameter_id = this.variable_manager.local_parameters_get_id( plp_id, got_name );
-                        VerificationParameter parameter_data = this.variable_manager.local_parameters_get_data(plp_id, parameter_id);
 
-                        variable_id = parameter_data.variable_id;
-                        set_plp     = String.valueOf(plp_id);
+                        if ( this.variable_manager.local_parameters_is_exist( plp_id, got_name ) ) {
+                            int parameter_id = this.variable_manager.local_parameters_get_id(plp_id, got_name);
+
+                            VerificationParameter parameter_data = this.variable_manager.local_parameters_get_data(plp_id, parameter_id);
+
+                            variable_id = parameter_data.variable_id;
+                            set_plp = String.valueOf(plp_id);
+                        }
+                        else
+                        {
+                            throw new VerificationException("Parameter \"" + got_name + "\" does not exist in PLP: " + String.valueOf(plp_id) + "." );
+                        }
                     }
                     else
                     {
@@ -185,34 +197,30 @@ public class VerificationManager {
                 set_overwrite = "YES";
             }
 
-            variable_data.is_set = true;
 
-            if ( XMLtoUppaalConverter.xml_is_numeric_or_boolean(got_value) ) {
-                variable_data.value  = this.xml_to_uppaal_converter.convert_xml_value_to_uppaal_int(got_value);
-            }
-            else
-            {
-                if ( this.variable_manager.global_variable_is_exist( got_value ) )
-                {
-                    VerificationVariable use_data = this.variable_manager.global_variable_get_data( got_value );
-                    if ( true == use_data.is_set ) {
-                        variable_data.value = use_data.value;
-                    }
-                    else
-                    {
-                        throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set to uninitialized variable: \"" + got_value + "\"." );
+            if ( false == got_value.isEmpty() ) {
+                variable_data.is_set = true;
+
+                if (XMLtoUppaalConverter.xml_is_numeric_or_boolean(got_value)) {
+                    variable_data.value = this.xml_to_uppaal_converter.convert_xml_value_to_uppaal_int(got_value);
+                } else {
+                    if (this.variable_manager.global_variable_is_exist(got_value)) {
+                        VerificationVariable use_data = this.variable_manager.global_variable_get_data(got_value);
+
+                        if (true == use_data.is_set) {
+                            variable_data.value = use_data.value;
+                        } else {
+                            throw new VerificationException("Loading configurations, variable: \"" + got_name + "\", trying to set to uninitialized variable: \"" + got_value + "\".");
+                        }
+                    } else {
+                        throw new VerificationException("Loading configurations, variable: \"" + got_name + "\", trying to set to unknown variable: \"" + got_value + "\".");
                     }
                 }
-                else
-                {
-                    throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set to unknown variable: \"" + got_value + "\"." );
-                }
-            }
 
-            if ( ( VerificationVariable.VerificationValueType.value_boolean == variable_data.value_type) &&
-                 ( 0 != variable_data.value ) )
-            {
+                if ((VerificationVariable.VerificationValueType.value_boolean == variable_data.value_type) &&
+                        (0 != variable_data.value)) {
                     variable_data.value = 1;
+                }
             }
 
 
@@ -228,14 +236,10 @@ public class VerificationManager {
                     if ( this.variable_manager.global_variable_is_exist( got_min_value ) )
                     {
                         VerificationVariable min_data = this.variable_manager.global_variable_get_data( got_min_value );
-                        if ( true == min_data.is_set ) {
-                            set_min_value = String.valueOf(min_data.value);
-                            is_min_set = true;
-                        }
-                        else
-                        {
-                            throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set min to uninitialized variable: \"" + got_min_value + "\"." );
-                        }
+
+                        set_min_value = String.valueOf(min_data.value);
+                        is_min_set = true;
+
                     }
                     else
                     {
@@ -243,7 +247,8 @@ public class VerificationManager {
                     }
                 }
 
-                if ( ( true == is_min_set                            ) &&
+                if ( ( true == variable_data.is_set                  ) &&
+                     ( true == is_min_set                            ) &&
                      ( variable_data.value < variable_data.min_value ) )
                 {
                     variable_data.value = variable_data.min_value;
@@ -262,15 +267,9 @@ public class VerificationManager {
                     if ( this.variable_manager.global_variable_is_exist(got_max_value) )
                     {
                         VerificationVariable max_data = this.variable_manager.global_variable_get_data( got_max_value );
-                        if ( true == max_data.is_set )
-                        {
-                            set_max_value   = String.valueOf( max_data.value );
-                            is_max_set      = true;
-                        }
-                        else
-                        {
-                            throw new VerificationException( "Loading configurations, variable: \"" + got_name + "\", trying to set max to uninitialized variable: \"" + got_max_value + "\"." );
-                        }
+
+                        set_max_value   = String.valueOf( max_data.value );
+                        is_max_set      = true;
                     }
                     else
                     {
@@ -278,7 +277,8 @@ public class VerificationManager {
                     }
                 }
 
-                if ( ( true == is_max_set                            ) &&
+                if ( ( true == variable_data.is_set                  ) &&
+                     ( true == is_max_set                            ) &&
                      ( variable_data.value > variable_data.max_value ) )
                 {
                     variable_data.value = variable_data.max_value;
@@ -294,7 +294,9 @@ public class VerificationManager {
                 variable_data.is_in_range = false;
             }
 
-            set_value = String.valueOf(variable_data.value);
+            if ( true == variable_data.is_set ) {
+                set_value = String.valueOf(variable_data.value);
+            }
 
             if ( false == got_is_exclusive_access.isEmpty() )
             {
