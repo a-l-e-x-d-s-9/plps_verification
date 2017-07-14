@@ -70,9 +70,13 @@
 
   <runtime_given_success>
     <distribution>
-        <exp>
+        <!--exp>
             <lambda-rate  value="0.025"/>
-        </exp>
+        </exp-->
+        <uniform>
+        <lower_bound value="10" />
+        <upper_bound value="11" />
+      </uniform>
     </distribution>
   </runtime_given_success>
     

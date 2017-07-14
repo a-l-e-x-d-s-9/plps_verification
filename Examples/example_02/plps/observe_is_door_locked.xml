@@ -13,7 +13,7 @@
     </input_parameters>
 
     <output_parameters>
-      <param name="gateway_location"/>
+      <param name="door_is_locked"/>
     </output_parameters>
 
     <non_observable>
@@ -30,6 +30,19 @@
   </required_resources>
 
   <preconditions>
+    <OR>
+        <formula_condition key_description="near the door at a">
+          <expression value="robot_location"/>
+          <operator type="="/>
+          <expression value="at_a_doorway"/>
+        </formula_condition>
+        
+        <formula_condition key_description="near the door at b">
+          <expression value="robot_location"/>
+          <operator type="="/>
+          <expression value="at_b_doorway"/>
+        </formula_condition>
+    </OR>
   </preconditions>
 
   <concurrency_conditions>
@@ -45,7 +58,7 @@
   </progress_measures>
   
   <observation_goal_parameter>
-    <param name="gateway_location"/>
+    <param name="door_is_locked"/>
   </observation_goal_parameter>
   
   <failure_to_observe_probability>
@@ -64,7 +77,7 @@
     <distribution>
       <uniform>
         <lower_bound value="3" />
-        <upper_bound value="10" />
+        <upper_bound value="7" />
       </uniform>
     </distribution>
   </runtime_given_success>

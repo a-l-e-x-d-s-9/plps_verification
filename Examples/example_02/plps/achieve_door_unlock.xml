@@ -20,8 +20,8 @@
   </parameters>
 
   <variables>
-    <var name="clear_path"      type="boolean"/>
-    <var name="robot_at_target" type="boolean"/>
+    <var name="robot_location"      type="integer"/>
+    <var name="door_was_unlocked"   type="boolean"/>
   </variables>
 
   <constants>
@@ -31,12 +31,31 @@
   </required_resources>
 
   <preconditions>
+    <OR>
+        <formula_condition key_description="near the door at a">
+          <expression value="robot_location"/>
+          <operator type="="/>
+          <expression value="at_a_doorway"/>
+        </formula_condition>
+        
+        <formula_condition key_description="near the door at b">
+          <expression value="robot_location"/>
+          <operator type="="/>
+          <expression value="at_b_doorway"/>
+        </formula_condition>
+    </OR>
   </preconditions>
 
   <concurrency_conditions>
+    <formula_condition key_description="holding_key">
+      <expression value="holding_key" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
   </concurrency_conditions>
 
   <concurrent_modules>
+    <module name="maintain_key_hold" concurrency_type="parallel" />
   </concurrent_modules>
 
   <side_effects>
@@ -46,38 +65,21 @@
   </progress_measures>
 
   <achievement_goal>
-    <formula_condition key_description="at_target">
-      <expression value="robot_at_target"/>
+    <formula_condition key_description="door_was_unlocked">
+      <expression value="door_was_unlocked"/>
       <operator type="="/>
       <expression value="TRUE"/>
     </formula_condition>
   </achievement_goal>
 
   <success_probability>
-    <conditional_probability>
-      <formula_condition key_description="clear_path">
-        <expression value="clear_path"/>
-        <operator type="="/>
-        <expression value="TRUE"/>
-      </formula_condition>
-      <probability value="0.95" />
-    </conditional_probability>
-    
-    <conditional_probability>
-      <formula_condition key_description="not_clear_path">
-        <expression value="clear_path"/>
-        <operator type="="/>
-        <expression value="FALSE"/>
-      </formula_condition>
-      <probability value="0" />
-    </conditional_probability>
   </success_probability>
 
   <runtime_given_success>
     <distribution>
       <uniform>
-        <lower_bound value="4" />
-        <upper_bound value="6" />
+        <lower_bound value="1" />
+        <upper_bound value="2" />
       </uniform>
     </distribution>
   </runtime_given_success>

@@ -126,6 +126,19 @@
             <expression value="at_b_doorway"/>
           </formula_condition>
         </OR>
+        <OR>
+            <formula_condition key_description="door_was_opened">
+              <expression value="door_was_opened"/>
+              <operator type="="/>
+              <expression value="TRUE"/>
+            </formula_condition>
+            
+            <formula_condition key_description="observed that door is open">
+              <expression value="_observe_is_door_open_door_is_open"/>
+              <operator type="="/>
+              <expression value="TRUE"/>
+            </formula_condition>
+        </OR>
       </AND>
       <probability value="1" />
     </conditional_probability>

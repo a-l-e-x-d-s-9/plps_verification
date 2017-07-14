@@ -11,5 +11,17 @@
 			<comment>
 			</comment>
 		</query>
+		<query>
+			<formula>E&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>A&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
+			</formula>
+			<comment>
+			</comment>
+		</query>
 	</queries>
 </nta>

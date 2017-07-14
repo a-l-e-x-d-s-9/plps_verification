@@ -7,7 +7,6 @@ xmllint --xinclude --schema ../../Verification-schemas/control_graph.xsd    cont
 xmllint --xinclude --schema ../../PLP-schemas/AchievePLP_schema.xsd         plps/achieve_door_open.xml
 xmllint --xinclude --schema ../../PLP-schemas/AchievePLP_schema.xsd         plps/achieve_door_unlock.xml
 xmllint --xinclude --schema ../../PLP-schemas/AchievePLP_schema.xsd         plps/achieve_key_take.xml
-xmllint --xinclude --schema ../../PLP-schemas/AchievePLP_schema.xsd         plps/achieve_move_through_doorway.xml
 xmllint --xinclude --schema ../../PLP-schemas/AchievePLP_schema.xsd         plps/achieve_move_to.xml
 xmllint --xinclude --schema ../../PLP-schemas/ObservePLP_schema.xsd         plps/observe_is_door_locked.xml
 xmllint --xinclude --schema ../../PLP-schemas/ObservePLP_schema.xsd         plps/observe_is_door_open.xml
