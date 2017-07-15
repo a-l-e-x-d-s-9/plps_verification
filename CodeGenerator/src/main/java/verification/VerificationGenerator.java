@@ -868,7 +868,7 @@ public class VerificationGenerator {
         }
 
 
-        //this.xml_to_uppaal_converter.convert_xml_formula_to_uppaal( plp_id, distribution_uniform.getLowerBound() )
+        //this.xml_to_uppaal_converter.convert_xml_expression_to_uppaal_expression( plp_id, distribution_uniform.getLowerBound() )
 
         for ( Effect side_effect : side_effects )
         {
@@ -886,7 +886,7 @@ public class VerificationGenerator {
                     String side_effect_initialize_value = UppaalBuilder.binary_expression(
                             uppaal_variable_for_request_id_side_effect,
                             UppaalBuilder.STR_ASSIGNMENT,
-                            this.xml_to_uppaal_converter.convert_xml_formula_to_uppaal( plp_id, assignment_effect.getExpression().toString() ) );
+                            this.xml_to_uppaal_converter.convert_xml_expression_to_uppaal_expression( plp_id, assignment_effect.getExpression().toString() ) );
 
                             concurrent_commands_collector_1.add_to_initial_assignments( side_effect_initialize_value );
 
@@ -1563,8 +1563,8 @@ public class VerificationGenerator {
             String variable_bound_lower = plp_uppaal.local_variable_add();
             String variable_bound_upper = plp_uppaal.local_variable_add();
 
-            String label_assignment_content = variable_bound_lower + " = " + this.xml_to_uppaal_converter.convert_xml_formula_to_uppaal( plp_id, distribution_uniform.getLowerBound() ) + ",\n" +
-                    variable_bound_upper + " = " + this.xml_to_uppaal_converter.convert_xml_formula_to_uppaal( plp_id, distribution_uniform.getUpperBound() );
+            String label_assignment_content = variable_bound_lower + " = " + this.xml_to_uppaal_converter.convert_xml_expression_to_uppaal_expression( plp_id, distribution_uniform.getLowerBound() ) + ",\n" +
+                    variable_bound_upper + " = " + this.xml_to_uppaal_converter.convert_xml_expression_to_uppaal_expression( plp_id, distribution_uniform.getUpperBound() );
             Point label_assignment_place = new Point(
                     source_place_absolute.x + UppaalBuilder.label_center_at_x( UppaalBuilder.direction_left( UppaalBuilder.squares_length(3)), label_assignment_content ),
                     source_place_absolute.y + UppaalBuilder.direction_down(UppaalBuilder.squares_length(1.5)) );
@@ -1622,10 +1622,11 @@ public class VerificationGenerator {
                 {
                     throw new VerificationException("PLP: " + String.valueOf(plp_id) + ", Unknown variable: \"" + lambda_input + "\" in run time distribution: " + distribution.toString() );
                 }
-            }
+            }// convert_xml_expression_to_uppaal_expression
 */
+
             String lambda_output =  UppaalBuilder.binary_expression(
-                    UppaalBuilder.add_brackets( this.xml_to_uppaal_converter.convert_xml_formula_to_uppaal( plp_id, lambda_input ) ),
+                    UppaalBuilder.add_brackets( this.xml_to_uppaal_converter.convert_xml_expression_to_uppaal_expression( plp_id, lambda_input ) ),
                     UppaalBuilder.STR_DIVIDE,
                     this.settings.get_string( this.settings.SETTING_PRECISION_MULTIPLIER_FOR_NUMBERS_AND_TIME ));
 
@@ -1640,7 +1641,7 @@ public class VerificationGenerator {
             String label_assignment_content = UppaalBuilder.binary_expression(
                     variable_exp_lambda,
                     UppaalBuilder.STR_ASSIGNMENT,
-                    this.xml_to_uppaal_converter.convert_xml_formula_to_uppaal( plp_id, distribution_exp.getLambda() ));
+                    this.xml_to_uppaal_converter.convert_xml_expression_to_uppaal_expression( plp_id, distribution_exp.getLambda() ));
 
             Point label_assignment_place = new Point(
                     source_place_absolute.x + UppaalBuilder.label_center_at_x( UppaalBuilder.direction_left( UppaalBuilder.squares_length(1)), label_assignment_content ),

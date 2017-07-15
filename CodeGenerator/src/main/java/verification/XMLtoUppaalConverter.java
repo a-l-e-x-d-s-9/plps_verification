@@ -9,6 +9,7 @@ import plpFields.FailureMode;
 import plpFields.PLPParameter;
 
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -130,7 +131,7 @@ public class XMLtoUppaalConverter {
             throw new VerificationException("\"" + number_string + "\" should be of number or boolean type.");
         }
     }
-
+/*
     public String convert_xml_expression_to_uppaal_expression( int plp_id, String xml_expression ) throws VerificationException
     {
 
@@ -143,7 +144,7 @@ public class XMLtoUppaalConverter {
             return String.valueOf( convert_xml_value_to_uppaal_int( xml_expression ) );
         }
     }
-
+*/
     public String convert_xml_value_to_uppaal_string(String number_string ) throws VerificationException
     {
         return Integer.toString(convert_xml_value_to_uppaal_int(number_string));
@@ -701,25 +702,74 @@ public class XMLtoUppaalConverter {
         return variables;
     }
 
-    public String convert_xml_formula_to_uppaal( int plp_id, String xml_formula ) throws VerificationException
+    private List<StringsStartAndEnd> extract_all_numbers_in_formula( String xml_formula )
+    {
+        Pattern                     number_pattern  = Pattern.compile("\\d+(\\.\\d+)?");
+        Matcher                     matcher         = number_pattern.matcher( xml_formula );
+        List<StringsStartAndEnd>    number_places   = new LinkedList<>();
+
+        while(matcher.find()) {
+            number_places.add( new StringsStartAndEnd( matcher.start(), matcher.end() ));
+        }
+
+        return number_places;
+    }
+
+    private class StringsStartAndEnd{
+        int start;
+        int end;
+
+        public StringsStartAndEnd( int start, int end ){
+            this.start  = start;
+            this.end    = end;
+        }
+    }
+
+    public String convert_xml_expression_to_uppaal_expression( int plp_id, String xml_formula ) throws VerificationException
     {
         if ( xml_formula.isEmpty() )
         {
             throw new VerificationException("Can't convert empty formula.");
         }
 
-        Set <String>    variables       = extract_all_possible_variables_in_formula(xml_formula);
         StringBuffer    result_formula  = new StringBuffer(xml_formula);
+
+        int replace_offset = 0;
+        List<StringsStartAndEnd> number_places = extract_all_numbers_in_formula( xml_formula );
+        for ( StringsStartAndEnd number_place : number_places )
+        {
+            if ( ( 0 == number_place.start ) ||
+                 ( xml_formula.substring( number_place.start - 1, number_place.start ).matches("[^a-zA-Z_]") ) ){
+                int found_length = number_place.end - number_place.start;
+                String converted_number = String.valueOf(convert_xml_double_to_uppaal_int(Double.valueOf(xml_formula.substring(number_place.start, number_place.end))));
+                int converted_length = converted_number.length();
+
+                StringBufferExtra.replace(result_formula, replace_offset + number_place.start, found_length, converted_number);
+
+                replace_offset += converted_length - found_length;
+            }
+        }
+
+        Set <String>    variables       = extract_all_possible_variables_in_formula(result_formula.toString());
+        //StringBuffer    result_formula  = new StringBuffer(xml_formula);
 
         for ( String variable : variables )
         {
-            if ( this.variable_manager.variable_or_parameter_is_exist( plp_id, variable ) )
+            if ( variable.equals( XMLtoUppaalConverter.STR_XML_TRUE ) )
+            {
+                StringBufferExtra.replace_all_uniqueque_variables( result_formula, variable, UppaalBuilder.STR_NUMERIC_TRUE );
+            }
+            else if ( variable.equals( XMLtoUppaalConverter.STR_XML_FALSE ) )
+            {
+                StringBufferExtra.replace_all_uniqueque_variables( result_formula, variable, UppaalBuilder.STR_NUMERIC_FALSE );
+            }
+            else  if ( this.variable_manager.variable_or_parameter_is_exist( plp_id, variable ) )
             {
                 int variable_id = this.variable_manager.variable_or_parameter_get_variable_id( plp_id, variable );
                 //System.out.println("  Origin Formula: \"" + xml_formula + "\"");
                 //System.out.println("Replace variable: \"" + variable + "\"");
                 //System.out.println("            With: \"" + variable_id_to_uppaal_string( variable_id ) + "\"");
-                StringBufferExtra.replace_all( result_formula, variable, UppaalBuilder.uppaal_variable_read( variable_id ) );
+                StringBufferExtra.replace_all_uniqueque_variables( result_formula, variable, UppaalBuilder.uppaal_variable_read( variable_id ) );
                 //System.out.println("  Result Formula: \"" + result_formula.toString() + "\"");
             }
             else

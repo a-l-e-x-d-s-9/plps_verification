@@ -16,7 +16,6 @@ xsi:schemaLocation="configurations.xsd">
 <variable  name="door_was_opened"                                   value="FALSE"       is_exclusive_access="true"  />
 <variable  name="door_was_unlocked"                                 value="FALSE"       is_exclusive_access="true"  />
 
-
 <parameter plp_name="observe_is_door_locked" name="door_is_locked"  min_value="FALSE"   max_value="TRUE"  />
 <parameter plp_name="observe_is_door_open"   name="door_is_open"    min_value="FALSE"   max_value="TRUE"  />
 

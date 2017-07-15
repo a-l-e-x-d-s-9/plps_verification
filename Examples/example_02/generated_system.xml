@@ -424,8 +424,8 @@ int _variable_0004;
 		<transition>
 			<source ref="id38"/>
 			<target ref="id25"/>
-						<label kind="assignment" x="-720" y="-561">_variable_0000 = 1,
-_variable_0001 = 2</label>
+						<label kind="assignment" x="-727" y="-561">_variable_0000 = 100,
+_variable_0001 = 200</label>
 		</transition>
 		<transition>
 			<source ref="id30"/>
@@ -754,8 +754,8 @@ int _variable_0002;
 		<transition>
 			<source ref="id41"/>
 			<target ref="id25"/>
-						<label kind="assignment" x="-720" y="-561">_variable_0000 = 4,
-_variable_0001 = 6</label>
+						<label kind="assignment" x="-727" y="-561">_variable_0000 = 400,
+_variable_0001 = 600</label>
 		</transition>
 		<transition>
 			<source ref="id30"/>
@@ -1009,8 +1009,8 @@ int _variable_0003;
 		<transition>
 			<source ref="id38"/>
 			<target ref="id25"/>
-						<label kind="assignment" x="-720" y="-561">_variable_0000 = 1,
-_variable_0001 = 2</label>
+						<label kind="assignment" x="-727" y="-561">_variable_0000 = 100,
+_variable_0001 = 200</label>
 		</transition>
 		<transition>
 			<source ref="id30"/>
@@ -1268,8 +1268,8 @@ int _variable_0002;
 		<transition>
 			<source ref="id38"/>
 			<target ref="id25"/>
-						<label kind="assignment" x="-720" y="-561">_variable_0000 = 1,
-_variable_0001 = 2</label>
+						<label kind="assignment" x="-727" y="-561">_variable_0000 = 100,
+_variable_0001 = 200</label>
 		</transition>
 		<transition>
 			<source ref="id30"/>
@@ -1544,8 +1544,8 @@ concurrent_request_type _request_0000;
 		<transition>
 			<source ref="id77"/>
 			<target ref="id57"/>
-						<label kind="assignment" x="610" y="-119">_variable_0000 = 10,
-_variable_0001 = 11</label>
+						<label kind="assignment" x="603" y="-119">_variable_0000 = 5500,
+_variable_0001 = 5700</label>
 		</transition>
 		<transition>
 			<source ref="id77"/>
@@ -1860,8 +1860,8 @@ int _variable_0001;
 		<transition>
 			<source ref="id109"/>
 			<target ref="id96"/>
-						<label kind="assignment" x="-244" y="-221">_variable_0000 = 3,
-_variable_0001 = 7</label>
+						<label kind="assignment" x="-251" y="-221">_variable_0000 = 300,
+_variable_0001 = 700</label>
 		</transition>
 		<transition>
 			<source ref="id102"/>
@@ -2133,8 +2133,8 @@ int _variable_0001;
 		<transition>
 			<source ref="id109"/>
 			<target ref="id96"/>
-						<label kind="assignment" x="-244" y="-221">_variable_0000 = 3,
-_variable_0001 = 10</label>
+						<label kind="assignment" x="-251" y="-221">_variable_0000 = 300,
+_variable_0001 = 1000</label>
 		</transition>
 		<transition>
 			<source ref="id102"/>
