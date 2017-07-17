@@ -1387,7 +1387,7 @@ public class VerificationGenerator {
 
     public void generate_processes_update() {
         // Processes update
-        StringBuffer processes_string = new StringBuffer("system concurrent_process, control_graph_init, ");
+        StringBuffer processes_string = new StringBuffer("system concurrent_process, control_graph_init_process, ");
         int processes_last_index = this.plp_processes.size() - 1;
         for (int i = 0; i <= processes_last_index; i++) {
             processes_string.append( this.plp_processes.get(i) );

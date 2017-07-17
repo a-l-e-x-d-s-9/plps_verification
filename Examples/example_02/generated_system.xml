@@ -1544,8 +1544,8 @@ concurrent_request_type _request_0000;
 		<transition>
 			<source ref="id77"/>
 			<target ref="id57"/>
-						<label kind="assignment" x="603" y="-119">_variable_0000 = 5500,
-_variable_0001 = 5700</label>
+						<label kind="assignment" x="603" y="-119">_variable_0000 = 2500,
+_variable_0001 = 2500</label>
 		</transition>
 		<transition>
 			<source ref="id77"/>
@@ -2370,7 +2370,7 @@ clock local_time;
 		</location>
 		<location id="id7" x="0" y="680">
 			<name x="-64" y="672">wait_1</name>
-			<label kind="invariant" x="22" y="702">( local_time &lt;= 100 )</label>
+			<label kind="invariant" x="22" y="702">( local_time &lt;= 0 )</label>
 		</location>
 		<location id="id8" x="0" y="816">
 			<name x="-113" y="808">plp_running_1</name>
@@ -2444,7 +2444,7 @@ clock local_time;
 		<transition>
 			<source ref="id7"/>
 			<target ref="id8"/>
-			<label kind="guard" x="-147" y="748">( local_time == 100 )</label>
+			<label kind="guard" x="-133" y="748">( local_time == 0 )</label>
 			<label kind="synchronisation" x="-147" y="765">control_plp_start[2]!</label>
 		</transition>
 		<transition>
@@ -3502,7 +3502,7 @@ node_sequential_door_open_process = node_sequential_door_open( 6, 13 );
 node_sequential_move_to_target_process = node_sequential_move_to_target( 7, 14 );
 node_condition_decide_after_is_open_process = node_condition_decide_after_is_open( 8, 15 );
 node_condition_decide_after_is_locked_process = node_condition_decide_after_is_locked( 9, 16 );
-system concurrent_process, control_graph_init, achieve_door_unlock_process, 
+system concurrent_process, control_graph_init_process, achieve_door_unlock_process, 
        achieve_move_to_process, achieve_key_take_process, achieve_door_open_process, 
        maintain_key_hold_process, observe_is_door_locked_process, observe_is_door_open_process, 
        node_concurrent_hold_and_move_process, node_sequential_start_process, node_sequential_key_holding_process, 

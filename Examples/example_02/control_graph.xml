@@ -16,7 +16,7 @@ xsi:schemaLocation="control_graph.xsd">
           </formula_condition>
         </update>
     </run_plp>
-    <run_plp plp_name="achieve_key_take" wait_time="1">
+    <run_plp plp_name="achieve_key_take">
     </run_plp>
 </node_sequential>
 

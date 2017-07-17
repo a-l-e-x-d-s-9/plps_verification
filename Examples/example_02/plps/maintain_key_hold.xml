@@ -74,8 +74,8 @@
             <lambda-rate  value="0.025"/>
         </exp-->
         <uniform>
-        <lower_bound value="55" />
-        <upper_bound value="57" />
+        <lower_bound value="25.01" />
+        <upper_bound value="25.01" />
       </uniform>
     </distribution>
   </runtime_given_success>
