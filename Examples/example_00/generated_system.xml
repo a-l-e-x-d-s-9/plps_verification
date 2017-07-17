@@ -2381,8 +2381,8 @@ concurrent_request_type _request_0002;
 			<source ref="id114"/>
 			<target ref="id116"/>
 			<label kind="probability" x="-205" y="-187">100</label>
-						<label kind="assignment" x="-244" y="-119">_variable_0000 = 0,
-_variable_0001 = 20</label>
+						<label kind="assignment" x="-251" y="-119">_variable_0000 = 0,
+_variable_0001 = 2000</label>
 		</transition>
 		<transition>
 			<source ref="id116"/>
@@ -2407,8 +2407,8 @@ _variable_0001 = 20</label>
 			<source ref="id115"/>
 			<target ref="id118"/>
 			<label kind="probability" x="-202" y="-68">10</label>
-						<label kind="assignment" x="-244" y="-17">_variable_0002 = 0,
-_variable_0003 = 20</label>
+						<label kind="assignment" x="-251" y="-17">_variable_0002 = 0,
+_variable_0003 = 2000</label>
 		</transition>
 		<transition>
 			<source ref="id118"/>
@@ -4487,7 +4487,7 @@ node_sequential_1_process = node_sequential_1( 8, 13 );
 node_sequential_2_process = node_sequential_2( 9, 14 );
 node_condition_1_process = node_condition_1( 10, 15 );
 node_condition_2_process = node_condition_2( 11, 16 );
-system concurrent_process, control_graph_init, achieve_walk_given_distance_process, 
+system concurrent_process, control_graph_init_process, achieve_walk_given_distance_process, 
        maintain_direction_on_map_2_process, maintain_direction_on_map_process, observe_gateway_process, 
        detect_wall_process, node_probability_1_process, node_probability_2_process, 
        node_probability_3_process, node_probability_4_process, node_concurrent_1_process, 
@@ -4504,6 +4504,18 @@ system concurrent_process, control_graph_init, achieve_walk_given_distance_proce
 		</query>
 		<query>
 			<formula>Pr[&lt;=10000] ( &lt;&gt; node_condition_2_process.main  )
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>A&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
 			</formula>
 			<comment>
 			</comment>
