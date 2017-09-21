@@ -1156,7 +1156,7 @@ public class VerificationGenerator {
                 }
 
                 plp_add_success_and_failure_terminations( plp_id, plp, plp_uppaal,
-                        null, fail_termination_conditions,
+                        plp_detect.getGoal(), fail_termination_conditions,
                         "id135",
                          "id129",
                               "id130",
@@ -1169,7 +1169,7 @@ public class VerificationGenerator {
                           null,
                           "id131",   "id135", new Point(-119,-136),
                         "id132", "id136", new Point( 578,-136),
-                        plp_detect.getGoal(), null, null,
+                        null, null, null,
                         plp.getRequiredResources(), plp.getSideEffects() );
 
                 add_sorting_of_result_from_concurrent_requests( plp_id, plp_uppaal,

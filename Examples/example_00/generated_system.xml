@@ -2756,7 +2756,6 @@ clock local_time;
 
 int _variable_0000;
 concurrent_request_type _request_0000;
-int _variable_0001;
 
 
 		</declaration>
@@ -2815,8 +2814,8 @@ int _variable_0001;
 			<name x="-93" y="-175">check_termination</name>
 			<urgent/>
 		</location>
-		<location id="id140" x="442" y="0">
-			<name x="376" y="22">failure_termination</name>
+		<location id="id140" x="442" y="136">
+			<name x="376" y="158">failure_termination</name>
 		</location>
 		<location id="id142" x="-323" y="-340">
 			<name x="-485" y="-348">concurrent_waiting_0</name>
@@ -2848,19 +2847,15 @@ int _variable_0001;
 			<name x="702" y="-454">concurrent_notify_0_1</name>
 			<urgent/>
 		</location>
-		<location id="id150" x="680" y="-612">
-			<name x="702" y="-590">concurrent_notify_1_1</name>
-			<urgent/>
-		</location>
-		<location id="id151" x="782" y="-476">
+		<location id="id150" x="782" y="-476">
 			<name x="804" y="-484">concurrent_unlock_1</name>
 			<urgent/>
 		</location>
-		<location id="id152" x="782" y="-340">
+		<location id="id151" x="782" y="-340">
 			<name x="804" y="-348">concurrent_continue_1</name>
 			<urgent/>
 		</location>
-		<location id="id153" x="1411" y="-204">
+		<location id="id152" x="1411" y="-204">
 			<name x="1390" y="-243">fail_0</name>
 		</location>
 
@@ -2894,20 +2889,37 @@ int _variable_0001;
 			<target ref="id130"/>
 					</transition>
 		<transition>
-			<source ref="id130"/>
-			<target ref="id140"/>
-			<label kind="guard" x="153" y="-68">// [[vehicle_off_road = TRUE]]
-( ( concurrent_read( 33 ) == 1 ) )</label>
-			<label kind="synchronisation" x="195" y="-34">concurrent_notify[33]?</label>
+			<source ref="id141"/>
+			<target ref="id129"/>
+			<label kind="guard" x="160" y="-68">// (empty-goal)
+( concurrent_read( 74 ) &gt; 0 )</label>
 			<nail x="170" y="-68"/>
 			<nail x="374" y="-68"/>
 		</transition>
 		<transition>
+			<source ref="id130"/>
+			<target ref="id129"/>
+			<label kind="guard" x="160" y="0">// (empty-goal)
+( concurrent_read( 74 ) &gt; 0 )</label>
+			<label kind="synchronisation" x="195" y="34">concurrent_notify[74]?</label>
+			<nail x="170" y="0"/>
+			<nail x="374" y="0"/>
+		</transition>
+		<transition>
+			<source ref="id130"/>
+			<target ref="id140"/>
+			<label kind="guard" x="153" y="68">// [[vehicle_off_road = TRUE]]
+( ( concurrent_read( 33 ) == 1 ) )</label>
+			<label kind="synchronisation" x="195" y="102">concurrent_notify[33]?</label>
+			<nail x="170" y="68"/>
+			<nail x="374" y="68"/>
+		</transition>
+		<transition>
 			<source ref="id141"/>
 			<target ref="id140"/>
-			<label kind="guard" x="153" y="0">// [[vehicle_off_road = TRUE]]
+			<label kind="guard" x="153" y="136">// [[vehicle_off_road = TRUE]]
 ( ( concurrent_read( 33 ) == 1 ) )</label>
-			<nail x="170" y="0"/>
+			<nail x="170" y="136"/>
 		</transition>
 		<transition>
 			<source ref="id131"/>
@@ -2952,9 +2964,7 @@ concurrent_write( 79, 1 )</label>
 			<source ref="id132"/>
 			<target ref="id147"/>
 			<label kind="synchronisation" x="241" y="-306">concurrent_can_run!</label>
-			<label kind="assignment" x="108" y="-289">concurrent_signal_access( id, true ) ,
-// For Goal:
-_variable_0001 = 1</label>
+			<label kind="assignment" x="122" y="-289">concurrent_signal_access( id, true )</label>
 		</transition>
 		<transition>
 			<source ref="id147"/>
@@ -2964,37 +2974,28 @@ _variable_0001 = 1</label>
 		<transition>
 			<source ref="id149"/>
 			<target ref="id150"/>
-			<label kind="synchronisation" x="714" y="-544">concurrent_notify[74]!</label>
-		</transition>
-		<transition>
-			<source ref="id150"/>
-			<target ref="id151"/>
-			<label kind="synchronisation" x="714" y="-680">concurrent_notify[79]!</label>
-			<nail x="782" y="-612"/>
+			<label kind="synchronisation" x="714" y="-544">concurrent_notify[79]!</label>
 		</transition>
 		<transition>
 			<source ref="id148"/>
 			<target ref="id149"/>
 			<label kind="assignment" x="190" y="-544">_variable_0000 = concurrent_request_remove_request( _variable_0000 ) ,
-// For Goal:
-// empty-goal()
-concurrent_write( 74, _variable_0001 ) ,
 // This module finished running.
 concurrent_write( 79, 0 )</label>
 		</transition>
 		<transition>
-			<source ref="id151"/>
-			<target ref="id152"/>
+			<source ref="id150"/>
+			<target ref="id151"/>
 			<label kind="synchronisation" x="816" y="-442">concurrent_lock_release!</label>
 			<label kind="assignment" x="816" y="-425">concurrent_signal_access( id, false )</label>
 		</transition>
 		<transition>
-			<source ref="id152"/>
+			<source ref="id151"/>
 			<target ref="id136"/>
 		</transition>
 		<transition>
 			<source ref="id137"/>
-			<target ref="id153"/>
+			<target ref="id152"/>
 			<label kind="guard" x="1173" y="-204">( _variable_0000 == false )</label>
 			<nail x="1173" y="-204"/>
 		</transition>
