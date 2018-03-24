@@ -9,11 +9,14 @@ import fr.uga.pddl4j.parser.Op;
 import fr.uga.pddl4j.parser.Parser;
 import loader.PLPLoader;
 import modules.*;
+import org.xml.sax.SAXException;
 import verification.VerificationException;
 import verification.VerificationManager;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +42,16 @@ public class CodeGenerator {
             // Complete path with with '/' or '\' according to what to OS uses
             if (!path.endsWith(pathBreak)) { path = path.concat(pathBreak); }
 
-            PLPLoader.loadFromDirectory(path);
+
+            try {
+                PLPLoader.loadFromDirectory(path);
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            } catch (SAXException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             packageName = "plp_monitors";
             generateROSPackage(path);
@@ -74,7 +86,16 @@ public class CodeGenerator {
                 path = path.concat(pathBreak);
             }
 
-            PLPLoader.loadFromDirectory(path);
+
+            try {
+                PLPLoader.loadFromDirectory(path);
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            } catch (SAXException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             final int ARGUMENT_INDEX_CONTROL_GRAPH      = 2;
             final int ARGUMENT_INDEX_OUTPUT_UPPAAL_FILE = 3;
@@ -111,7 +132,15 @@ public class CodeGenerator {
             packageName = "plp_middleware";
             generateROSPackage(plpPath);
 
-            PLPLoader.loadFromDirectory(plpPath);
+            try {
+                PLPLoader.loadFromDirectory(plpPath);
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            } catch (SAXException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             Parser pddlParser = new Parser();
             try {
