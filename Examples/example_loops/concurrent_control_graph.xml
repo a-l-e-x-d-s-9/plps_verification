@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<control_graph
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="control_graph.xsd">
+
+<root root_name="node_concurrent_loop"/>
+
+<node_concurrent   node_name="node_concurrent_loop" start_policy="any_predecessor_done">
+    <run_node node_name="node_concurrent_loop"/>
+</node_concurrent>
+
+</control_graph>

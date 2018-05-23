@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<configurations
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="configurations.xsd">
+
+<setting   name="precision_multiplier_for_numbers_and_time"         value="100"/>
+<setting   name="observe_variable_samples"                          value="10"/>
+<setting   name="run_time_amount_of_intervals_for_discretization"   value="5"/>
+
+<variable  name="robot_location"                                    value="at_a"        is_exclusive_access="true"  />
+<variable  name="key_location"                                      value="at_a_key"    is_exclusive_access="true"  />
+<variable  name="holding_key"                                       value="FALSE"       is_exclusive_access="true"  />
+<variable  name="key_dropped"                                       value="FALSE"       is_exclusive_access="true"  />
+<variable  name="key_can_drop"                                      value="FALSE"       is_exclusive_access="true"  />
+<variable  name="door_was_opened"                                   value="FALSE"       is_exclusive_access="true"  />
+<variable  name="door_was_unlocked"                                 value="FALSE"       is_exclusive_access="true"  />
+
+<parameter plp_name="observe_is_door_locked" name="door_is_locked"  min_value="FALSE"   max_value="TRUE"  />
+<parameter plp_name="observe_is_door_open"   name="door_is_open"    min_value="FALSE"   max_value="TRUE"  />
+
+
+</configurations>

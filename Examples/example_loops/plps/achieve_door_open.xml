@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<plps:achieve_plp name="achieve_door_open" version="1.0" glue_file_location=""
+	xmlns:plps="PLP-schemas"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="PLP-schemas AchievePLP_schema.xsd">
+
+  <parameters>
+    <execution_parameters>
+    </execution_parameters>
+
+    <input_parameters>
+    </input_parameters>
+
+    <output_parameters>
+    </output_parameters>
+
+    <non_observable>
+    </non_observable>
+    
+  </parameters>
+
+  <variables>
+    <var name="robot_location"  type="integer"/>
+    <var name="door_was_opened" type="boolean"/>
+  </variables>
+
+  <constants>
+  </constants>
+
+  <required_resources>
+  </required_resources>
+
+  <preconditions>
+    <AND>
+        <OR>
+            <formula_condition key_description="near the door at a">
+              <expression value="robot_location"/>
+              <operator type="="/>
+              <expression value="at_a_doorway"/>
+            </formula_condition>
+            
+            <formula_condition key_description="near the door at b">
+              <expression value="robot_location"/>
+              <operator type="="/>
+              <expression value="at_b_doorway"/>
+            </formula_condition>
+        </OR>
+    
+        <OR>
+            <formula_condition key_description="door_was_unlocked">
+              <expression value="door_was_unlocked"/>
+              <operator type="="/>
+              <expression value="TRUE"/>
+            </formula_condition>
+            
+            <formula_condition key_description="observed that door is unlocked">
+              <expression value="_observe_is_door_locked_door_is_locked"/>
+              <operator type="="/>
+              <expression value="FALSE"/>
+            </formula_condition>
+        </OR>
+    </AND>
+    
+  </preconditions>
+
+  <concurrency_conditions>
+  </concurrency_conditions>
+
+  <concurrent_modules>
+  </concurrent_modules>
+
+  <side_effects>
+  </side_effects>
+
+  <progress_measures>
+  </progress_measures>
+
+  <achievement_goal>
+    <formula_condition key_description="door_was_opened">
+      <expression value="door_was_opened"/>
+      <operator type="="/>
+      <expression value="TRUE"/>
+    </formula_condition>
+  </achievement_goal>
+
+  <success_probability>
+  </success_probability>
+
+  <runtime_given_success>
+    <distribution>
+      <uniform>
+        <lower_bound value="1" />
+        <upper_bound value="2" />
+      </uniform>
+    </distribution>
+  </runtime_given_success>
+
+  <failure_modes>
+  </failure_modes>
+  
+  <runtime_given_failure>
+  </runtime_given_failure>
+  
+</plps:achieve_plp>

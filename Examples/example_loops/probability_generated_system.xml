@@ -1,0 +1,3539 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>
+
+typedef struct
+{
+    int     bound_lower;
+    int     bound_upper;
+    bool    is_single_range;
+    bool    is_active;
+    int     variable_id;
+    bool    satisfied;
+    bool    is_exclusive;
+} concurrent_request_type;
+
+typedef struct
+{
+    int     value;
+    bool    is_set;
+    bool    in_range;
+    int     min;
+    int     max;
+} concurrent_data_type;
+
+const int SCHEDULER_PROCESSES_AMOUNT    = 17;
+const int CONCURRENT_DATA_AMOUNT        = 29;
+const int CONCURRENT_REQUESTS_AMOUNT    = 3;
+int concurrent_select = 0;
+const int INVALID_REQUEST_ID            = -1;
+
+typedef struct
+{
+    concurrent_data_type    concurrent_data[ CONCURRENT_DATA_AMOUNT ];
+    concurrent_request_type concurrent_requests[ CONCURRENT_REQUESTS_AMOUNT ];
+    bool                    is_process_would_like_to_access[ SCHEDULER_PROCESSES_AMOUNT ];
+    int                     requests_amount;
+} concurrent_info_type;
+
+broadcast chan concurrent_notify[ CONCURRENT_DATA_AMOUNT ];
+
+concurrent_info_type concurrent_info;
+
+broadcast chan concurrent_lock_process[ SCHEDULER_PROCESSES_AMOUNT ];
+
+broadcast chan concurrent_init_main;
+broadcast chan concurrent_can_run;
+broadcast chan concurrent_lock_release;
+
+bool concurrent_done = false;
+
+
+void concurrent_init()
+{
+    for ( request_id : int[ 0, CONCURRENT_REQUESTS_AMOUNT - 1 ])
+    {
+        concurrent_info.concurrent_requests[ request_id ].is_active     = false;
+        concurrent_info.concurrent_requests[ request_id ].satisfied     = true;
+        concurrent_info.concurrent_requests[ request_id ].is_exclusive  = false;
+    }
+    
+    for ( process_id : int[ 0, SCHEDULER_PROCESSES_AMOUNT - 1 ])
+    {
+        concurrent_info.is_process_would_like_to_access[ process_id ] = false;
+    }
+
+    for ( variable_id : int[ 0, CONCURRENT_DATA_AMOUNT - 1 ])
+    {
+        concurrent_info.concurrent_data[ variable_id ].is_set   = false;
+        concurrent_info.concurrent_data[ variable_id ].in_range = false;
+    }
+
+    concurrent_info.requests_amount = 0;
+}
+
+void concurrent_satisfied_update_request_single( int variable_id, int request_index ){
+    int value = concurrent_info.concurrent_data[variable_id].value;
+
+    if ( ( variable_id == concurrent_info.concurrent_requests[request_index].variable_id ) &amp;&amp;
+         ( true == concurrent_info.concurrent_requests[request_index].is_active ) ){
+        
+        if ( true == concurrent_info.concurrent_requests[request_index].is_single_range )
+        {
+            concurrent_info.concurrent_requests[request_index].satisfied = concurrent_info.concurrent_requests[request_index].satisfied &amp;&amp;
+                ( ( concurrent_info.concurrent_requests[request_index].bound_lower &lt;= value ) &amp;&amp;
+                  ( value &lt;= concurrent_info.concurrent_requests[request_index].bound_upper ) );
+        }
+        else
+        {
+            concurrent_info.concurrent_requests[request_index].satisfied = concurrent_info.concurrent_requests[request_index].satisfied &amp;&amp;
+                ( ( value &lt;= concurrent_info.concurrent_requests[request_index].bound_lower  ) ||
+                  ( concurrent_info.concurrent_requests[request_index].bound_upper &lt;= value ) );
+        }
+    }
+    
+}
+
+void concurrent_satisfied_update_request_all( int variable_id ){
+    if ( 0 &lt; concurrent_info.requests_amount ){
+        int value = concurrent_info.concurrent_data[ variable_id ].value;
+
+        for ( i : int[0, CONCURRENT_REQUESTS_AMOUNT - 1] )
+        {
+            concurrent_satisfied_update_request_single( variable_id, i );
+        }
+    }
+}
+
+int concurrent_request_add( int variable_id, concurrent_request_type &amp;request){
+    int     i           = 0;
+    bool    found       = false;
+    int     added_index = INVALID_REQUEST_ID;
+
+    while( ( false == found                      ) &amp;&amp;
+           ( i &lt; CONCURRENT_REQUESTS_AMOUNT ) )
+    {
+        if ( false == concurrent_info.concurrent_requests[ i ].is_active )
+        {
+            concurrent_info.concurrent_requests[i]             = request;
+            concurrent_info.concurrent_requests[i].satisfied   = true;
+            concurrent_info.concurrent_requests[i].is_active   = true;
+            concurrent_info.concurrent_requests[i].variable_id = variable_id;
+
+            concurrent_satisfied_update_request_single( variable_id, i );
+            
+            found = true;
+
+            added_index = i;
+
+            concurrent_info.requests_amount++;
+        }
+        else
+        {
+            i++;
+        }
+    }
+
+    return added_index;
+}
+
+bool concurrent_request_remove_request( int request_index ){
+    if ( true == concurrent_info.concurrent_requests[request_index].is_active ){
+        
+        concurrent_info.concurrent_requests[request_index].is_active = false;
+
+        concurrent_info.requests_amount--;
+    }
+
+    return concurrent_info.concurrent_requests[request_index].satisfied;
+}
+
+bool concurrent_is_satisfied( int request_index ){
+    return concurrent_info.concurrent_requests[request_index].satisfied;
+}
+
+int concurrent_read( int variable_id ){
+    if ( true == concurrent_info.concurrent_data[ variable_id ].is_set )
+    {
+        return concurrent_info.concurrent_data[ variable_id ].value;
+    }
+    else
+    {
+        // Error trying to read variable without ever writing to it:
+        return ( variable_id - variable_id ) / 0;
+    }
+}
+
+void concurrent_write( int variable_id, int value ){
+    concurrent_info.concurrent_data[ variable_id ].is_set = true;
+
+    if ( true == concurrent_info.concurrent_data[ variable_id ].in_range )
+    {
+        if ( ( value &lt; concurrent_info.concurrent_data[ variable_id ].min ) ||
+             ( value &gt; concurrent_info.concurrent_data[ variable_id ].max ) )
+        {
+             // Error variable value out of range:
+             concurrent_info.concurrent_data[ variable_id ].value = (variable_id - variable_id) / (value - value );
+        }
+    }
+
+    concurrent_info.concurrent_data[ variable_id ].value  = value;
+    
+    concurrent_satisfied_update_request_all( variable_id );
+}
+
+void concurrent_set_range( int variable_id, int min, int max ){
+    concurrent_info.concurrent_data[ variable_id ].in_range = true;
+    concurrent_info.concurrent_data[ variable_id ].min      = min;
+    concurrent_info.concurrent_data[ variable_id ].max      = max;
+}
+
+void concurrent_signal_access(  int process_id, bool value ){
+    
+    concurrent_info.is_process_would_like_to_access[ process_id ] = value;
+}
+
+const int CONTROL_NODES_AMOUNT          = 10;
+const int CONTROL_NODES_CAN_RUN_AMOUNT  = 11;
+
+broadcast chan control_plp_start    [ CONCURRENT_DATA_AMOUNT        ];
+broadcast chan control_plp_done     [ CONCURRENT_DATA_AMOUNT        ];
+broadcast chan control_node_notify  [ CONTROL_NODES_AMOUNT          ];
+bool           control_node_can_run [ CONTROL_NODES_CAN_RUN_AMOUNT  ];
+
+void initialize_variables(){
+// 000: robot_location
+concurrent_write( 0, 100 );
+// 001: door_was_unlocked
+concurrent_write( 1, 0 );
+// 002: _achieve_door_unlock_repeat
+concurrent_write( 2, 0 );
+concurrent_set_range( 2, 0, 1 );
+// 003: at_unknown
+concurrent_write( 3, 0 );
+concurrent_set_range( 3, 0, 0 );
+// 004: at_a
+concurrent_write( 4, 100 );
+concurrent_set_range( 4, 100, 100 );
+// 005: at_a_key
+concurrent_write( 5, 200 );
+concurrent_set_range( 5, 200, 200 );
+// 006: at_a_doorway
+concurrent_write( 6, 300 );
+concurrent_set_range( 6, 300, 300 );
+// 007: at_b_doorway
+concurrent_write( 7, 400 );
+concurrent_set_range( 7, 400, 400 );
+// 008: at_b_target
+concurrent_write( 8, 500 );
+concurrent_set_range( 8, 500, 500 );
+// 009: _achieve_move_to_destination
+// 010: _achieve_move_to_repeat
+concurrent_write( 10, 0 );
+concurrent_set_range( 10, 0, 1 );
+// 011: holding_key
+concurrent_write( 11, 0 );
+// 012: key_location
+concurrent_write( 12, 200 );
+// 013: _achieve_key_take_repeat
+concurrent_write( 13, 0 );
+concurrent_set_range( 13, 0, 1 );
+// 014: door_was_opened
+concurrent_write( 14, 0 );
+// 015: _achieve_door_open_repeat
+concurrent_write( 15, 0 );
+concurrent_set_range( 15, 0, 1 );
+// 016: key_dropped
+concurrent_write( 16, 0 );
+// 017: key_can_drop
+concurrent_write( 17, 0 );
+// 018: _observe_is_door_locked_door_is_locked
+concurrent_set_range( 18, 0, 1 );
+// 019: _observe_is_door_locked_repeat
+concurrent_write( 19, 0 );
+concurrent_set_range( 19, 0, 1 );
+// 020: _observe_is_door_open_door_is_open
+concurrent_set_range( 20, 0, 1 );
+// 021: _observe_is_door_open_repeat
+concurrent_write( 21, 0 );
+concurrent_set_range( 21, 0, 1 );
+// 022: _module_achieve_door_unlock
+concurrent_write( 22, 0 );
+concurrent_set_range( 22, 0, 1 );
+// 023: _module_achieve_move_to
+concurrent_write( 23, 0 );
+concurrent_set_range( 23, 0, 1 );
+// 024: _module_achieve_key_take
+concurrent_write( 24, 0 );
+concurrent_set_range( 24, 0, 1 );
+// 025: _module_achieve_door_open
+concurrent_write( 25, 0 );
+concurrent_set_range( 25, 0, 1 );
+// 026: _module_maintain_key_hold
+concurrent_write( 26, 0 );
+concurrent_set_range( 26, 0, 1 );
+// 027: _module_observe_is_door_locked
+concurrent_write( 27, 0 );
+concurrent_set_range( 27, 0, 1 );
+// 028: _module_observe_is_door_open
+concurrent_write( 28, 0 );
+concurrent_set_range( 28, 0, 1 );
+}
+
+
+</declaration>
+
+
+	<template>
+		<name x="5" y="5">achieve_door_unlock</name>
+		<parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+int _variable_0000;
+int _variable_0001;
+int _variable_0002;
+concurrent_request_type _request_0000;
+int _variable_0003;
+concurrent_request_type _request_0001;
+int _variable_0004;
+
+</declaration>
+
+		<location id="id38" x="-688" y="-612">
+			<name x="-747" y="-651">check_termination</name>
+			<urgent/>
+		</location>
+		<location id="id39" x="-935" y="-816">
+			<name x="-1097" y="-824">concurrent_waiting_0</name>
+		</location>
+		<location id="id40" x="-935" y="-952">
+			<name x="-1104" y="-960">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id41" x="-629" y="-952">
+			<name x="-607" y="-930">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id42" x="-527" y="-952">
+			<name x="-505" y="-960">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id43" x="-527" y="-816">
+			<name x="-505" y="-824">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id44" x="-391" y="-816">
+			<name x="-553" y="-824">concurrent_waiting_1</name>
+		</location>
+		<location id="id45" x="-391" y="-952">
+			<name x="-560" y="-960">concurrent_got_lock_1</name>
+			<urgent/>
+		</location>
+		<location id="id46" x="-85" y="-952">
+			<name x="-63" y="-930">concurrent_notify_0_1</name>
+			<urgent/>
+		</location>
+		<location id="id47" x="-85" y="-1088">
+			<name x="-63" y="-1066">concurrent_notify_1_1</name>
+			<urgent/>
+		</location>
+		<location id="id48" x="17" y="-952">
+			<name x="39" y="-960">concurrent_unlock_1</name>
+			<urgent/>
+		</location>
+		<location id="id49" x="17" y="-816">
+			<name x="39" y="-824">concurrent_continue_1</name>
+			<urgent/>
+		</location>
+		<location id="id50" x="578" y="-680">
+			<name x="557" y="-719">fail_0</name>
+		</location>
+		<location id="id51" x="578" y="-748">
+			<name x="557" y="-787">fail_1</name>
+		</location>
+
+
+        <location id="id36" x="272" y="-612">
+			<name x="196" y="-578">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id23" x="612" y="-612">
+			<name x="621" y="-646">end</name>
+			<urgent/>
+		</location>
+
+		<location id="id25" x="-552" y="-612">
+			<name x="-600" y="-671">main_success</name>
+						<label kind="invariant" x="-601" y="-578">( local_time &lt;= _variable_0001 )</label>
+
+		</location>
+
+		<location id="id27" x="-1368" y="-612">
+			<name x="-1385" y="-654">start</name>
+		</location>
+		<location id="id28" x="-1130" y="-306">
+			<name x="-1138" y="-357">repeat_wait</name>
+			<label kind="invariant" x="-1104" y="-289">local_time &lt;= 0</label>
+		</location>
+		<location id="id29" x="-1223" y="-612">
+			<name x="-1248" y="-654">synced</name>
+			<urgent/>
+		</location>
+		<location id="id33" x="-1023" y="-612">
+            <name x="-1122" y="-646">checked</name>
+            <urgent/>
+        </location>
+		<location id="id30" x="-748" y="-612">
+			<name x="-957" y="-633">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id34" x="-714" y="-612">
+            <name x="-680" y="-633">access_memory_end_0</name>
+            <urgent/>
+        </location>
+		<location id="id31" x="-204" y="-612">
+			<name x="-386" y="-663">access_memory_start_1</name>
+			<urgent/>
+		</location>
+		<location id="id35" x="-170" y="-612">
+            <name x="-146" y="-663">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+
+
+
+        <init ref="id27"/>
+
+		<transition>
+			<source ref="id25"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-539" y="-646">( _variable_0000 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0001 )</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id30"/>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id38"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id25"/>
+						<label kind="assignment" x="-727" y="-561">_variable_0000 = 100,
+_variable_0001 = 200</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id39"/>
+			<label kind="synchronisation" x="-1068" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-1215" y="-765">concurrent_signal_access( id, true ),
+// maintain_key_hold
+_request_0000.bound_lower        = 1,
+_request_0000.bound_upper        = 1,
+_request_0000.is_single_range    = true,
+_request_0000.variable_id        = 26,
+// [holding_key = TRUE]
+_request_0001.bound_lower        = 1,
+_request_0001.bound_upper        = 1,
+_request_0001.is_single_range    = true,
+_request_0001.variable_id        = 11</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id40"/>
+			<label kind="synchronisation" x="-1165" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id42"/>
+			<label kind="synchronisation" x="-595" y="-1020">concurrent_notify[22]!</label>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id41"/>
+			<label kind="assignment" x="-1063" y="-1020">// maintain_key_hold
+_variable_0002 = concurrent_request_add( 26, _request_0000 ) ,
+// [holding_key = TRUE]
+_variable_0003 = concurrent_request_add( 11, _request_0001 ) ,
+// This module is running.
+concurrent_write( 22, 1 )</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id43"/>
+			<label kind="synchronisation" x="-493" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="-493" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id34"/>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id44"/>
+			<label kind="synchronisation" x="-524" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-657" y="-765">concurrent_signal_access( id, true ) ,
+// For Goal:
+_variable_0004 = 1</label>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id45"/>
+			<label kind="synchronisation" x="-621" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id47"/>
+			<label kind="synchronisation" x="-51" y="-1020">concurrent_notify[1]!</label>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id48"/>
+			<label kind="synchronisation" x="-51" y="-1156">concurrent_notify[22]!</label>
+			<nail x="17" y="-1088"/>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id46"/>
+			<label kind="assignment" x="-575" y="-1020">_variable_0002 = concurrent_request_remove_request( _variable_0002 ) ,
+_variable_0003 = concurrent_request_remove_request( _variable_0003 ) ,
+// For Goal:
+// door_was_unlocked
+concurrent_write( 1, _variable_0004 ) ,
+// This module finished running.
+concurrent_write( 22, 0 )</label>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id49"/>
+			<label kind="synchronisation" x="51" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="51" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id35"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id50"/>
+			<label kind="guard" x="340" y="-680">( _variable_0002 == false )</label>
+			<nail x="340" y="-680"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id51"/>
+			<label kind="guard" x="340" y="-748">( _variable_0003 == false )</label>
+			<nail x="340" y="-748"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id23"/>
+			<label kind="guard" x="340" y="-612">( _variable_0002 == true ) &amp;&amp;
+( _variable_0003 == true )</label>
+		</transition>
+
+
+		<transition>
+			<source ref="id27"/>
+			<target ref="id29"/>
+			<label kind="synchronisation" x="-1359" y="-637">control_plp_start[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id27"/>
+			<label kind="guard" x="-1334" y="-263"> false == concurrent_read( 2 ) </label>
+			<label kind="synchronisation" x="-1334" y="-229">control_plp_done[id]!</label>
+			<nail x="612" y="-204"/>
+			<nail x="-1368" y="-204"/>
+		</transition>
+		<transition controllable="true">
+			<source ref="id29"/>
+			<target ref="id33"/>
+			<label kind="guard" x="-1309" y="-688">// Preconditions: [[OR [robot_location = at_a_doorway] [robot_location = at_b_doorway]]]
+( ( ( concurrent_read( 0 ) == concurrent_read( 6 ) ) ||
+( concurrent_read( 0 ) == concurrent_read( 7 ) ) ) )</label>
+			<label kind="assignment" x="-1189" y="-603">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id29"/>
+			<label kind="guard" x="-1266" y="-442">local_time == 0</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-1104" y="-331">true == concurrent_read( 2 )</label>
+			<label kind="assignment" x="-1104" y="-306">local_time = 0</label>
+			<nail x="578" y="-306"/>
+		</transition>
+
+        <transition>
+            <source ref="id35"/>
+            <target ref="id36"/>
+        </transition>
+	</template>
+	<template>
+		<name x="5" y="5">achieve_move_to</name>
+		<parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+int _variable_0000;
+int _variable_0001;
+int _variable_0002;
+
+</declaration>
+
+		<location id="id41" x="-688" y="-612">
+			<name x="-747" y="-651">check_termination</name>
+			<urgent/>
+		</location>
+		<location id="id42" x="-935" y="-816">
+			<name x="-1097" y="-824">concurrent_waiting_0</name>
+		</location>
+		<location id="id43" x="-935" y="-952">
+			<name x="-1104" y="-960">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id44" x="-629" y="-952">
+			<name x="-607" y="-930">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id45" x="-527" y="-952">
+			<name x="-505" y="-960">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id46" x="-527" y="-816">
+			<name x="-505" y="-824">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id47" x="-391" y="-816">
+			<name x="-553" y="-824">concurrent_waiting_1</name>
+		</location>
+		<location id="id48" x="-391" y="-952">
+			<name x="-560" y="-960">concurrent_got_lock_1</name>
+			<urgent/>
+		</location>
+		<location id="id49" x="-85" y="-952">
+			<name x="-63" y="-930">concurrent_notify_0_1</name>
+			<urgent/>
+		</location>
+		<location id="id50" x="-85" y="-1088">
+			<name x="-63" y="-1066">concurrent_notify_1_1</name>
+			<urgent/>
+		</location>
+		<location id="id51" x="17" y="-952">
+			<name x="39" y="-960">concurrent_unlock_1</name>
+			<urgent/>
+		</location>
+		<location id="id52" x="17" y="-816">
+			<name x="39" y="-824">concurrent_continue_1</name>
+			<urgent/>
+		</location>
+
+
+        <location id="id36" x="272" y="-612">
+			<name x="196" y="-578">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id23" x="612" y="-612">
+			<name x="621" y="-646">end</name>
+			<urgent/>
+		</location>
+
+		<location id="id25" x="-552" y="-612">
+			<name x="-600" y="-671">main_success</name>
+						<label kind="invariant" x="-601" y="-578">( local_time &lt;= _variable_0001 )</label>
+
+		</location>
+
+		<location id="id27" x="-1368" y="-612">
+			<name x="-1385" y="-654">start</name>
+		</location>
+		<location id="id28" x="-1130" y="-306">
+			<name x="-1138" y="-357">repeat_wait</name>
+			<label kind="invariant" x="-1104" y="-289">local_time &lt;= 0</label>
+		</location>
+		<location id="id29" x="-1223" y="-612">
+			<name x="-1248" y="-654">synced</name>
+			<urgent/>
+		</location>
+		<location id="id33" x="-1023" y="-612">
+            <name x="-1122" y="-646">checked</name>
+            <urgent/>
+        </location>
+		<location id="id30" x="-748" y="-612">
+			<name x="-957" y="-633">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id34" x="-714" y="-612">
+            <name x="-680" y="-633">access_memory_end_0</name>
+            <urgent/>
+        </location>
+		<location id="id31" x="-204" y="-612">
+			<name x="-386" y="-663">access_memory_start_1</name>
+			<urgent/>
+		</location>
+		<location id="id35" x="-170" y="-612">
+            <name x="-146" y="-663">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+
+			<branchpoint id="id37" x="-853" y="-510"></branchpoint>
+			<branchpoint id="id38" x="-853" y="-408"></branchpoint>
+			<branchpoint id="id39" x="-853" y="-306"></branchpoint>
+
+
+        <init ref="id27"/>
+
+		<transition>
+			<source ref="id25"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-539" y="-646">( _variable_0000 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0001 )</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id37"/>
+			<label kind="guard" x="-989" y="-612">// [AND [OR [robot_location = at_a] [robot_location = at_a_key] [robot_location = at_a_doorway]] [OR [destination = at_a] [destination = at_a_key] [destination = at_a_doorway]]]
+( ( ( concurrent_read( 0 ) == concurrent_read( 4 ) ) ||
+( concurrent_read( 0 ) == concurrent_read( 5 ) ) ||
+( concurrent_read( 0 ) == concurrent_read( 6 ) ) ) &amp;&amp;
+( ( concurrent_read( 9 ) == concurrent_read( 4 ) ) ||
+( concurrent_read( 9 ) == concurrent_read( 5 ) ) ||
+( concurrent_read( 9 ) == concurrent_read( 6 ) ) ) )</label>
+			<nail x="-955" y="-510"/>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id30"/>
+			<label kind="probability" x="-853" y="-544">100</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id38"/>
+			<label kind="guard" x="-989" y="-510">// [AND [OR [robot_location = at_a_doorway] [robot_location = at_b_doorway]] [OR [destination = at_a_doorway] [destination = at_b_doorway]] [OR [door_was_opened = TRUE] [_observe_is_door_open_door_is_open = TRUE]]]
+( ( ( concurrent_read( 0 ) == concurrent_read( 6 ) ) ||
+( concurrent_read( 0 ) == concurrent_read( 7 ) ) ) &amp;&amp;
+( ( concurrent_read( 9 ) == concurrent_read( 6 ) ) ||
+( concurrent_read( 9 ) == concurrent_read( 7 ) ) ) &amp;&amp;
+( ( concurrent_read( 14 ) == 1 ) ||
+( concurrent_read( 20 ) == 1 ) ) )</label>
+			<nail x="-955" y="-408"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id30"/>
+			<label kind="probability" x="-853" y="-442">100</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id39"/>
+			<label kind="guard" x="-989" y="-408">// [AND [OR [robot_location = at_b_doorway] [robot_location = at_b_target]] [OR [destination = at_b_doorway] [destination = at_b_target]]]
+( ( ( concurrent_read( 0 ) == concurrent_read( 7 ) ) ||
+( concurrent_read( 0 ) == concurrent_read( 8 ) ) ) &amp;&amp;
+( ( concurrent_read( 9 ) == concurrent_read( 7 ) ) ||
+( concurrent_read( 9 ) == concurrent_read( 8 ) ) ) )</label>
+			<nail x="-955" y="-306"/>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id30"/>
+			<label kind="probability" x="-853" y="-340">100</label>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id41"/>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id25"/>
+						<label kind="assignment" x="-727" y="-561">_variable_0000 = 400,
+_variable_0001 = 600</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id42"/>
+			<label kind="synchronisation" x="-1068" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-1187" y="-765">concurrent_signal_access( id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id43"/>
+			<label kind="synchronisation" x="-1165" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id45"/>
+			<label kind="synchronisation" x="-595" y="-1020">concurrent_notify[23]!</label>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id44"/>
+			<label kind="assignment" x="-811" y="-1020">// This module is running.
+concurrent_write( 23, 1 )</label>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id46"/>
+			<label kind="synchronisation" x="-493" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="-493" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id34"/>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id47"/>
+			<label kind="synchronisation" x="-524" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-657" y="-765">concurrent_signal_access( id, true ) ,
+// For Goal:
+_variable_0002 = concurrent_read( 9 )</label>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id48"/>
+			<label kind="synchronisation" x="-621" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id50"/>
+			<label kind="synchronisation" x="-51" y="-1020">concurrent_notify[0]!</label>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id51"/>
+			<label kind="synchronisation" x="-51" y="-1156">concurrent_notify[23]!</label>
+			<nail x="17" y="-1088"/>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id49"/>
+			<label kind="assignment" x="-358" y="-1020">// For Goal:
+// robot_location
+concurrent_write( 0, _variable_0002 ) ,
+// This module finished running.
+concurrent_write( 23, 0 )</label>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id52"/>
+			<label kind="synchronisation" x="51" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="51" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id52"/>
+			<target ref="id35"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id23"/>
+		</transition>
+
+
+		<transition>
+			<source ref="id27"/>
+			<target ref="id29"/>
+			<label kind="synchronisation" x="-1359" y="-637">control_plp_start[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id27"/>
+			<label kind="guard" x="-1334" y="-263"> false == concurrent_read( 10 ) </label>
+			<label kind="synchronisation" x="-1334" y="-229">control_plp_done[id]!</label>
+			<nail x="612" y="-204"/>
+			<nail x="-1368" y="-204"/>
+		</transition>
+		<transition controllable="true">
+			<source ref="id29"/>
+			<target ref="id33"/>
+			<label kind="guard" x="-1309" y="-688"></label>
+			<label kind="assignment" x="-1189" y="-603">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id29"/>
+			<label kind="guard" x="-1266" y="-442">local_time == 0</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-1104" y="-331">true == concurrent_read( 10 )</label>
+			<label kind="assignment" x="-1104" y="-306">local_time = 0</label>
+			<nail x="578" y="-306"/>
+		</transition>
+
+        <transition>
+            <source ref="id35"/>
+            <target ref="id36"/>
+        </transition>
+	</template>
+	<template>
+		<name x="5" y="5">achieve_key_take</name>
+		<parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+int _variable_0000;
+int _variable_0001;
+int _variable_0002;
+int _variable_0003;
+
+</declaration>
+
+		<location id="id38" x="-688" y="-612">
+			<name x="-747" y="-651">check_termination</name>
+			<urgent/>
+		</location>
+		<location id="id39" x="-935" y="-816">
+			<name x="-1097" y="-824">concurrent_waiting_0</name>
+		</location>
+		<location id="id40" x="-935" y="-952">
+			<name x="-1104" y="-960">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id41" x="-629" y="-952">
+			<name x="-607" y="-930">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id42" x="-527" y="-952">
+			<name x="-505" y="-960">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id43" x="-527" y="-816">
+			<name x="-505" y="-824">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id44" x="-391" y="-816">
+			<name x="-553" y="-824">concurrent_waiting_1</name>
+		</location>
+		<location id="id45" x="-391" y="-952">
+			<name x="-560" y="-960">concurrent_got_lock_1</name>
+			<urgent/>
+		</location>
+		<location id="id46" x="-85" y="-952">
+			<name x="-63" y="-930">concurrent_notify_0_1</name>
+			<urgent/>
+		</location>
+		<location id="id47" x="-85" y="-1088">
+			<name x="-63" y="-1066">concurrent_notify_1_1</name>
+			<urgent/>
+		</location>
+		<location id="id48" x="-85" y="-1224">
+			<name x="-63" y="-1202">concurrent_notify_2_1</name>
+			<urgent/>
+		</location>
+		<location id="id49" x="17" y="-952">
+			<name x="39" y="-960">concurrent_unlock_1</name>
+			<urgent/>
+		</location>
+		<location id="id50" x="17" y="-816">
+			<name x="39" y="-824">concurrent_continue_1</name>
+			<urgent/>
+		</location>
+
+
+        <location id="id36" x="272" y="-612">
+			<name x="196" y="-578">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id23" x="612" y="-612">
+			<name x="621" y="-646">end</name>
+			<urgent/>
+		</location>
+
+		<location id="id25" x="-552" y="-612">
+			<name x="-600" y="-671">main_success</name>
+						<label kind="invariant" x="-601" y="-578">( local_time &lt;= _variable_0001 )</label>
+
+		</location>
+
+		<location id="id27" x="-1368" y="-612">
+			<name x="-1385" y="-654">start</name>
+		</location>
+		<location id="id28" x="-1130" y="-306">
+			<name x="-1138" y="-357">repeat_wait</name>
+			<label kind="invariant" x="-1104" y="-289">local_time &lt;= 0</label>
+		</location>
+		<location id="id29" x="-1223" y="-612">
+			<name x="-1248" y="-654">synced</name>
+			<urgent/>
+		</location>
+		<location id="id33" x="-1023" y="-612">
+            <name x="-1122" y="-646">checked</name>
+            <urgent/>
+        </location>
+		<location id="id30" x="-748" y="-612">
+			<name x="-957" y="-633">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id34" x="-714" y="-612">
+            <name x="-680" y="-633">access_memory_end_0</name>
+            <urgent/>
+        </location>
+		<location id="id31" x="-204" y="-612">
+			<name x="-386" y="-663">access_memory_start_1</name>
+			<urgent/>
+		</location>
+		<location id="id35" x="-170" y="-612">
+            <name x="-146" y="-663">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+
+
+
+        <init ref="id27"/>
+
+		<transition>
+			<source ref="id25"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-539" y="-646">( _variable_0000 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0001 )</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id30"/>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id38"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id25"/>
+						<label kind="assignment" x="-727" y="-561">_variable_0000 = 100,
+_variable_0001 = 200</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id39"/>
+			<label kind="synchronisation" x="-1068" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-1187" y="-765">concurrent_signal_access( id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id40"/>
+			<label kind="synchronisation" x="-1165" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id42"/>
+			<label kind="synchronisation" x="-595" y="-1020">concurrent_notify[24]!</label>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id41"/>
+			<label kind="assignment" x="-811" y="-1020">// This module is running.
+concurrent_write( 24, 1 )</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id43"/>
+			<label kind="synchronisation" x="-493" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="-493" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id34"/>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id44"/>
+			<label kind="synchronisation" x="-524" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-657" y="-765">concurrent_signal_access( id, true ) ,
+// For Goal:
+_variable_0002 = 1 ,
+_variable_0003 = concurrent_read( 3 )</label>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id45"/>
+			<label kind="synchronisation" x="-621" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id47"/>
+			<label kind="synchronisation" x="-51" y="-1020">concurrent_notify[11]!</label>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id48"/>
+			<label kind="synchronisation" x="-51" y="-1156">concurrent_notify[12]!</label>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id49"/>
+			<label kind="synchronisation" x="-51" y="-1292">concurrent_notify[24]!</label>
+			<nail x="17" y="-1224"/>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id46"/>
+			<label kind="assignment" x="-365" y="-1020">// For Goal:
+// holding_key
+concurrent_write( 11, _variable_0002 ) ,
+// key_location
+concurrent_write( 12, _variable_0003 ) ,
+// This module finished running.
+concurrent_write( 24, 0 )</label>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id50"/>
+			<label kind="synchronisation" x="51" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="51" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id35"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id23"/>
+		</transition>
+
+
+		<transition>
+			<source ref="id27"/>
+			<target ref="id29"/>
+			<label kind="synchronisation" x="-1359" y="-637">control_plp_start[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id27"/>
+			<label kind="guard" x="-1334" y="-263"> false == concurrent_read( 13 ) </label>
+			<label kind="synchronisation" x="-1334" y="-229">control_plp_done[id]!</label>
+			<nail x="612" y="-204"/>
+			<nail x="-1368" y="-204"/>
+		</transition>
+		<transition controllable="true">
+			<source ref="id29"/>
+			<target ref="id33"/>
+			<label kind="guard" x="-1309" y="-688">// Preconditions: [[key_location = robot_location]]
+( ( concurrent_read( 12 ) == concurrent_read( 0 ) ) )</label>
+			<label kind="assignment" x="-1189" y="-603">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id29"/>
+			<label kind="guard" x="-1266" y="-442">local_time == 0</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-1104" y="-331">true == concurrent_read( 13 )</label>
+			<label kind="assignment" x="-1104" y="-306">local_time = 0</label>
+			<nail x="578" y="-306"/>
+		</transition>
+
+        <transition>
+            <source ref="id35"/>
+            <target ref="id36"/>
+        </transition>
+	</template>
+	<template>
+		<name x="5" y="5">achieve_door_open</name>
+		<parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+int _variable_0000;
+int _variable_0001;
+int _variable_0002;
+
+</declaration>
+
+		<location id="id38" x="-688" y="-612">
+			<name x="-747" y="-651">check_termination</name>
+			<urgent/>
+		</location>
+		<location id="id39" x="-935" y="-816">
+			<name x="-1097" y="-824">concurrent_waiting_0</name>
+		</location>
+		<location id="id40" x="-935" y="-952">
+			<name x="-1104" y="-960">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id41" x="-629" y="-952">
+			<name x="-607" y="-930">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id42" x="-527" y="-952">
+			<name x="-505" y="-960">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id43" x="-527" y="-816">
+			<name x="-505" y="-824">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id44" x="-391" y="-816">
+			<name x="-553" y="-824">concurrent_waiting_1</name>
+		</location>
+		<location id="id45" x="-391" y="-952">
+			<name x="-560" y="-960">concurrent_got_lock_1</name>
+			<urgent/>
+		</location>
+		<location id="id46" x="-85" y="-952">
+			<name x="-63" y="-930">concurrent_notify_0_1</name>
+			<urgent/>
+		</location>
+		<location id="id47" x="-85" y="-1088">
+			<name x="-63" y="-1066">concurrent_notify_1_1</name>
+			<urgent/>
+		</location>
+		<location id="id48" x="17" y="-952">
+			<name x="39" y="-960">concurrent_unlock_1</name>
+			<urgent/>
+		</location>
+		<location id="id49" x="17" y="-816">
+			<name x="39" y="-824">concurrent_continue_1</name>
+			<urgent/>
+		</location>
+
+
+        <location id="id36" x="272" y="-612">
+			<name x="196" y="-578">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id23" x="612" y="-612">
+			<name x="621" y="-646">end</name>
+			<urgent/>
+		</location>
+
+		<location id="id25" x="-552" y="-612">
+			<name x="-600" y="-671">main_success</name>
+						<label kind="invariant" x="-601" y="-578">( local_time &lt;= _variable_0001 )</label>
+
+		</location>
+
+		<location id="id27" x="-1368" y="-612">
+			<name x="-1385" y="-654">start</name>
+		</location>
+		<location id="id28" x="-1130" y="-306">
+			<name x="-1138" y="-357">repeat_wait</name>
+			<label kind="invariant" x="-1104" y="-289">local_time &lt;= 0</label>
+		</location>
+		<location id="id29" x="-1223" y="-612">
+			<name x="-1248" y="-654">synced</name>
+			<urgent/>
+		</location>
+		<location id="id33" x="-1023" y="-612">
+            <name x="-1122" y="-646">checked</name>
+            <urgent/>
+        </location>
+		<location id="id30" x="-748" y="-612">
+			<name x="-957" y="-633">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id34" x="-714" y="-612">
+            <name x="-680" y="-633">access_memory_end_0</name>
+            <urgent/>
+        </location>
+		<location id="id31" x="-204" y="-612">
+			<name x="-386" y="-663">access_memory_start_1</name>
+			<urgent/>
+		</location>
+		<location id="id35" x="-170" y="-612">
+            <name x="-146" y="-663">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+
+
+
+        <init ref="id27"/>
+
+		<transition>
+			<source ref="id25"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-539" y="-646">( _variable_0000 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0001 )</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id30"/>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id38"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id25"/>
+						<label kind="assignment" x="-727" y="-561">_variable_0000 = 100,
+_variable_0001 = 200</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id39"/>
+			<label kind="synchronisation" x="-1068" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-1187" y="-765">concurrent_signal_access( id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id40"/>
+			<label kind="synchronisation" x="-1165" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id42"/>
+			<label kind="synchronisation" x="-595" y="-1020">concurrent_notify[25]!</label>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id41"/>
+			<label kind="assignment" x="-811" y="-1020">// This module is running.
+concurrent_write( 25, 1 )</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id43"/>
+			<label kind="synchronisation" x="-493" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="-493" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id34"/>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id44"/>
+			<label kind="synchronisation" x="-524" y="-782">concurrent_can_run!</label>
+			<label kind="assignment" x="-657" y="-765">concurrent_signal_access( id, true ) ,
+// For Goal:
+_variable_0002 = 1</label>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id45"/>
+			<label kind="synchronisation" x="-621" y="-918">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id47"/>
+			<label kind="synchronisation" x="-51" y="-1020">concurrent_notify[14]!</label>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id48"/>
+			<label kind="synchronisation" x="-51" y="-1156">concurrent_notify[25]!</label>
+			<nail x="17" y="-1088"/>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id46"/>
+			<label kind="assignment" x="-365" y="-1020">// For Goal:
+// door_was_opened
+concurrent_write( 14, _variable_0002 ) ,
+// This module finished running.
+concurrent_write( 25, 0 )</label>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id49"/>
+			<label kind="synchronisation" x="51" y="-918">concurrent_lock_release!</label>
+			<label kind="assignment" x="51" y="-901">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id35"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id23"/>
+		</transition>
+
+
+		<transition>
+			<source ref="id27"/>
+			<target ref="id29"/>
+			<label kind="synchronisation" x="-1359" y="-637">control_plp_start[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id27"/>
+			<label kind="guard" x="-1334" y="-263"> false == concurrent_read( 15 ) </label>
+			<label kind="synchronisation" x="-1334" y="-229">control_plp_done[id]!</label>
+			<nail x="612" y="-204"/>
+			<nail x="-1368" y="-204"/>
+		</transition>
+		<transition controllable="true">
+			<source ref="id29"/>
+			<target ref="id33"/>
+			<label kind="guard" x="-1309" y="-688">// Preconditions: [[AND [OR [robot_location = at_a_doorway] [robot_location = at_b_doorway]] [OR [door_was_unlocked = TRUE] [_observe_is_door_locked_door_is_locked = FALSE]]]]
+( ( ( ( concurrent_read( 0 ) == concurrent_read( 6 ) ) ||
+( concurrent_read( 0 ) == concurrent_read( 7 ) ) ) &amp;&amp;
+( ( concurrent_read( 1 ) == 1 ) ||
+( concurrent_read( 18 ) == 0 ) ) ) )</label>
+			<label kind="assignment" x="-1189" y="-603">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id29"/>
+			<label kind="guard" x="-1266" y="-442">local_time == 0</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-1104" y="-331">true == concurrent_read( 15 )</label>
+			<label kind="assignment" x="-1104" y="-306">local_time = 0</label>
+			<nail x="578" y="-306"/>
+		</transition>
+
+        <transition>
+            <source ref="id35"/>
+            <target ref="id36"/>
+        </transition>
+	</template>
+	<template>
+		<name x="9" y="9">maintain_key_hold</name>
+		<parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+int wait                   = 2;
+
+int _variable_0000;
+int _variable_0001;
+int _variable_0002;
+concurrent_request_type _request_0000;
+
+
+		</declaration>
+		<location id="id55" x="1190" y="-170">
+			<name x="1139" y="-204">main_done</name>
+			<urgent/>
+		</location>
+		<location id="id75" x="1649" y="-170">
+			<name x="1550" y="-145">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id56" x="2074" y="-170">
+			<name x="2091" y="-196">end</name>
+			<urgent/>
+		</location>
+		<location id="id57" x="782" y="-170">
+			<name x="773" y="-204">main_success</name>
+						<label kind="invariant" x="733" y="-136">( local_time &lt;= _variable_0001 )</label>
+
+		</location>
+
+		<location id="id62" x="68" y="-170">
+			<name x="26" y="-196">start</name>
+		</location>
+		<location id="id63" x="459" y="-170">
+			<name x="382" y="-229">wait_maintain_true</name>
+						<urgent/>
+
+		</location>
+
+		<location id="id74" x="409" y="-170">
+			<name x="332" y="-229">pre_wait_maintain_true</name>
+			<urgent/>
+		</location>
+
+		<location id="id64" x="578" y="-170">
+			<name x="416" y="-229">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id72" x="612" y="-170">
+            <name x="624" y="-229">access_memory_end_0</name>
+            <urgent/>
+        </location>
+
+		<location id="id65" x="1258" y="-170">
+			<name x="1096" y="-238">access_memory_start_1</name>
+			<urgent/>
+		</location>
+		<location id="id73" x="1292" y="-170">
+            <name x="1300" y="-220">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+        <location id="id60" x="187" y="-170">
+            <name x="161" y="-212">synced</name>
+            <urgent/>
+		</location>
+		<location id="id70" x="306" y="-170">
+            <name x="272" y="-212">checked</name>
+            <urgent/>
+        </location>
+
+
+
+		<location id="id77" x="646" y="-170">
+			<name x="587" y="-209">check_termination</name>
+			<urgent/>
+		</location>
+		<location id="id76" x="1190" y="102">
+			<name x="1124" y="124">failure_termination</name>
+		</location>
+		<location id="id78" x="391" y="-374">
+			<name x="229" y="-382">concurrent_waiting_0</name>
+		</location>
+		<location id="id79" x="391" y="-510">
+			<name x="222" y="-518">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id80" x="697" y="-510">
+			<name x="719" y="-488">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id81" x="697" y="-646">
+			<name x="719" y="-624">concurrent_notify_1_0</name>
+			<urgent/>
+		</location>
+		<location id="id82" x="799" y="-510">
+			<name x="821" y="-518">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id83" x="799" y="-374">
+			<name x="821" y="-382">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id84" x="1071" y="-374">
+			<name x="909" y="-382">concurrent_waiting_1</name>
+		</location>
+		<location id="id85" x="1071" y="-510">
+			<name x="902" y="-518">concurrent_got_lock_1</name>
+			<urgent/>
+		</location>
+		<location id="id86" x="1377" y="-510">
+			<name x="1399" y="-488">concurrent_notify_0_1</name>
+			<urgent/>
+		</location>
+		<location id="id87" x="1479" y="-510">
+			<name x="1501" y="-518">concurrent_unlock_1</name>
+			<urgent/>
+		</location>
+		<location id="id88" x="1479" y="-374">
+			<name x="1501" y="-382">concurrent_continue_1</name>
+			<urgent/>
+		</location>
+		<location id="id89" x="1955" y="-238">
+			<name x="1934" y="-277">fail_0</name>
+		</location>
+
+
+
+
+		<init ref="id62"/>
+
+		<transition>
+			<source ref="id63"/>
+			<target ref="id64"/>
+		</transition>
+		<transition>
+			<source ref="id57"/>
+			<target ref="id55"/>
+			<label kind="guard" x="825" y="-204">( _variable_0000 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0001 )</label>
+		</transition>
+		<transition>
+			<source ref="id72"/>
+			<target ref="id77"/>
+		</transition>
+		<transition>
+			<source ref="id77"/>
+			<target ref="id57"/>
+						<label kind="assignment" x="603" y="-119">_variable_0000 = 2501,
+_variable_0001 = 2501</label>
+		</transition>
+		<transition>
+			<source ref="id77"/>
+			<target ref="id55"/>
+			<label kind="guard" x="881" y="-102">// [key_can_drop = TRUE]
+( concurrent_read( 17 ) == 1 )</label>
+			<nail x="850" y="-102"/>
+			<nail x="1122" y="-102"/>
+		</transition>
+		<transition>
+			<source ref="id57"/>
+			<target ref="id55"/>
+			<label kind="guard" x="881" y="-34">// [key_can_drop = TRUE]
+( concurrent_read( 17 ) == 1 )</label>
+			<label kind="synchronisation" x="909" y="0">concurrent_notify[17]?</label>
+			<nail x="850" y="-34"/>
+			<nail x="1122" y="-34"/>
+		</transition>
+		<transition>
+			<source ref="id57"/>
+			<target ref="id76"/>
+			<label kind="guard" x="867" y="34">// [[key_dropped = TRUE]]
+( ( concurrent_read( 16 ) == 1 ) )</label>
+			<label kind="synchronisation" x="909" y="68">concurrent_notify[16]?</label>
+			<nail x="850" y="34"/>
+			<nail x="1122" y="34"/>
+		</transition>
+		<transition>
+			<source ref="id77"/>
+			<target ref="id76"/>
+			<label kind="guard" x="867" y="102">// [[key_dropped = TRUE]]
+( ( concurrent_read( 16 ) == 1 ) )</label>
+			<nail x="850" y="102"/>
+		</transition>
+		<transition>
+			<source ref="id70"/>
+			<target ref="id74"/>
+		</transition>
+		<transition>
+			<source ref="id64"/>
+			<target ref="id78"/>
+			<label kind="synchronisation" x="258" y="-340">concurrent_can_run!</label>
+			<label kind="assignment" x="111" y="-323">concurrent_signal_access( id, true ),
+
+_request_0000.bound_lower        = 1,
+_request_0000.bound_upper        = 1,
+_request_0000.is_single_range    = true,
+_request_0000.variable_id        = 11</label>
+		</transition>
+		<transition>
+			<source ref="id78"/>
+			<target ref="id79"/>
+			<label kind="synchronisation" x="161" y="-476">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id80"/>
+			<target ref="id81"/>
+			<label kind="synchronisation" x="731" y="-578">concurrent_notify[11]!</label>
+		</transition>
+		<transition>
+			<source ref="id81"/>
+			<target ref="id82"/>
+			<label kind="synchronisation" x="731" y="-714">concurrent_notify[26]!</label>
+			<nail x="799" y="-646"/>
+		</transition>
+		<transition>
+			<source ref="id79"/>
+			<target ref="id80"/>
+			<label kind="assignment" x="263" y="-578">// [holding_key = TRUE]
+concurrent_write( 11, 1 ) ,
+_variable_0002 = concurrent_request_add( 11, _request_0000 ) ,
+// This module is running.
+concurrent_write( 26, 1 )</label>
+		</transition>
+		<transition>
+			<source ref="id82"/>
+			<target ref="id83"/>
+			<label kind="synchronisation" x="833" y="-476">concurrent_lock_release!</label>
+			<label kind="assignment" x="833" y="-459">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id83"/>
+			<target ref="id72"/>
+		</transition>
+		<transition>
+			<source ref="id65"/>
+			<target ref="id84"/>
+			<label kind="synchronisation" x="938" y="-340">concurrent_can_run!</label>
+			<label kind="assignment" x="819" y="-323">concurrent_signal_access( id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id84"/>
+			<target ref="id85"/>
+			<label kind="synchronisation" x="841" y="-476">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id86"/>
+			<target ref="id87"/>
+			<label kind="synchronisation" x="1411" y="-578">concurrent_notify[26]!</label>
+		</transition>
+		<transition>
+			<source ref="id85"/>
+			<target ref="id86"/>
+			<label kind="assignment" x="887" y="-578">_variable_0002 = concurrent_request_remove_request( _variable_0002 ) ,
+// This module finished running.
+concurrent_write( 26, 0 )</label>
+		</transition>
+		<transition>
+			<source ref="id87"/>
+			<target ref="id88"/>
+			<label kind="synchronisation" x="1513" y="-476">concurrent_lock_release!</label>
+			<label kind="assignment" x="1513" y="-459">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id88"/>
+			<target ref="id73"/>
+		</transition>
+		<transition>
+			<source ref="id75"/>
+			<target ref="id89"/>
+			<label kind="guard" x="1717" y="-238">( _variable_0002 == false )</label>
+			<nail x="1717" y="-238"/>
+		</transition>
+		<transition>
+			<source ref="id75"/>
+			<target ref="id56"/>
+			<label kind="guard" x="1717" y="-170">( _variable_0002 == true )</label>
+		</transition>
+
+
+
+
+
+		<transition>
+			<source ref="id74"/>
+			<target ref="id63"/>
+						<label kind="guard" x="459" y="-170">( local_time == 0 )</label>
+
+		</transition>
+		<transition>
+			<source ref="id55"/>
+			<target ref="id65"/>
+		</transition>
+
+
+
+
+		<transition controllable="true">
+            <source ref="id60"/>
+            <target ref="id70"/>
+            <label kind="guard" x="51" y="-255">// Preconditions: [[holding_key = TRUE]]
+( ( concurrent_read( 11 ) == 1 ) )</label>
+            <label kind="assignment" x="180" y="-150">local_time = 0</label>
+        </transition>
+
+		<transition>
+			<source ref="id56"/>
+			<target ref="id62"/>
+			<label kind="synchronisation" x="76" y="314">control_plp_done[id]!</label>
+			<nail x="2074" y="340"/>
+			<nail x="68" y="340"/>
+		</transition>
+
+		<transition>
+			<source ref="id62"/>
+			<target ref="id60"/>
+			<label kind="synchronisation" x="76" y="-195">control_plp_start[id]?</label>
+		</transition>
+
+        <transition>
+            <source ref="id73"/>
+            <target ref="id75"/>
+        </transition>
+	</template>
+
+
+
+
+
+	<template>
+		<name>observe_is_door_locked</name>
+        <parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+int _variable_0000;
+int _variable_0001;
+
+
+</declaration>
+		<location id="id91" x="-484" y="102">
+			<label kind="invariant" x="-458" y="119">local_time &lt;= 0</label>
+		</location>
+		<location id="id92" x="-534" y="-272">
+			<name x="-561" y="-314">synced</name>
+			<urgent/>
+		</location>
+		<location id="id107" x="1129" y="-272">
+			<name x="1045" y="-260">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id93" x="1469" y="-272">
+			<name x="1460" y="-306">end</name>
+			<urgent/>
+		</location>
+		<location id="id94" x="214" y="-272">
+			<name x="180" y="-323">success</name>
+			<urgent/>
+		</location>
+
+        <location id="id102" x="-229" y="-272">
+			<name x="-382" y="-314">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id103" x="-195" y="-272">
+            <name x="-178" y="-314">access_memory_end_0</name>
+            <urgent/>
+        </location>
+
+        <!--location id="id106" x="551" y="-272">
+            <name x="440" y="-306">observation_decided</name>
+            <urgent/>
+        </location-->
+
+        <location id="id104" x="687" y="-272">
+            <name x="576" y="-306">access_memory_start_1</name>
+            <urgent/>
+        </location>
+        <location id="id105" x="721" y="-272">
+            <name x="712" y="-306">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+		<location id="id96" x="-76" y="-272">
+			<name x="-127" y="-314">main_success</name>
+						<label kind="invariant" x="-125" y="-238">( local_time &lt;= _variable_0001 )</label>
+
+		</location>
+		<location id="id98" x="-654" y="-272">
+			<name x="-671" y="-323">start</name>
+		</location>
+		<location id="id101" x="-382" y="-272">
+            <name x="-392" y="-282">checked</name>
+            <urgent/>
+        </location>
+		<location id="id109" x="-212" y="-272">
+			<name x="-271" y="-311">check_termination</name>
+			<urgent/>
+		</location>
+		<location id="id110" x="-416" y="-476">
+			<name x="-578" y="-484">concurrent_waiting_0</name>
+		</location>
+		<location id="id111" x="-416" y="-612">
+			<name x="-585" y="-620">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id112" x="-110" y="-612">
+			<name x="-88" y="-590">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id113" x="-8" y="-612">
+			<name x="14" y="-620">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id114" x="-8" y="-476">
+			<name x="14" y="-484">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id115" x="500" y="-476">
+			<name x="338" y="-484">concurrent_waiting_1</name>
+		</location>
+		<location id="id116" x="500" y="-612">
+			<name x="331" y="-620">concurrent_got_lock_1</name>
+			<urgent/>
+		</location>
+		<location id="id117" x="806" y="-612">
+			<name x="828" y="-590">concurrent_notify_0_1</name>
+			<urgent/>
+		</location>
+		<location id="id118" x="806" y="-748">
+			<name x="828" y="-726">concurrent_notify_1_1</name>
+			<urgent/>
+		</location>
+		<location id="id119" x="908" y="-612">
+			<name x="930" y="-620">concurrent_unlock_1</name>
+			<urgent/>
+		</location>
+		<location id="id120" x="908" y="-476">
+			<name x="930" y="-484">concurrent_continue_1</name>
+			<urgent/>
+		</location>
+
+
+
+
+		<init ref="id98"/>
+
+		<transition>
+			<source ref="id96"/>
+			<target ref="id94"/>
+			<label kind="guard" x="-92" y="-306">( _variable_0000 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0001 )</label>
+		</transition>
+		<transition>
+			<source ref="id101"/>
+			<target ref="id102"/>
+		</transition>
+		<transition>
+			<source ref="id103"/>
+			<target ref="id109"/>
+		</transition>
+		<transition>
+			<source ref="id109"/>
+			<target ref="id96"/>
+						<label kind="assignment" x="-251" y="-221">_variable_0000 = 300,
+_variable_0001 = 700</label>
+		</transition>
+		<transition>
+			<source ref="id102"/>
+			<target ref="id110"/>
+			<label kind="synchronisation" x="-549" y="-442">concurrent_can_run!</label>
+			<label kind="assignment" x="-668" y="-425">concurrent_signal_access( id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id110"/>
+			<target ref="id111"/>
+			<label kind="synchronisation" x="-646" y="-578">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id112"/>
+			<target ref="id113"/>
+			<label kind="synchronisation" x="-76" y="-680">concurrent_notify[27]!</label>
+		</transition>
+		<transition>
+			<source ref="id111"/>
+			<target ref="id112"/>
+			<label kind="assignment" x="-292" y="-680">// This module is running.
+concurrent_write( 27, 1 )</label>
+		</transition>
+		<transition>
+			<source ref="id113"/>
+			<target ref="id114"/>
+			<label kind="synchronisation" x="26" y="-578">concurrent_lock_release!</label>
+			<label kind="assignment" x="26" y="-561">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id114"/>
+			<target ref="id103"/>
+		</transition>
+		<transition>
+			<source ref="id104"/>
+			<target ref="id115"/>
+			<label kind="synchronisation" x="367" y="-442">concurrent_can_run!</label>
+			<label kind="assignment" x="248" y="-425">concurrent_signal_access( id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id115"/>
+			<target ref="id116"/>
+			<label kind="synchronisation" x="270" y="-578">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id117"/>
+			<target ref="id118"/>
+			<label kind="synchronisation" x="840" y="-680">concurrent_notify[18]!</label>
+		</transition>
+		<transition>
+			<source ref="id118"/>
+			<target ref="id119"/>
+			<label kind="synchronisation" x="840" y="-816">concurrent_notify[27]!</label>
+			<nail x="908" y="-748"/>
+		</transition>
+		<transition>
+			<source ref="id116"/>
+			<target ref="id117"/>
+			<label kind="assignment" x="541" y="-671">// This module finished running.
+concurrent_write( 27, 0 ) ,
+// Observation:
+concurrent_write( 18, 0 )</label>
+			<nail x="534" y="-679"/>
+			<nail x="772" y="-679"/>
+		</transition>
+		<transition>
+			<source ref="id116"/>
+			<target ref="id117"/>
+			<label kind="assignment" x="541" y="-604">// This module finished running.
+concurrent_write( 27, 0 ) ,
+// Observation:
+concurrent_write( 18, 1 )</label>
+			<nail x="534" y="-612"/>
+			<nail x="772" y="-612"/>
+		</transition>
+		<transition>
+			<source ref="id119"/>
+			<target ref="id120"/>
+			<label kind="synchronisation" x="942" y="-578">concurrent_lock_release!</label>
+			<label kind="assignment" x="942" y="-561">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id120"/>
+			<target ref="id105"/>
+		</transition>
+		<transition>
+			<source ref="id107"/>
+			<target ref="id93"/>
+		</transition>
+
+
+		<transition>
+			<source ref="id91"/>
+			<target ref="id92"/>
+			<label kind="guard" x="-595" y="-51">local_time == 0</label>
+		</transition>
+		<transition>
+			<source ref="id93"/>
+			<target ref="id91"/>
+			<label kind="guard" x="-458" y="76">true == concurrent_read( 19 )</label>
+			<label kind="assignment" x="-458" y="102">local_time = 0</label>
+			<nail x="1436" y="102"/>
+		</transition>
+		<transition controllable="false">
+			<source ref="id92"/>
+			<target ref="id101"/>
+			<label kind="guard" x="-595" y="-382">// Preconditions: [[OR [robot_location = at_a_doorway] [robot_location = at_b_doorway]]]
+( ( ( concurrent_read( 0 ) == concurrent_read( 6 ) ) ||
+( concurrent_read( 0 ) == concurrent_read( 7 ) ) ) )</label>
+			<label kind="assignment" x="-502" y="-263">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id93"/>
+			<target ref="id98"/>
+			<label kind="guard" x="-638" y="127">false == concurrent_read( 19 )</label>
+			<label kind="synchronisation" x="-638" y="161">control_plp_done[id]!</label>
+			<nail x="1469" y="187"/>
+			<nail x="-654" y="187"/>
+		</transition>
+
+		<transition>
+			<source ref="id98"/>
+			<target ref="id92"/>
+			<label kind="synchronisation" x="-645" y="-297">control_plp_start[id]?</label>
+		</transition>
+
+		<transition>
+            <source ref="id94"/>
+            <target ref="id104"/>
+        </transition>
+
+        <transition>
+            <source ref="id105"/>
+            <target ref="id107"/>
+        </transition>
+	</template>
+	<template>
+		<name>observe_is_door_open</name>
+        <parameter>int id</parameter>
+		<declaration>
+clock local_time;
+
+int _variable_0000;
+int _variable_0001;
+
+
+</declaration>
+		<location id="id91" x="-484" y="102">
+			<label kind="invariant" x="-458" y="119">local_time &lt;= 0</label>
+		</location>
+		<location id="id92" x="-534" y="-272">
+			<name x="-561" y="-314">synced</name>
+			<urgent/>
+		</location>
+		<location id="id107" x="1129" y="-272">
+			<name x="1045" y="-260">sort_concurrent_results</name>
+			<urgent/>
+		</location>
+		<location id="id93" x="1469" y="-272">
+			<name x="1460" y="-306">end</name>
+			<urgent/>
+		</location>
+		<location id="id94" x="214" y="-272">
+			<name x="180" y="-323">success</name>
+			<urgent/>
+		</location>
+
+        <location id="id102" x="-229" y="-272">
+			<name x="-382" y="-314">access_memory_start_0</name>
+			<urgent/>
+		</location>
+		<location id="id103" x="-195" y="-272">
+            <name x="-178" y="-314">access_memory_end_0</name>
+            <urgent/>
+        </location>
+
+        <!--location id="id106" x="551" y="-272">
+            <name x="440" y="-306">observation_decided</name>
+            <urgent/>
+        </location-->
+
+        <location id="id104" x="687" y="-272">
+            <name x="576" y="-306">access_memory_start_1</name>
+            <urgent/>
+        </location>
+        <location id="id105" x="721" y="-272">
+            <name x="712" y="-306">access_memory_end_1</name>
+            <urgent/>
+        </location>
+
+		<location id="id96" x="-76" y="-272">
+			<name x="-127" y="-314">main_success</name>
+						<label kind="invariant" x="-125" y="-238">( local_time &lt;= _variable_0001 )</label>
+
+		</location>
+		<location id="id98" x="-654" y="-272">
+			<name x="-671" y="-323">start</name>
+		</location>
+		<location id="id101" x="-382" y="-272">
+            <name x="-392" y="-282">checked</name>
+            <urgent/>
+        </location>
+		<location id="id109" x="-212" y="-272">
+			<name x="-271" y="-311">check_termination</name>
+			<urgent/>
+		</location>
+		<location id="id110" x="-416" y="-476">
+			<name x="-578" y="-484">concurrent_waiting_0</name>
+		</location>
+		<location id="id111" x="-416" y="-612">
+			<name x="-585" y="-620">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id112" x="-110" y="-612">
+			<name x="-88" y="-590">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id113" x="-8" y="-612">
+			<name x="14" y="-620">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id114" x="-8" y="-476">
+			<name x="14" y="-484">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id115" x="500" y="-476">
+			<name x="338" y="-484">concurrent_waiting_1</name>
+		</location>
+		<location id="id116" x="500" y="-612">
+			<name x="331" y="-620">concurrent_got_lock_1</name>
+			<urgent/>
+		</location>
+		<location id="id117" x="806" y="-612">
+			<name x="828" y="-590">concurrent_notify_0_1</name>
+			<urgent/>
+		</location>
+		<location id="id118" x="806" y="-748">
+			<name x="828" y="-726">concurrent_notify_1_1</name>
+			<urgent/>
+		</location>
+		<location id="id119" x="908" y="-612">
+			<name x="930" y="-620">concurrent_unlock_1</name>
+			<urgent/>
+		</location>
+		<location id="id120" x="908" y="-476">
+			<name x="930" y="-484">concurrent_continue_1</name>
+			<urgent/>
+		</location>
+
+
+
+
+		<init ref="id98"/>
+
+		<transition>
+			<source ref="id96"/>
+			<target ref="id94"/>
+			<label kind="guard" x="-92" y="-306">( _variable_0000 &lt;= local_time ) &amp;&amp;
+( local_time &lt;= _variable_0001 )</label>
+		</transition>
+		<transition>
+			<source ref="id101"/>
+			<target ref="id102"/>
+		</transition>
+		<transition>
+			<source ref="id103"/>
+			<target ref="id109"/>
+		</transition>
+		<transition>
+			<source ref="id109"/>
+			<target ref="id96"/>
+						<label kind="assignment" x="-251" y="-221">_variable_0000 = 300,
+_variable_0001 = 1000</label>
+		</transition>
+		<transition>
+			<source ref="id102"/>
+			<target ref="id110"/>
+			<label kind="synchronisation" x="-549" y="-442">concurrent_can_run!</label>
+			<label kind="assignment" x="-668" y="-425">concurrent_signal_access( id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id110"/>
+			<target ref="id111"/>
+			<label kind="synchronisation" x="-646" y="-578">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id112"/>
+			<target ref="id113"/>
+			<label kind="synchronisation" x="-76" y="-680">concurrent_notify[28]!</label>
+		</transition>
+		<transition>
+			<source ref="id111"/>
+			<target ref="id112"/>
+			<label kind="assignment" x="-292" y="-680">// This module is running.
+concurrent_write( 28, 1 )</label>
+		</transition>
+		<transition>
+			<source ref="id113"/>
+			<target ref="id114"/>
+			<label kind="synchronisation" x="26" y="-578">concurrent_lock_release!</label>
+			<label kind="assignment" x="26" y="-561">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id114"/>
+			<target ref="id103"/>
+		</transition>
+		<transition>
+			<source ref="id104"/>
+			<target ref="id115"/>
+			<label kind="synchronisation" x="367" y="-442">concurrent_can_run!</label>
+			<label kind="assignment" x="248" y="-425">concurrent_signal_access( id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id115"/>
+			<target ref="id116"/>
+			<label kind="synchronisation" x="270" y="-578">concurrent_lock_process[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id117"/>
+			<target ref="id118"/>
+			<label kind="synchronisation" x="840" y="-680">concurrent_notify[20]!</label>
+		</transition>
+		<transition>
+			<source ref="id118"/>
+			<target ref="id119"/>
+			<label kind="synchronisation" x="840" y="-816">concurrent_notify[28]!</label>
+			<nail x="908" y="-748"/>
+		</transition>
+		<transition>
+			<source ref="id116"/>
+			<target ref="id117"/>
+			<label kind="assignment" x="541" y="-671">// This module finished running.
+concurrent_write( 28, 0 ) ,
+// Observation:
+concurrent_write( 20, 0 )</label>
+			<nail x="534" y="-679"/>
+			<nail x="772" y="-679"/>
+		</transition>
+		<transition>
+			<source ref="id116"/>
+			<target ref="id117"/>
+			<label kind="assignment" x="541" y="-604">// This module finished running.
+concurrent_write( 28, 0 ) ,
+// Observation:
+concurrent_write( 20, 1 )</label>
+			<nail x="534" y="-612"/>
+			<nail x="772" y="-612"/>
+		</transition>
+		<transition>
+			<source ref="id119"/>
+			<target ref="id120"/>
+			<label kind="synchronisation" x="942" y="-578">concurrent_lock_release!</label>
+			<label kind="assignment" x="942" y="-561">concurrent_signal_access( id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id120"/>
+			<target ref="id105"/>
+		</transition>
+		<transition>
+			<source ref="id107"/>
+			<target ref="id93"/>
+		</transition>
+
+
+		<transition>
+			<source ref="id91"/>
+			<target ref="id92"/>
+			<label kind="guard" x="-595" y="-51">local_time == 0</label>
+		</transition>
+		<transition>
+			<source ref="id93"/>
+			<target ref="id91"/>
+			<label kind="guard" x="-458" y="76">true == concurrent_read( 21 )</label>
+			<label kind="assignment" x="-458" y="102">local_time = 0</label>
+			<nail x="1436" y="102"/>
+		</transition>
+		<transition controllable="false">
+			<source ref="id92"/>
+			<target ref="id101"/>
+			<label kind="guard" x="-595" y="-382"></label>
+			<label kind="assignment" x="-502" y="-263">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id93"/>
+			<target ref="id98"/>
+			<label kind="guard" x="-638" y="127">false == concurrent_read( 21 )</label>
+			<label kind="synchronisation" x="-638" y="161">control_plp_done[id]!</label>
+			<nail x="1469" y="187"/>
+			<nail x="-654" y="187"/>
+		</transition>
+
+		<transition>
+			<source ref="id98"/>
+			<target ref="id92"/>
+			<label kind="synchronisation" x="-645" y="-297">control_plp_start[id]?</label>
+		</transition>
+
+		<transition>
+            <source ref="id94"/>
+            <target ref="id104"/>
+        </transition>
+
+        <transition>
+            <source ref="id105"/>
+            <target ref="id107"/>
+        </transition>
+	</template>	<template>
+		<name>node_concurrent_hold_and_move</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id2" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id0" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<urgent/>
+		</location>
+		<location id="id1" x="0" y="272">
+			<name x="-99" y="264">all_can_run</name>
+			<label kind="invariant" x="22" y="294">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id3" x="0" y="408">
+			<name x="-57" y="400">run_0</name>
+			<urgent/>
+		</location>
+		<location id="id4" x="0" y="544">
+			<name x="-57" y="536">run_1</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="0" y="680">
+			<name x="-50" y="672">done</name>
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-238" y="68">( control_node_can_run[2] &gt; 0 )</label>
+			<label kind="synchronisation" x="-203" y="85">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="102">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="assignment" x="-203" y="204">control_node_can_run[0] = 1 ,
+control_node_can_run[1] = 1</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="-161" y="340">control_node_notify[2]!</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-161" y="476">control_node_notify[3]!</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+		</transition>
+	</template>
+	<template>
+		<name>node_sequential_start</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id2" x="272" y="238">
+			<name x="202" y="199">concurrent_waiting_0</name>
+		</location>
+		<location id="id3" x="476" y="238">
+			<name x="403" y="199">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id4" x="476" y="374">
+			<name x="403" y="396">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="476" y="442">
+			<name x="410" y="464">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="272" y="442">
+			<name x="199" y="464">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id9" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id10" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<urgent/>
+		</location>
+		<location id="id0" x="0" y="272">
+			<name x="-64" y="264">wait_0</name>
+			<label kind="invariant" x="22" y="294">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id1" x="0" y="408">
+			<name x="-113" y="400">plp_running_0</name>
+		</location>
+		<location id="id11" x="0" y="544">
+			<name x="-92" y="536">plp_done_0</name>
+			<urgent/>
+		</location>
+		<location id="id7" x="0" y="680">
+			<name x="-64" y="672">wait_1</name>
+			<label kind="invariant" x="22" y="702">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id8" x="0" y="816">
+			<name x="-113" y="808">plp_running_1</name>
+		</location>
+		<location id="id12" x="0" y="952">
+			<name x="-92" y="944">plp_done_1</name>
+			<urgent/>
+		</location>
+		<location id="id13" x="0" y="1088">
+			<name x="-113" y="1080">all_plps_done</name>
+			<urgent/>
+		</location>
+		<location id="id14" x="0" y="1224">
+			<name x="-50" y="1216">done</name>
+		</location>
+		<init ref="id9"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id2"/>
+			<label kind="guard" x="139" y="272">( local_time == 0 )</label>
+			<label kind="synchronisation" x="139" y="289">concurrent_can_run!</label>
+			<label kind="assignment" x="-113" y="306">concurrent_signal_access( concurrent_process_id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="210" y="170">concurrent_lock_process[concurrent_process_id]?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="505" y="374">concurrent_notify[9]!</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="assignment" x="510" y="272">concurrent_write( 9, concurrent_read( 5 ) )</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="290" y="510">concurrent_lock_release!</label>
+			<label kind="assignment" x="178" y="527">concurrent_signal_access( concurrent_process_id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="91" y="442">control_plp_start[1]!</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-203" y="68">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="85">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-98" y="204">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-140" y="476">control_plp_done[1]?</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id7"/>
+			<label kind="assignment" x="-98" y="612">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-133" y="748">( local_time == 0 )</label>
+			<label kind="synchronisation" x="-147" y="765">control_plp_start[2]!</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-140" y="884">control_plp_done[2]?</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id13"/>
+			<label kind="assignment" x="-189" y="1020">control_node_can_run[2] = 1</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-161" y="1156">control_node_notify[0]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>node_sequential_key_holding</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id2" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id3" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<urgent/>
+		</location>
+		<location id="id0" x="0" y="272">
+			<name x="-64" y="264">wait_0</name>
+			<label kind="invariant" x="22" y="294">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id1" x="0" y="408">
+			<name x="-113" y="400">plp_running_0</name>
+		</location>
+		<location id="id4" x="0" y="544">
+			<name x="-92" y="536">plp_done_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="0" y="680">
+			<name x="-113" y="672">all_plps_done</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="0" y="816">
+			<name x="-50" y="808">done</name>
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-238" y="68">( control_node_can_run[0] &gt; 0 )</label>
+			<label kind="synchronisation" x="-203" y="85">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="102">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-98" y="204">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-133" y="340">( local_time == 0 )</label>
+			<label kind="synchronisation" x="-147" y="357">control_plp_start[4]!</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-140" y="476">control_plp_done[4]?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+		</transition>
+	</template>
+	<template>
+		<name>node_sequential_move_to_door</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id2" x="272" y="238">
+			<name x="202" y="199">concurrent_waiting_0</name>
+		</location>
+		<location id="id3" x="476" y="238">
+			<name x="403" y="199">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id4" x="476" y="374">
+			<name x="403" y="396">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="476" y="442">
+			<name x="410" y="464">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="272" y="442">
+			<name x="199" y="464">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id9" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id10" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<urgent/>
+		</location>
+		<location id="id0" x="0" y="272">
+			<name x="-64" y="264">wait_0</name>
+			<label kind="invariant" x="22" y="294">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id1" x="0" y="408">
+			<name x="-113" y="400">plp_running_0</name>
+		</location>
+		<location id="id11" x="0" y="544">
+			<name x="-92" y="536">plp_done_0</name>
+			<urgent/>
+		</location>
+		<location id="id7" x="0" y="680">
+			<name x="-64" y="672">wait_1</name>
+			<label kind="invariant" x="22" y="702">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id8" x="0" y="816">
+			<name x="-113" y="808">plp_running_1</name>
+		</location>
+		<location id="id12" x="0" y="952">
+			<name x="-92" y="944">plp_done_1</name>
+			<urgent/>
+		</location>
+		<location id="id13" x="0" y="1088">
+			<name x="-113" y="1080">all_plps_done</name>
+			<urgent/>
+		</location>
+		<location id="id14" x="0" y="1224">
+			<name x="-50" y="1216">done</name>
+		</location>
+		<init ref="id9"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id2"/>
+			<label kind="guard" x="139" y="272">( local_time == 0 )</label>
+			<label kind="synchronisation" x="139" y="289">concurrent_can_run!</label>
+			<label kind="assignment" x="-113" y="306">concurrent_signal_access( concurrent_process_id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="210" y="170">concurrent_lock_process[concurrent_process_id]?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="505" y="374">concurrent_notify[9]!</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="assignment" x="510" y="272">concurrent_write( 9, concurrent_read( 6 ) )</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="290" y="510">concurrent_lock_release!</label>
+			<label kind="assignment" x="178" y="527">concurrent_signal_access( concurrent_process_id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="91" y="442">control_plp_start[1]!</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-238" y="68">( control_node_can_run[1] &gt; 0 )</label>
+			<label kind="synchronisation" x="-203" y="85">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="102">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-98" y="204">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-140" y="476">control_plp_done[1]?</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id7"/>
+			<label kind="assignment" x="-98" y="612">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-133" y="748">( local_time == 0 )</label>
+			<label kind="synchronisation" x="-147" y="765">control_plp_start[6]!</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-140" y="884">control_plp_done[6]?</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id13"/>
+			<label kind="assignment" x="-189" y="1020">control_node_can_run[3] = 1</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-161" y="1156">control_node_notify[8]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>node_sequential_is_door_locked</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id2" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id3" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<urgent/>
+		</location>
+		<location id="id0" x="0" y="272">
+			<name x="-64" y="264">wait_0</name>
+			<label kind="invariant" x="22" y="294">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id1" x="0" y="408">
+			<name x="-113" y="400">plp_running_0</name>
+		</location>
+		<location id="id4" x="0" y="544">
+			<name x="-92" y="536">plp_done_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="0" y="680">
+			<name x="-113" y="672">all_plps_done</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="0" y="816">
+			<name x="-50" y="808">done</name>
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-238" y="68">( control_node_can_run[8] &gt; 0 )</label>
+			<label kind="synchronisation" x="-203" y="85">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="102">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-98" y="204">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-133" y="340">( local_time == 0 )</label>
+			<label kind="synchronisation" x="-147" y="357">control_plp_start[5]!</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-140" y="476">control_plp_done[5]?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="assignment" x="-189" y="612">control_node_can_run[4] = 1</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-161" y="748">control_node_notify[9]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>node_sequential_door_unlock</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id2" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id3" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<urgent/>
+		</location>
+		<location id="id0" x="0" y="272">
+			<name x="-64" y="264">wait_0</name>
+			<label kind="invariant" x="22" y="294">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id1" x="0" y="408">
+			<name x="-113" y="400">plp_running_0</name>
+		</location>
+		<location id="id4" x="0" y="544">
+			<name x="-92" y="536">plp_done_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="0" y="680">
+			<name x="-113" y="672">all_plps_done</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="0" y="816">
+			<name x="-50" y="808">done</name>
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-238" y="68">( control_node_can_run[9] &gt; 0 )</label>
+			<label kind="synchronisation" x="-203" y="85">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="102">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-98" y="204">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-133" y="340">( local_time == 0 )</label>
+			<label kind="synchronisation" x="-147" y="357">control_plp_start[0]!</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-140" y="476">control_plp_done[0]?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="assignment" x="-189" y="612">control_node_can_run[5] = 1</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-161" y="748">control_node_notify[6]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>node_sequential_door_open</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id2" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id3" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<urgent/>
+		</location>
+		<location id="id0" x="0" y="272">
+			<name x="-64" y="264">wait_0</name>
+			<label kind="invariant" x="22" y="294">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id1" x="0" y="408">
+			<name x="-113" y="400">plp_running_0</name>
+		</location>
+		<location id="id4" x="0" y="544">
+			<name x="-92" y="536">plp_done_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="0" y="680">
+			<name x="-113" y="672">all_plps_done</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="0" y="816">
+			<name x="-50" y="808">done</name>
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-259" y="68">( control_node_can_run[5] &gt; 0 ) ||
+( control_node_can_run[10] &gt; 0 )</label>
+			<label kind="synchronisation" x="-203" y="102">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="119">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-98" y="204">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-133" y="340">( local_time == 0 )</label>
+			<label kind="synchronisation" x="-147" y="357">control_plp_start[3]!</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-140" y="476">control_plp_done[3]?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="assignment" x="-189" y="612">control_node_can_run[6] = 1</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-161" y="748">control_node_notify[7]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>node_sequential_move_to_target</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id2" x="272" y="238">
+			<name x="202" y="199">concurrent_waiting_0</name>
+		</location>
+		<location id="id3" x="476" y="238">
+			<name x="403" y="199">concurrent_got_lock_0</name>
+			<urgent/>
+		</location>
+		<location id="id4" x="476" y="374">
+			<name x="403" y="396">concurrent_notify_0_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="476" y="442">
+			<name x="410" y="464">concurrent_unlock_0</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="272" y="442">
+			<name x="199" y="464">concurrent_continue_0</name>
+			<urgent/>
+		</location>
+		<location id="id9" x="272" y="646">
+			<name x="202" y="607">concurrent_waiting_1</name>
+		</location>
+		<location id="id10" x="476" y="646">
+			<name x="403" y="607">concurrent_got_lock_1</name>
+			<urgent/>
+		</location>
+		<location id="id11" x="476" y="782">
+			<name x="403" y="804">concurrent_notify_0_1</name>
+			<urgent/>
+		</location>
+		<location id="id12" x="476" y="850">
+			<name x="410" y="872">concurrent_unlock_1</name>
+			<urgent/>
+		</location>
+		<location id="id13" x="272" y="850">
+			<name x="199" y="872">concurrent_continue_1</name>
+			<urgent/>
+		</location>
+		<location id="id14" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id15" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<urgent/>
+		</location>
+		<location id="id0" x="0" y="272">
+			<name x="-64" y="264">wait_0</name>
+			<label kind="invariant" x="22" y="294">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id1" x="0" y="408">
+			<name x="-113" y="400">plp_running_0</name>
+		</location>
+		<location id="id16" x="0" y="544">
+			<name x="-92" y="536">plp_done_0</name>
+			<urgent/>
+		</location>
+		<location id="id7" x="0" y="680">
+			<name x="-64" y="672">wait_1</name>
+			<label kind="invariant" x="22" y="702">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id8" x="0" y="816">
+			<name x="-113" y="808">plp_running_1</name>
+		</location>
+		<location id="id17" x="0" y="952">
+			<name x="-92" y="944">plp_done_1</name>
+			<urgent/>
+		</location>
+		<location id="id18" x="0" y="1088">
+			<name x="-113" y="1080">all_plps_done</name>
+			<urgent/>
+		</location>
+		<location id="id19" x="0" y="1224">
+			<name x="-50" y="1216">done</name>
+		</location>
+		<init ref="id14"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id2"/>
+			<label kind="guard" x="139" y="272">( local_time == 0 )</label>
+			<label kind="synchronisation" x="139" y="289">concurrent_can_run!</label>
+			<label kind="assignment" x="-113" y="306">concurrent_signal_access( concurrent_process_id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="210" y="170">concurrent_lock_process[concurrent_process_id]?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="505" y="374">concurrent_notify[9]!</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="assignment" x="510" y="272">concurrent_write( 9, concurrent_read( 7 ) )</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="290" y="510">concurrent_lock_release!</label>
+			<label kind="assignment" x="178" y="527">concurrent_signal_access( concurrent_process_id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="91" y="442">control_plp_start[1]!</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id9"/>
+			<label kind="guard" x="139" y="680">( local_time == 0 )</label>
+			<label kind="synchronisation" x="139" y="697">concurrent_can_run!</label>
+			<label kind="assignment" x="-113" y="714">concurrent_signal_access( concurrent_process_id, true )</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="210" y="578">concurrent_lock_process[concurrent_process_id]?</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="505" y="782">concurrent_notify[9]!</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id11"/>
+			<label kind="assignment" x="510" y="680">concurrent_write( 9, concurrent_read( 8 ) )</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id13"/>
+			<label kind="synchronisation" x="290" y="918">concurrent_lock_release!</label>
+			<label kind="assignment" x="178" y="935">concurrent_signal_access( concurrent_process_id, false )</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="91" y="850">control_plp_start[1]!</label>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id15"/>
+			<label kind="guard" x="-259" y="68">( control_node_can_run[6] &gt; 0 ) ||
+( control_node_can_run[7] &gt; 0 )</label>
+			<label kind="synchronisation" x="-203" y="102">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="119">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-98" y="204">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id16"/>
+			<label kind="synchronisation" x="-140" y="476">control_plp_done[1]?</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id7"/>
+			<label kind="assignment" x="-98" y="612">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id17"/>
+			<label kind="synchronisation" x="-140" y="884">control_plp_done[1]?</label>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id18"/>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id19"/>
+		</transition>
+	</template>
+	<template>
+		<name>node_condition_decide_after_is_open</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id3" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id4" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<label kind="invariant" x="22" y="158">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id0" x="0" y="272">
+			<name x="-50" y="264">main</name>
+			<urgent/>
+		</location>
+		<location id="id1" x="0" y="476">
+			<name x="-64" y="468">path_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="0" y="612">
+			<name x="-64" y="604">done_0</name>
+		</location>
+		<location id="id2" x="1020" y="476">
+			<name x="956" y="468">path_1</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="1020" y="612">
+			<name x="956" y="604">done_1</name>
+		</location>
+		<init ref="id3"/>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-238" y="68">( control_node_can_run[3] &gt; 0 )</label>
+			<label kind="synchronisation" x="-203" y="85">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="102">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-133" y="204">( local_time == 0 )</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-238" y="340">( ( concurrent_read( 20 ) == 1 ) )</label>
+			<label kind="assignment" x="-189" y="357">control_node_can_run[7] = 1</label>
+			<nail x="0" y="340"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-161" y="544">control_node_notify[7]!</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id2"/>
+			<label kind="guard" x="782" y="340">( ( concurrent_read( 20 ) == 0 ) )</label>
+			<label kind="assignment" x="831" y="357">control_node_can_run[8] = 1</label>
+			<nail x="1020" y="340"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="859" y="544">control_node_notify[4]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>node_condition_decide_after_is_locked</name>
+		<parameter>int node_id, int concurrent_process_id</parameter>
+		<declaration>
+clock local_time;
+		</declaration>
+		<location id="id3" x="0" y="0">
+			<name x="-57" y="-8">start</name>
+		</location>
+		<location id="id4" x="0" y="136">
+			<name x="-57" y="128">ready</name>
+			<label kind="invariant" x="22" y="158">( local_time &lt;= 0 )</label>
+		</location>
+		<location id="id0" x="0" y="272">
+			<name x="-50" y="264">main</name>
+			<urgent/>
+		</location>
+		<location id="id1" x="0" y="476">
+			<name x="-64" y="468">path_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="0" y="612">
+			<name x="-64" y="604">done_0</name>
+		</location>
+		<location id="id2" x="1020" y="476">
+			<name x="956" y="468">path_1</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="1020" y="612">
+			<name x="956" y="604">done_1</name>
+		</location>
+		<init ref="id3"/>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-238" y="68">( control_node_can_run[4] &gt; 0 )</label>
+			<label kind="synchronisation" x="-203" y="85">control_node_notify[node_id]?</label>
+			<label kind="assignment" x="-98" y="102">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-133" y="204">( local_time == 0 )</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-238" y="340">( ( concurrent_read( 18 ) == 1 ) )</label>
+			<label kind="assignment" x="-189" y="357">control_node_can_run[9] = 1</label>
+			<nail x="0" y="340"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-161" y="544">control_node_notify[5]!</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id2"/>
+			<label kind="guard" x="782" y="340">( ( concurrent_read( 18 ) == 0 ) )</label>
+			<label kind="assignment" x="824" y="357">control_node_can_run[10] = 1</label>
+			<nail x="1020" y="340"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="859" y="544">control_node_notify[6]!</label>
+		</transition>
+	</template>
+
+	<template>
+		<name>concurrent</name>
+		<parameter></parameter>
+		<declaration>
+		int process_access_granted_id = -1;
+		clock time;
+        </declaration>
+		<location id="id68" x="-1156" y="-204">
+			<name x="-1198" y="-246">init_state</name>
+		</location>
+		<location id="id69" x="-408" y="-34">
+			<name x="-433" y="-93">selected</name>
+			<urgent/>
+		</location>
+		<location id="id70" x="0" y="-34">
+			<name x="-68" y="-93">waiting_plp_done</name>
+		</location>
+		<location id="id71" x="-884" y="-34">
+			<name x="-909" y="-93">choose</name>
+			<urgent/>
+		</location>
+		<location id="id72" x="-1020" y="-34">
+			<name x="-1062" y="-93">wait_to_run</name>
+		</location>
+		<location id="id73" x="-374" y="306">
+			<name x="-382" y="255">released</name>
+			<urgent/>
+		</location>
+		<init ref="id68"/>
+		<transition>
+			<source ref="id70"/>
+			<target ref="id73"/>
+			<label kind="synchronisation" x="-348" y="289">concurrent_lock_release?</label>
+			<nail x="0" y="306"/>
+		</transition>
+		<transition>
+			<source ref="id73"/>
+			<target ref="id71"/>
+			<label kind="guard" x="-875" y="127">
+(concurrent_info.is_process_would_like_to_access[0] == true) ||
+(concurrent_info.is_process_would_like_to_access[1] == true) ||
+(concurrent_info.is_process_would_like_to_access[2] == true) ||
+(concurrent_info.is_process_would_like_to_access[3] == true) ||
+(concurrent_info.is_process_would_like_to_access[4] == true) ||
+(concurrent_info.is_process_would_like_to_access[5] == true) ||
+(concurrent_info.is_process_would_like_to_access[6] == true) ||
+(concurrent_info.is_process_would_like_to_access[7] == true) ||
+(concurrent_info.is_process_would_like_to_access[8] == true) ||
+(concurrent_info.is_process_would_like_to_access[9] == true) ||
+(concurrent_info.is_process_would_like_to_access[10] == true) ||
+(concurrent_info.is_process_would_like_to_access[11] == true) ||
+(concurrent_info.is_process_would_like_to_access[12] == true) ||
+(concurrent_info.is_process_would_like_to_access[13] == true) ||
+(concurrent_info.is_process_would_like_to_access[14] == true) ||
+(concurrent_info.is_process_would_like_to_access[15] == true) ||
+(concurrent_info.is_process_would_like_to_access[16] == true)
+            </label>
+			<nail x="-408" y="204"/>
+			<nail x="-884" y="204"/>
+		</transition>
+		<transition>
+			<source ref="id72"/>
+			<target ref="id71"/>
+			<label kind="synchronisation" x="-1028" y="-76">concurrent_can_run?</label>
+		</transition>
+		<transition>
+			<source ref="id68"/>
+			<target ref="id72"/>
+			<label kind="synchronisation" x="-1147" y="-161">concurrent_init_main?</label>
+			<label kind="assignment" x="-1138" y="-34">time = 0</label>
+			<nail x="-1156" y="-34"/>
+		</transition>
+		<transition>
+			<source ref="id69"/>
+			<target ref="id70"/>
+			<label kind="synchronisation" x="-391" y="-68">concurrent_lock_process[process_access_granted_id]!</label>
+		</transition>
+		<transition>
+			<source ref="id73"/>
+			<target ref="id72"/>
+			<label kind="guard" x="-1011" y="331">
+(concurrent_info.is_process_would_like_to_access[0] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[1] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[2] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[3] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[4] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[5] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[6] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[7] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[8] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[9] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[10] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[11] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[12] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[13] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[14] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[15] == false) &amp;&amp;
+(concurrent_info.is_process_would_like_to_access[16] == false)
+            </label>
+			<label kind="assignment" x="-1088" y="127">time = 0</label>
+			<nail x="-408" y="408"/>
+			<nail x="-1020" y="408"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-320">concurrent_info.is_process_would_like_to_access[0]</label>
+			<label kind="assignment" x="-755" y="-300">process_access_granted_id = 0</label>
+			<nail x="-860" y="-300"/>
+			<nail x="-420" y="-300"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-290">concurrent_info.is_process_would_like_to_access[1]</label>
+			<label kind="assignment" x="-755" y="-270">process_access_granted_id = 1</label>
+			<nail x="-860" y="-270"/>
+			<nail x="-420" y="-270"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-260">concurrent_info.is_process_would_like_to_access[2]</label>
+			<label kind="assignment" x="-755" y="-240">process_access_granted_id = 2</label>
+			<nail x="-860" y="-240"/>
+			<nail x="-420" y="-240"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-230">concurrent_info.is_process_would_like_to_access[3]</label>
+			<label kind="assignment" x="-755" y="-210">process_access_granted_id = 3</label>
+			<nail x="-860" y="-210"/>
+			<nail x="-420" y="-210"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-200">concurrent_info.is_process_would_like_to_access[4]</label>
+			<label kind="assignment" x="-755" y="-180">process_access_granted_id = 4</label>
+			<nail x="-860" y="-180"/>
+			<nail x="-420" y="-180"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-170">concurrent_info.is_process_would_like_to_access[5]</label>
+			<label kind="assignment" x="-755" y="-150">process_access_granted_id = 5</label>
+			<nail x="-860" y="-150"/>
+			<nail x="-420" y="-150"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-140">concurrent_info.is_process_would_like_to_access[6]</label>
+			<label kind="assignment" x="-755" y="-120">process_access_granted_id = 6</label>
+			<nail x="-860" y="-120"/>
+			<nail x="-420" y="-120"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-110">concurrent_info.is_process_would_like_to_access[7]</label>
+			<label kind="assignment" x="-755" y="-90">process_access_granted_id = 7</label>
+			<nail x="-860" y="-90"/>
+			<nail x="-420" y="-90"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-80">concurrent_info.is_process_would_like_to_access[8]</label>
+			<label kind="assignment" x="-755" y="-60">process_access_granted_id = 8</label>
+			<nail x="-860" y="-60"/>
+			<nail x="-420" y="-60"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-50">concurrent_info.is_process_would_like_to_access[9]</label>
+			<label kind="assignment" x="-755" y="-30">process_access_granted_id = 9</label>
+			<nail x="-860" y="-30"/>
+			<nail x="-420" y="-30"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="-20">concurrent_info.is_process_would_like_to_access[10]</label>
+			<label kind="assignment" x="-755" y="0">process_access_granted_id = 10</label>
+			<nail x="-860" y="0"/>
+			<nail x="-420" y="0"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="10">concurrent_info.is_process_would_like_to_access[11]</label>
+			<label kind="assignment" x="-755" y="30">process_access_granted_id = 11</label>
+			<nail x="-860" y="30"/>
+			<nail x="-420" y="30"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="40">concurrent_info.is_process_would_like_to_access[12]</label>
+			<label kind="assignment" x="-755" y="60">process_access_granted_id = 12</label>
+			<nail x="-860" y="60"/>
+			<nail x="-420" y="60"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="70">concurrent_info.is_process_would_like_to_access[13]</label>
+			<label kind="assignment" x="-755" y="90">process_access_granted_id = 13</label>
+			<nail x="-860" y="90"/>
+			<nail x="-420" y="90"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="100">concurrent_info.is_process_would_like_to_access[14]</label>
+			<label kind="assignment" x="-755" y="120">process_access_granted_id = 14</label>
+			<nail x="-860" y="120"/>
+			<nail x="-420" y="120"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="130">concurrent_info.is_process_would_like_to_access[15]</label>
+			<label kind="assignment" x="-755" y="150">process_access_granted_id = 15</label>
+			<nail x="-860" y="150"/>
+			<nail x="-420" y="150"/>
+		</transition>
+		
+		<transition>
+			<source ref="id71"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-825" y="160">concurrent_info.is_process_would_like_to_access[16]</label>
+			<label kind="assignment" x="-755" y="180">process_access_granted_id = 16</label>
+			<nail x="-860" y="180"/>
+			<nail x="-420" y="180"/>
+		</transition>
+
+	</template>
+	<template>
+		<name>control_graph_init</name>
+		<declaration>clock local_time;</declaration>
+		<location id="id126" x="-272" y="-34">
+			<name x="-255" y="-51">start</name>
+			<urgent/>
+		</location>
+		<location id="id127" x="-272" y="170">
+			<name x="-255" y="153">concurrent_started</name>
+			<urgent/>
+		</location>
+		<location id="id128" x="-272" y="68">
+			<name x="-255" y="51">concurrent_data_initialized</name>
+			<urgent/>
+		</location>
+		<location id="id129" x="-272" y="272">
+		</location>
+		<init ref="id126"/>
+		<transition>
+			<source ref="id127"/>
+			<target ref="id129"/>
+			<label kind="synchronisation" x="-263" y="204">control_node_notify[1]!</label>
+		</transition>
+		<transition>
+			<source ref="id128"/>
+			<target ref="id127"/>
+			<label kind="synchronisation" x="-263" y="110">concurrent_init_main!</label>
+		</transition>
+		<transition>
+			<source ref="id126"/>
+			<target ref="id128"/>
+			<label kind="assignment" x="-263" y="8">concurrent_init(),
+initialize_variables()</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+
+concurrent_process         = concurrent();
+control_graph_init_process = control_graph_init();
+achieve_door_unlock_process = achieve_door_unlock( 0 );
+achieve_move_to_process = achieve_move_to( 1 );
+achieve_key_take_process = achieve_key_take( 2 );
+achieve_door_open_process = achieve_door_open( 3 );
+maintain_key_hold_process = maintain_key_hold( 4 );
+observe_is_door_locked_process = observe_is_door_locked( 5 );
+observe_is_door_open_process = observe_is_door_open( 6 );
+node_concurrent_hold_and_move_process = node_concurrent_hold_and_move( 0, 7 );
+node_sequential_start_process = node_sequential_start( 1, 8 );
+node_sequential_key_holding_process = node_sequential_key_holding( 2, 9 );
+node_sequential_move_to_door_process = node_sequential_move_to_door( 3, 10 );
+node_sequential_is_door_locked_process = node_sequential_is_door_locked( 4, 11 );
+node_sequential_door_unlock_process = node_sequential_door_unlock( 5, 12 );
+node_sequential_door_open_process = node_sequential_door_open( 6, 13 );
+node_sequential_move_to_target_process = node_sequential_move_to_target( 7, 14 );
+node_condition_decide_after_is_open_process = node_condition_decide_after_is_open( 8, 15 );
+node_condition_decide_after_is_locked_process = node_condition_decide_after_is_locked( 9, 16 );
+system concurrent_process, control_graph_init_process, achieve_door_unlock_process, 
+       achieve_move_to_process, achieve_key_take_process, achieve_door_open_process, 
+       maintain_key_hold_process, observe_is_door_locked_process, observe_is_door_open_process, 
+       node_concurrent_hold_and_move_process, node_sequential_start_process, node_sequential_key_holding_process, 
+       node_sequential_move_to_door_process, node_sequential_is_door_locked_process, node_sequential_door_unlock_process, 
+       node_sequential_door_open_process, node_sequential_move_to_target_process, node_condition_decide_after_is_open_process, 
+       node_condition_decide_after_is_locked_process;
+</system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt; node_condition_2_process.main
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=10000] ( &lt;&gt; node_condition_2_process.main  )
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>A&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
+			</formula>
+			<comment>
+			</comment>
+		</query>
+	</queries>
+</nta>

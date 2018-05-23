@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<configurations
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="configurations.xsd">
+
+<setting   name="precision_multiplier_for_numbers_and_time"          value="1000"/>
+<setting   name="observe_variable_samples"                           value="10"/>
+<setting   name="run_time_amount_of_intervals_for_discretization"    value="5"/>
+
+<variable  name="moved"                         value="0"   />
+
+
+</configurations>

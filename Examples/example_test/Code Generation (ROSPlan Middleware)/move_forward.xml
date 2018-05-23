@@ -1,0 +1,273 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<plps:achieve_plp name="walk_through_gateway" version="1.0" 
+	glue_file_location="walk_through_gateway_glue.xml"
+	xmlns:plps="PLP-schemas"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="PLP-schemas AchievePLP_schema.xsd">
+	
+  <parameters>
+    <execution_parameters>
+      <param name="areaA" />
+      <param name="areaB" />
+      <param name="gateway" />
+    </execution_parameters>
+
+    <input_parameters>
+      <param name="gateway_location" >
+        <field value="gateway" />
+      </param>
+      <param name="laser_scan" read_frequency="5" />
+      <param name="odometry" read_frequency="5" />
+      <param name="arm_controller" read_frequency="1" />
+    </input_parameters>
+
+    <output_parameters>
+      <param name="result" />
+    </output_parameters>
+
+    <non_observable>
+      <param name="clear_path" />
+      <param name="floor_traction" />
+    </non_observable>
+  </parameters>
+
+  <variables>
+    <var name="current_Aspeed" type="real" />
+    <var name="current_Lspeed" type="real" />
+    <var name="collision_alert" type="boolean" />
+    <var name="arm_moving" type="boolean" />
+  </variables>
+
+  <constants>
+    <constant name="linear_speed" />
+    <constant name="angular_speed" />
+    <constant name="aspeed_offset" />
+    <constant name="lspeed_offset" />
+  </constants>
+
+  <required_resources>
+    <resource name="robot_wheels">
+      <status type="exclusive" />
+    </resource>
+  </required_resources>
+
+  <preconditions>
+
+    <predicate_condition name="at">
+      <field value="areaA" />
+    </predicate_condition>
+
+    <predicate_condition name="connected">
+      <field value="areaA" />
+      <field value="areaB" />
+      <field value="gateway" />
+    </predicate_condition>
+
+    <formula_condition key_description="no_angular_speed">
+      <expression value="begin_Aspeed" />
+      <operator type="="/>
+      <expression value="0" />
+    </formula_condition>
+
+    <formula_condition key_description="no_linear_speed">
+      <expression value="begin_Lspeed" />
+      <operator type="="/>
+      <expression value="0" />
+    </formula_condition>
+
+  </preconditions>
+
+  <concurrency_conditions>
+    <formula_condition key_description="arm_not_moving">
+      <expression value="arm_moving" />
+      <operator type="="/>
+      <expression value="FALSE" />
+    </formula_condition>
+  </concurrency_conditions>
+
+  <concurrent_modules>
+    <module name="observe_gateway" concurrency_type="mutex" />
+  </concurrent_modules>
+
+  <side_effects>
+	  <forall_effect>
+		<param name="gw" />
+		<assignment_effect key_description="losing_observed_locations">
+		  <param name="gateway_location" >
+			<field value="gw" />
+		  </param>
+		  <expression value="NULL" />
+		</assignment_effect>
+	  </forall_effect>
+
+  </side_effects>
+
+  <progress_measures>
+    <progress_measure frequency="1">
+      <OR>
+        <formula_condition key_description="angular_speed_in_range">
+          <expression value="current_Aspeed" />
+          <inside_range>
+            <range min_value="angular_speed-aspeed_offset" min_inclusive="true" max_value="angular_speed+aspeed_offset" max_inclusive="true" />
+          </inside_range>
+        </formula_condition>
+
+        <formula_condition key_description="linear_speed_in_range">
+          <expression value="current_Lspeed" />
+          <inside_range>
+            <range min_value="linear_speed-lspeed_offset" min_inclusive="true" max_value="linear_speed+lspeed_offset" max_inclusive="true" />
+          </inside_range>
+        </formula_condition>
+      </OR>
+    </progress_measure>
+
+  </progress_measures>
+
+  <!-- NEXT TAGS ARE SPECIFIC TO ACHIEVE -->
+
+  <achievement_goal>
+    <predicate_condition name="at">
+      <field value="areaB" />
+    </predicate_condition>
+  </achievement_goal>
+  
+  <success_termination_condition>
+  	<formula_condition key_description="result_is_success">
+  		<expression value="result"/>
+  		<operator type="="/>
+  		<expression value="success"/>
+  	</formula_condition>
+  </success_termination_condition>
+
+  <success_probability>
+    <conditional_probability>
+      <formula_condition key_description="path_clear">
+        <expression value="clear_path" />
+        <operator type="="/>
+        <expression value="TRUE" />
+      </formula_condition>
+      <probability value="0.95" />
+    </conditional_probability>
+
+    <conditional_probability>
+      <formula_condition key_description="not_path_clear">
+        <expression value="clear_path" />
+        <operator type="="/>
+        <expression value="FALSE" />
+      </formula_condition>
+      <probability value="0" />
+    </conditional_probability>
+  </success_probability>
+
+  <runtime_given_success>
+    <distribution>
+      <uniform>
+        <lower_bound value="(|gateway_location(gateway).angle|/angular_speed)+(gateway_location(gateway).distance/linear_speed)" />
+        <upper_bound value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
+      </uniform>
+    </distribution>
+  </runtime_given_success>
+  
+  <failure_modes>
+    <failure_mode>
+      <formula_condition key_description="collision">
+        <expression value="collision_alert" />
+        <operator type="="/>
+        <expression value="TRUE" />
+      </formula_condition>
+
+      <conditional_probability>
+        <formula_condition key_description="path_clear">
+          <expression value="clear_path" />
+          <operator type="="/>
+          <expression value="TRUE" />
+        </formula_condition>
+        <probability value="0.01" />
+      </conditional_probability>
+
+      <conditional_probability>
+        <formula_condition key_description="not_clear_path">
+          <expression value="clear_path" />
+          <operator type="="/>
+          <expression value="FALSE" />
+        </formula_condition>
+        <probability value="1" />
+      </conditional_probability>
+    </failure_mode>
+
+    <failure_mode>
+    
+    <AND>
+      <not_condition>
+        <predicate_condition name="at">
+          <field value="areaB" />
+        </predicate_condition>
+      </not_condition>
+      
+      <formula_condition key_description="no_angular_speed">
+	      <expression value="begin_Aspeed" />
+	      <operator type="="/>
+	      <expression value="0" />
+	    </formula_condition>
+	  
+	  <formula_condition key_description="no_linear_speed">
+      	<expression value="begin_Lspeed" />
+      	<operator type="="/>
+      	<expression value="0" />
+      </formula_condition>
+	</AND>
+	
+      <conditional_probability>
+        <AND>
+          <formula_condition key_description="no_floor_traction">
+            <expression value="floor_traction" />
+            <operator type="="/>
+            <expression value="FALSE" />
+          </formula_condition>
+          <formula_condition key_description="path_clear">
+            <expression value="clear_path" />
+            <operator type="="/>
+            <expression value="TRUE" />
+          </formula_condition>
+        </AND>
+
+        <probability value="0.01" />
+      </conditional_probability>
+
+      <conditional_probability>
+        <AND>
+          <formula_condition key_description="floor_traction">
+            <expression value="floor_traction" />
+            <operator type="="/>
+            <expression value="TRUE" />
+          </formula_condition>
+          <formula_condition key_description="path_clear">
+            <expression value="clear_path" />
+            <operator type="="/>
+            <expression value="TRUE" />
+          </formula_condition>
+        </AND>
+        <probability value="0.03" />
+      </conditional_probability>
+    </failure_mode>
+
+  </failure_modes>
+  
+  <failure_termination_condition>
+  	<formula_condition key_description="result_is_false">
+  		<expression value="result"/>
+  		<operator type="="/>
+  		<expression value="failed"/>
+  	</formula_condition>
+  </failure_termination_condition>
+
+  <runtime_given_failure>
+    <distribution>
+      <uniform>
+        <lower_bound value="0" />
+        <upper_bound value="((|gateway_location(gateway).angle|+(PI/2))/angular_speed+((gateway_location(gateway).distance+1)/linear_speed)" />
+      </uniform>
+    </distribution>
+  </runtime_given_failure>
+
+</plps:achieve_plp>

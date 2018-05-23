@@ -47,11 +47,47 @@ public class UppaalControlNode {
     }
 
 
+    private void create_transitions_for_loop( UppaalSubGraphContainer sub_graph_container, String done_name,
+                                              Point done_place, StringBuffer node_preconditions,
+                                              StringBuffer node_condition_can_not_start )
+    {
+
+
+
+        if ( 0 != node_preconditions.length() ) {
+            List<Point> nails = new LinkedList<>();
+
+            nails.add(new Point(UppaalBuilder.direction_left(UppaalBuilder.squares_length(6)) + (int) done_place.getX(), UppaalBuilder.direction_up(UppaalBuilder.squares_length(3)) + (int) done_place.getY()));
+
+            UppaalTransition to_start = new UppaalTransition(done_name, "start",
+                    nails.get(0),
+                    UppaalBuilder.Side.bottom_right, node_preconditions.toString(), null,
+                    "", "", nails);
+            sub_graph_container.transitions.add(to_start);
+        }
+
+        if ( 0 != node_condition_can_not_start.length() ) {
+            List<Point> nails = new LinkedList<>();
+
+            nails.add(new Point(UppaalBuilder.direction_left(UppaalBuilder.squares_length(12)) + (int) done_place.getX(), UppaalBuilder.direction_up(UppaalBuilder.squares_length(5)) + (int) done_place.getY()));
+
+
+            UppaalTransition to_init = new UppaalTransition(done_name, "init_node",
+                    nails.get(0),
+                    UppaalBuilder.Side.bottom_right, node_condition_can_not_start.toString(), null,
+                    "", "", nails);
+            sub_graph_container.transitions.add(to_init);
+        }
+    }
+
     public UppaalPTA generate() throws VerificationException
     {
-        UppaalSubGraphContainer sub_graph_container     = new UppaalSubGraphContainer();
-        StringBuffer            node_preconditions      = new StringBuffer();
-        String                  preconditions_operator  = null;
+        UppaalSubGraphContainer sub_graph_container             = new UppaalSubGraphContainer();
+        StringBuffer            node_preconditions              = new StringBuffer();
+        StringBuffer            node_condition_can_not_start    = new StringBuffer();
+        String                  preconditions_operator          = null;
+        String                  complementary_operator          = null;
+        StringBuffer            nullify_all_predecessors            = new StringBuffer();
 
         this.control_graph_pta.set_name( control_node.get_node_name() );
         this.control_graph_pta.parameters.append( "int node_id, int concurrent_process_id" );
@@ -59,10 +95,12 @@ public class UppaalControlNode {
         if ( ControlNodeInterface.StartPolicyType.all_predecessor_done == this.control_node.get_start_policy() )
         {
             preconditions_operator = UppaalBuilder.STR_AND;
+            complementary_operator = UppaalBuilder.STR_OR;
         }
         else if ( ControlNodeInterface.StartPolicyType.any_predecessor_done == this.control_node.get_start_policy() )
         {
             preconditions_operator = UppaalBuilder.STR_OR;
+            complementary_operator = UppaalBuilder.STR_AND;
         }
 
         List<String> predecessors = this.control_node.get_predecessors();
@@ -70,28 +108,64 @@ public class UppaalControlNode {
         if ( null != predecessors ) {
             for ( String predecessor : predecessors ) {
                 int transition_id = this.control_graph.get_transition_id( predecessor, this.control_node.get_node_name() );
-                String variable_for_predecessor = UppaalBuilder.make_uppaal_condition_is_true_variable( this.uppaal_variable_can_run_by_id( transition_id ) );
+                String variable_for_predecessor = this.uppaal_variable_can_run_by_id( transition_id );
+                String expression_positive = UppaalBuilder.make_uppaal_condition_is_true_variable(  variable_for_predecessor );
+                String expression_negative = UppaalBuilder.make_uppaal_condition_is_false_variable( variable_for_predecessor );
 
-                UppaalBuilder.add_to_cumulative_expression_with_operator( node_preconditions, variable_for_predecessor, preconditions_operator);
+                UppaalBuilder.add_to_cumulative_expression_with_operator( node_preconditions          , expression_positive, preconditions_operator);
+                UppaalBuilder.add_to_cumulative_expression_with_operator( node_condition_can_not_start, expression_negative, complementary_operator);
+
+                String nullify_predecessor = UppaalBuilder.binary_expression_enclosed( variable_for_predecessor, UppaalBuilder.STR_ASSIGNMENT, "0"  );
+
+                UppaalBuilder.add_to_cumulative_expression_with_operator( nullify_all_predecessors, nullify_predecessor, UppaalBuilder.STR_COMMA );
             }
         }
 
         final int level_squares         = 4;
         final int level_init            = 0;
-        final int level_ready           = 1;
-        final double level_tran_init_to_ready = 0.5;
+        final int level_start           = 1;
+        final int level_ready           = 2;
+        final double level_tran_init_to_start  = level_init + 0.5;
+        final double level_tran_start_to_ready = level_start + 0.5;
 
         this.control_graph_pta.append_declarations( "clock local_time;\n" );
 
-        UppaalLocation loc_start = new UppaalLocation( "start", UppaalBuilder.Side.middle_left,
+
+        // *** LOCATION
+
+
+        UppaalLocation loc_init_node = new UppaalLocation( "init_node", UppaalBuilder.Side.middle_left,
                 new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_squares * level_init ))),
                 "", UppaalBuilder.Side.none,
                 "", UppaalBuilder.Side.none,
                 false);
+        sub_graph_container.locations.add( loc_init_node );
+
+
+        // *** LOCATION
+
+
+
+        UppaalLocation loc_start = new UppaalLocation( "start", UppaalBuilder.Side.middle_left,
+                new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_squares * level_start ))),
+                "", UppaalBuilder.Side.none,
+                "", UppaalBuilder.Side.none,
+                true);
         sub_graph_container.locations.add( loc_start );
 
-        sub_graph_container.init_location = "start";
+        sub_graph_container.init_location = "init_node";
         this.control_graph_pta.set_init_location_id( loc_start.location_name );
+
+
+        // *** TRANSITION
+
+        UppaalTransition to_start = new UppaalTransition( "init_node", "start",
+                new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_squares * level_tran_init_to_start ))),
+                UppaalBuilder.Side.bottom_right, node_preconditions.toString(), UppaalSystem.uppaal_sync_signal_receive( uppaal_channel_notify_me() ),
+                "", "",null );
+        sub_graph_container.transitions.add( to_start );
+
+        // *** TRANSITION
 
         boolean is_location_ready_urgent    = false;
         String  ready_invariant             = "";
@@ -118,10 +192,12 @@ public class UppaalControlNode {
          }
         sub_graph_container.locations.add( loc_ready );
 
+        UppaalBuilder.add_to_cumulative_expression_with_operator( nullify_all_predecessors, UppaalBuilder.binary_expression_enclosed( "local_time", UppaalBuilder.STR_ASSIGNMENT, "0"  ), UppaalBuilder.STR_COMMA );
+
         UppaalTransition to_ready = new UppaalTransition( "start", "ready",
-                new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_squares * level_tran_init_to_ready ))),
-                UppaalBuilder.Side.bottom_right, node_preconditions.toString(), UppaalSystem.uppaal_sync_signal_receive( uppaal_channel_notify_me() ),
-                "local_time = 0", "",null );
+                new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_squares * level_tran_start_to_ready ))),
+                UppaalBuilder.Side.bottom_right, "", "",
+                 nullify_all_predecessors.toString(), "",null );
         sub_graph_container.transitions.add( to_ready );
 
         if (ControlNodeInterface.ControlNodeType.node_probability == this.control_node.get_node_kind()) {
@@ -236,13 +312,16 @@ public class UppaalControlNode {
                     sub_graph_container.transitions.add( to_chosen_path );
                 }
 
+                Point place_loc_done    = new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( current_x_offset ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_done ) )));
                 UppaalLocation loc_done = new UppaalLocation( location_label_done, UppaalBuilder.Side.middle_left,
-                        new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( current_x_offset ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_done ) ))),
+                        place_loc_done,
                         "", UppaalBuilder.Side.none,
                         "", UppaalBuilder.Side.none,
-                        false );
+                        0 != node_preconditions.length() );
                 sub_graph_container.locations.add( loc_done );
 
+                create_transitions_for_loop( sub_graph_container, location_label_done,
+                        place_loc_done, node_preconditions, node_condition_can_not_start );
 
                 int next_node_id = this.control_graph.node_name_get_id( probability_for_successor_node.node_name );
 
@@ -358,13 +437,17 @@ public class UppaalControlNode {
 
             }
 
+            Point place_loc_done = new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current  )));
 
             UppaalLocation loc_done = new UppaalLocation( "done", UppaalBuilder.Side.middle_left,
-                    new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current  ))),
+                    place_loc_done,
                     "", UppaalBuilder.Side.none,
                     "", UppaalBuilder.Side.none,
-                    false);
+                    0 != node_preconditions.length());
             sub_graph_container.locations.add( loc_done );
+
+            create_transitions_for_loop( sub_graph_container, "done",
+                    place_loc_done, node_preconditions, node_condition_can_not_start );
 
             UppaalTransition to_done = new UppaalTransition( previous_location_name, "done",
                     new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current  - ( 0.5 * level_squares ) ))),
@@ -521,15 +604,16 @@ public class UppaalControlNode {
                     "",null );
             sub_graph_container.transitions.add( to_all_plps_done );
 
-
+            Point place_loc_done = new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_done ) )));
             UppaalLocation loc_done = new UppaalLocation( "done", UppaalBuilder.Side.middle_left,
-                    new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_done ) ))),
+                    place_loc_done,
                     "", UppaalBuilder.Side.none,
                     "", UppaalBuilder.Side.none,
-                    false);
+                    0 != node_preconditions.length());
             sub_graph_container.locations.add( loc_done );
 
-            
+            create_transitions_for_loop( sub_graph_container, "done",
+                    place_loc_done, node_preconditions, node_condition_can_not_start );
 
             UppaalTransition to_done = new UppaalTransition( "all_plps_done", "done",
                     new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_done ) - ( 0.5 * level_squares ) ))),
@@ -673,12 +757,18 @@ public class UppaalControlNode {
                     sub_graph_container.transitions.add(to_chosen_path);
                 }
 
+
+                Point place_loc_done = new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( current_x_offset ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_done ) )));
                 UppaalLocation loc_done = new UppaalLocation( location_label_done, UppaalBuilder.Side.middle_left,
-                        new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( current_x_offset ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_done ) ))),
+                        place_loc_done,
                         "", UppaalBuilder.Side.none,
                         "", UppaalBuilder.Side.none,
-                        false );
+                        0 != node_preconditions.length() );
                 sub_graph_container.locations.add( loc_done );
+
+
+                create_transitions_for_loop( sub_graph_container, location_label_done,
+                        place_loc_done, node_preconditions, node_condition_can_not_start );
 
 
                 int next_node_id = this.control_graph.node_name_get_id( condition_of_successor.node_name );

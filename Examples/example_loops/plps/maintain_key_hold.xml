@@ -1,0 +1,89 @@
+﻿<?xml version="1.1" encoding="utf-8"?>
+<plps:maintain_plp name="maintain_key_hold" version="1.0" glue_file_location=""
+  xmlns:plps="PLP-schemas"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="PLP-schemas MaintainPLP_schema.xsd">
+  
+  <parameters>
+  </parameters>
+
+  <variables>
+    <var name="holding_key"     type="boolean"/>
+    <var name="key_dropped"     type="boolean"/>
+    <var name="key_can_drop"    type="boolean"/>
+  </variables>
+
+  <constants>
+  </constants>
+
+  <required_resources>
+  </required_resources>
+
+  <preconditions>
+    <formula_condition key_description="holding_key">
+      <expression value="holding_key" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </preconditions>
+
+  <concurrency_conditions>
+  </concurrency_conditions>
+
+  <concurrent_modules>
+  </concurrent_modules>
+
+  <side_effects>
+  </side_effects>
+
+  <progress_measures>
+  </progress_measures>
+
+  <maintained_condition>
+    <formula_condition key_description="holding_key">
+      <expression value="holding_key" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+    
+    <initially_true />
+  </maintained_condition>
+
+  <success_termination_condition>
+    <formula_condition key_description="key_can_drop">
+      <expression value="key_can_drop" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </success_termination_condition>
+
+  <failure_termination_conditions>
+    <formula_condition key_description="key_dropped">
+      <expression value="key_dropped" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </failure_termination_conditions>
+
+  <success_probability>
+  </success_probability>
+
+  <runtime_given_success>
+    <distribution>
+        <!--exp>
+            <lambda-rate  value="0.025"/>
+        </exp-->
+        <uniform>
+        <lower_bound value="25.01" />
+        <upper_bound value="25.01" />
+      </uniform>
+    </distribution>
+  </runtime_given_success>
+    
+  <failure_modes>
+  </failure_modes>
+
+  <runtime_given_failure>
+  </runtime_given_failure>
+  
+</plps:maintain_plp>

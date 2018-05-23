@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<control_graph
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="control_graph.xsd">
+
+<root root_name="node_sequential_start"/>
+
+<node_sequential   node_name="node_sequential_start" start_policy="any_predecessor_done" next_node_name="node_concurrent_hold_and_move">
+    <run_plp plp_name="achieve_move_to">
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="_achieve_move_to_destination" />
+            <operator type="="/>
+            <expression value="at_a_key" />
+          </formula_condition>
+        </update>
+    </run_plp>
+    <run_plp plp_name="achieve_key_take">
+    </run_plp>
+</node_sequential>
+
+<node_concurrent   node_name="node_concurrent_hold_and_move" start_policy="any_predecessor_done">
+    <run_node node_name="node_sequential_key_holding"/>
+    <run_node node_name="node_sequential_move_to_door"/>
+</node_concurrent>
+
+<node_sequential   node_name="node_sequential_key_holding" start_policy="any_predecessor_done" next_node_name="">
+    <run_plp plp_name="maintain_key_hold">
+    </run_plp>
+</node_sequential>
+
+<node_sequential   node_name="node_sequential_move_to_door" start_policy="any_predecessor_done" next_node_name="node_condition_decide_after_is_open">
+    <run_plp plp_name="achieve_move_to">
+        <update>
+          <formula_condition key_description="update variables">
+            <expression value="_achieve_move_to_destination" />
+            <operator type="="/>
+            <expression value="at_a_doorway" />
+          </formula_condition>
+        </update>
+    </run_plp>
+    <run_plp plp_name="observe_is_door_open">
+    </run_plp>
+</node_sequential>
+
+<node_condition   node_name="node_condition_decide_after_is_open" start_policy="any_predecessor_done">
+    <run_node node_name="node_sequential_move_to_target">
+        <preconditions>
+            <formula_condition key_description="true == door_is_open">
+              <expression value="_observe_is_door_open_door_is_open" />
+              <operator type="="/>
+              <expression value="TRUE" />
+            </formula_condition>
+        </preconditions>
+    </run_node>
+    <run_node node_name="node_sequential_is_door_locked">
+        <preconditions>
+            <formula_condition key_description="false == door_is_open">
+              <expression value="_observe_is_door_open_door_is_open" />
+              <operator type="="/>
+              <expression value="FALSE" />
+            </formula_condition>
+        </preconditions>
+    </run_node>
+</node_condition>
+
+<node_sequential   node_name="node_sequential_is_door_locked" start_policy="any_predecessor_done" next_node_name="node_condition_decide_after_is_locked">
+    <run_plp plp_name="observe_is_door_locked">
+    </run_plp>
+</node_sequential>
+
+<node_condition   node_name="node_condition_decide_after_is_locked" start_policy="any_predecessor_done">
+    <run_node node_name="node_sequential_door_unlock">
+        <preconditions>
+            <formula_condition key_description="true == door_is_locked">
+              <expression value="_observe_is_door_locked_door_is_locked" />
+              <operator type="="/>
+              <expression value="TRUE" />
+            </formula_condition>
+        </preconditions>
+    </run_node>
+    <run_node node_name="node_sequential_door_open">
+        <preconditions>
+            <formula_condition key_description="false == door_is_locked">
+              <expression value="_observe_is_door_locked_door_is_locked" />
+              <operator type="="/>
+              <expression value="FALSE" />
+            </formula_condition>
+        </preconditions>
+    </run_node>
+</node_condition>
+
+<node_sequential   node_name="node_sequential_door_unlock" start_policy="any_predecessor_done" next_node_name="node_sequential_door_open">
+    <run_plp plp_name="achieve_door_unlock">
+    </run_plp>
+</node_sequential>
+
+<node_sequential   node_name="node_sequential_door_open" start_policy="any_predecessor_done" next_node_name="node_sequential_move_to_target">
+    <run_plp plp_name="achieve_door_open">
+    </run_plp>
+</node_sequential>
+
+
+<node_sequential   node_name="node_sequential_move_to_target" start_policy="any_predecessor_done" next_node_name="">
+    <run_plp plp_name="achieve_move_to">
+        <update>
+          <formula_condition key_description="move through doorway">
+            <expression value="_achieve_move_to_destination" />
+            <operator type="="/>
+            <expression value="at_b_doorway" />
+          </formula_condition>
+        </update>
+    </run_plp>
+    <run_plp plp_name="achieve_move_to">
+        <update>
+          <formula_condition key_description="move through doorway">
+            <expression value="_achieve_move_to_destination" />
+            <operator type="="/>
+            <expression value="at_b_target" />
+          </formula_condition>
+        </update>
+    </run_plp>
+</node_sequential>
+
+</control_graph>

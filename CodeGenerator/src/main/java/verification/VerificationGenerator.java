@@ -1411,6 +1411,9 @@ public class VerificationGenerator {
         StringBufferExtra.replace( verification_declarations_start, "[<[concurrent_data_amount]>]", String.format("%d", concurrent_data_amount) );
 
         int concurrent_requests_amount = this.variable_manager.concurrent_requests_get();
+        if ( 0 == concurrent_requests_amount ){
+            concurrent_requests_amount = 1;
+        }
         StringBufferExtra.replace( verification_declarations_start, "[<[concurrent_requests_amount]>]", String.format("%d", concurrent_requests_amount) );
 
         int global_variables_amount = this.variable_manager.get_global_variables_amount();

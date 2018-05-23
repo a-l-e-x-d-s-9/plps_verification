@@ -291,6 +291,11 @@ public class UppaalBuilder {
         return binary_expression_enclosed( uppaal_variable, UppaalBuilder.STR_GREATER_THAN, "0"  );
     }
 
+    public static String make_uppaal_condition_is_false_variable( String uppaal_variable )
+    {
+        return binary_expression_enclosed( uppaal_variable, UppaalBuilder.STR_EQUAL, "0"  );
+    }
+
     public static String uppaal_variable_write( String variable_id, String value )
     {
         return String.format( "concurrent_write( %s, %s )", variable_id, value );
