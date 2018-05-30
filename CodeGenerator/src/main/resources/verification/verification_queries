@@ -1,24 +1,24 @@
 	<queries>
 		<query>
-			<formula>E&lt;&gt; node_condition_2_process.main
+			<formula>E&lt;&gt; node_sequential_00001_process.done
 			</formula>
 			<comment>
 			</comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=10000] ( &lt;&gt; node_condition_2_process.main  )
+			<formula>Pr[&lt;=10000000] ( &lt;&gt; node_sequential_00001_process.done  )
 			</formula>
 			<comment>
 			</comment>
 		</query>
 		<query>
-			<formula>E&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
+			<formula>E&lt;&gt; node_sequential_00001_process.done
 			</formula>
 			<comment>
 			</comment>
 		</query>
 		<query>
-			<formula>A&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
+			<formula>A&lt;&gt; node_sequential_00001_process.done
 			</formula>
 			<comment>
 			</comment>
