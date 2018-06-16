@@ -1,0 +1,81 @@
+﻿<?xml version="1.1" encoding="utf-8"?>
+<plps:maintain_plp name="maintain_00000013" version="1.0" glue_file_location=""
+  xmlns:plps="PLP-schemas"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="PLP-schemas MaintainPLP_schema.xsd">
+  
+  <parameters>
+  </parameters>
+
+  <variables>
+    <var name="maintaining_00000013"                        type="boolean"/>
+    <var name="maintain_termination_success_00000013"       type="boolean"/>
+    <var name="maintain_termination_failure_00000013"       type="boolean"/>
+  </variables>
+
+  <constants>
+  </constants>
+
+  <required_resources>
+  </required_resources>
+
+  <preconditions>
+  </preconditions>
+
+  <concurrency_conditions>
+  </concurrency_conditions>
+
+  <concurrent_modules>
+  </concurrent_modules>
+
+  <side_effects>
+  </side_effects>
+
+  <progress_measures>
+  </progress_measures>
+
+  <maintained_condition>
+    <formula_condition key_description="maintaining_00000013">
+      <expression value="maintaining_00000013" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+    
+    <initially_true />
+  </maintained_condition>
+
+  <success_termination_condition>
+    <formula_condition key_description="maintain_termination_success_00000013">
+      <expression value="maintain_termination_success_00000013" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </success_termination_condition>
+
+  <failure_termination_conditions>
+    <formula_condition key_description="maintain_termination_success_00000013">
+      <expression value="maintain_termination_failure_00000013" />
+      <operator type="=" />
+      <expression value="TRUE" />
+    </formula_condition>
+  </failure_termination_conditions>
+
+  <success_probability>
+  </success_probability>
+
+  <runtime_given_success>
+    <distribution>
+        <uniform>
+        <lower_bound value="4.2" />
+        <upper_bound value="5" />
+      </uniform>
+    </distribution>
+  </runtime_given_success>
+    
+  <failure_modes>
+  </failure_modes>
+
+  <runtime_given_failure>
+  </runtime_given_failure>
+  
+</plps:maintain_plp>

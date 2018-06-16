@@ -1022,6 +1022,8 @@ public class VerificationManager {
             }
         }
 
+        int control_graph_nodes_amount = 0;
+
         if ( 0 < this.plp_catalog.get_plps_amount() )
         {
             concurrent_modules_initialize();
@@ -1040,6 +1042,7 @@ public class VerificationManager {
             Element control_graph_root = file_open( this.control_graph_file );
             ControlGraph control_graph = file_load_control_graph( control_graph_root );
             this.generator.add_control_graph( control_graph );
+            control_graph_nodes_amount = control_graph.contron_nodes_amount();
 
             this.variable_manager.print_variables();
 
@@ -1056,6 +1059,9 @@ public class VerificationManager {
         System.out.println("****************************************** Generation Done *****************************************");
         reports.print_info();
         reports.print_warnings();
+        System.out.println("PTAs_PLP     : " + this.plp_catalog.get_plps_amount());
+        System.out.println("Control nodes: " + control_graph_nodes_amount);
+        System.out.println("Variables    : " + this.variable_manager.get_global_variables_amount());
 
     }
 

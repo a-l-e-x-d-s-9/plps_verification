@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<control_graph
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="control_graph.xsd">
+
+<root root_name="node_probability_00000000"/>
+
+<node_probability node_name="node_probability_00000000" start_policy="any_predecessor_done" wait_time="0">
+	<probability_for_successor_node probability="0.5" node_name="node_concurrent_00000001"/>
+	<probability_for_successor_node probability="0.5" node_name="node_concurrent_00000002"/>
+</node_probability>
+<node_concurrent   node_name="node_concurrent_00000001" start_policy="any_predecessor_done">
+	<run_node node_name="node_sequential_maintain_00000003"/>
+	<run_node node_name="node_sequential_observe_00000005"/>
+</node_concurrent>
+<node_sequential   node_name="node_sequential_maintain_00000003" start_policy="any_predecessor_done" next_node_name="">
+	<run_plp plp_name="maintain_00000004" wait_time="0"></run_plp>
+</node_sequential>
+<node_sequential   node_name="node_sequential_observe_00000005" start_policy="any_predecessor_done" next_node_name="node_condition_00000007">
+	<run_plp plp_name="observe_00000006" wait_time="0"></run_plp>
+</node_sequential>
+<node_condition   node_name="node_condition_00000007" start_policy="any_predecessor_done">
+	<run_node node_name="node_sequential_achieve_true_00000008">
+		<preconditions>
+			<formula_condition key_description="true == observe_goal_00000006">
+				<expression value="_observe_00000006_observe_goal_00000006" />
+				<operator type="="/>
+				<expression value="TRUE" />
+			</formula_condition>
+		</preconditions>
+	</run_node>
+	<run_node node_name="node_sequential_achieve_false_00000009">
+		<preconditions>
+			<formula_condition key_description="false == observe_goal_00000006">
+				<expression value="_observe_00000006_observe_goal_00000006" />
+				<operator type="="/>
+				<expression value="FALSE" />
+			</formula_condition>
+		</preconditions>
+	</run_node>
+</node_condition>
+<node_sequential   node_name="node_sequential_achieve_true_00000008" start_policy="any_predecessor_done" next_node_name="">
+	<run_plp plp_name="achieve_true_00000010" wait_time="0"></run_plp>
+</node_sequential>
+<node_sequential   node_name="node_sequential_achieve_false_00000009" start_policy="any_predecessor_done" next_node_name="">
+	<run_plp plp_name="achieve_false_00000011" wait_time="0"></run_plp>
+</node_sequential><node_concurrent   node_name="node_concurrent_00000002" start_policy="any_predecessor_done">
+	<run_node node_name="node_sequential_maintain_00000012"/>
+	<run_node node_name="node_sequential_observe_00000014"/>
+</node_concurrent>
+<node_sequential   node_name="node_sequential_maintain_00000012" start_policy="any_predecessor_done" next_node_name="">
+	<run_plp plp_name="maintain_00000013" wait_time="0"></run_plp>
+</node_sequential>
+<node_sequential   node_name="node_sequential_observe_00000014" start_policy="any_predecessor_done" next_node_name="node_condition_00000016">
+	<run_plp plp_name="observe_00000015" wait_time="0"></run_plp>
+</node_sequential>
+<node_condition   node_name="node_condition_00000016" start_policy="any_predecessor_done">
+	<run_node node_name="node_sequential_achieve_true_00000017">
+		<preconditions>
+			<formula_condition key_description="true == observe_goal_00000015">
+				<expression value="_observe_00000015_observe_goal_00000015" />
+				<operator type="="/>
+				<expression value="TRUE" />
+			</formula_condition>
+		</preconditions>
+	</run_node>
+	<run_node node_name="node_sequential_achieve_false_00000018">
+		<preconditions>
+			<formula_condition key_description="false == observe_goal_00000015">
+				<expression value="_observe_00000015_observe_goal_00000015" />
+				<operator type="="/>
+				<expression value="FALSE" />
+			</formula_condition>
+		</preconditions>
+	</run_node>
+</node_condition>
+<node_sequential   node_name="node_sequential_achieve_true_00000017" start_policy="any_predecessor_done" next_node_name="">
+	<run_plp plp_name="achieve_true_00000019" wait_time="0"></run_plp>
+</node_sequential>
+<node_sequential   node_name="node_sequential_achieve_false_00000018" start_policy="any_predecessor_done" next_node_name="">
+	<run_plp plp_name="achieve_false_00000020" wait_time="0"></run_plp>
+</node_sequential></control_graph>

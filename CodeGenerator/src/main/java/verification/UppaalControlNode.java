@@ -210,130 +210,130 @@ public class UppaalControlNode {
 
             final int level_branchpoint = 0;
 
-            String location_branchpoint_id = this.control_graph_pta.get_new_location_id();
-            UppaalBranchpoint branchpoint_main = new UppaalBranchpoint( location_branchpoint_id,
-                    new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_branchpoint ) ))));
-            sub_graph_container.branchpoints.add( branchpoint_main );
+            if ( false == node_probability.probability_for_successor_nodes.isEmpty() ) {
+                String location_branchpoint_id = this.control_graph_pta.get_new_location_id();
+                UppaalBranchpoint branchpoint_main = new UppaalBranchpoint(location_branchpoint_id,
+                        new Point(UppaalBuilder.direction_right(UppaalBuilder.squares_length(0)), UppaalBuilder.direction_down(UppaalBuilder.squares_length(level_base_current + (level_squares * level_branchpoint)))));
+                sub_graph_container.branchpoints.add(branchpoint_main);
 
-            UppaalTransition to_branchpoint = new UppaalTransition( "ready", location_branchpoint_id,
-                    new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( 0 ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_branchpoint ) - ( 0.5 * level_squares ) ))),
-                    transition_label_side,
-                    UppaalBuilder.binary_expression_enclosed( "local_time", UppaalBuilder.STR_EQUAL, String.valueOf(node_probability.wait_time) ),
-                    "",
-                    "", "",null );
-            sub_graph_container.transitions.add( to_branchpoint );
+                UppaalTransition to_branchpoint = new UppaalTransition("ready", location_branchpoint_id,
+                        new Point(UppaalBuilder.direction_right(UppaalBuilder.squares_length(0)), UppaalBuilder.direction_down(UppaalBuilder.squares_length(level_base_current + (level_squares * level_branchpoint) - (0.5 * level_squares)))),
+                        transition_label_side,
+                        UppaalBuilder.binary_expression_enclosed("local_time", UppaalBuilder.STR_EQUAL, String.valueOf(node_probability.wait_time)),
+                        "",
+                        "", "", null);
+                sub_graph_container.transitions.add(to_branchpoint);
 
-            final int x_offset_squares      = 30;
-            final double level_nail         = 0.5;
-            final double level_chosen_path  = 1.5;
-            final double level_done         = 2.5;
-            final double level_concurrent   = 1.5;
+                final int x_offset_squares = 30;
+                final double level_nail = 0.5;
+                final double level_chosen_path = 1.5;
+                final double level_done = 2.5;
+                final double level_concurrent = 1.5;
 
-            for ( ControlProbabilityForSuccessor probability_for_successor_node : node_probability.probability_for_successor_nodes) {
+                for (ControlProbabilityForSuccessor probability_for_successor_node : node_probability.probability_for_successor_nodes) {
 
-                int current_x_offset = x_offset_squares * node_index;
+                    int current_x_offset = x_offset_squares * node_index;
 
-                String location_label_chosen_path   = String.format( "path_%d", node_index );
-                String location_label_done          = String.format( "done_%d", node_index );
+                    String location_label_chosen_path = String.format("path_%d", node_index);
+                    String location_label_done = String.format("done_%d", node_index);
 
-                UppaalLocation loc_chosen_path = new UppaalLocation( location_label_chosen_path, UppaalBuilder.Side.middle_left,
-                    new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( current_x_offset ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_chosen_path ) ))),
-                    "", UppaalBuilder.Side.none,
-                    "", UppaalBuilder.Side.none,
-                    true );
-                String locations_id_current_choose_path = control_graph_pta.get_new_location_id();
-                loc_chosen_path.location_id             = locations_id_current_choose_path;
-                sub_graph_container.locations.add( loc_chosen_path );
-
-
-                List<Integer>   update_variables_id = new LinkedList<>();
-                List<String>    update_values       = new LinkedList<>();
-
-                try {
-                    //this.xml_to_uppaal_converter.convert_xml_conditions_to_uppaal_assignment( -1, update_for_successor, probability_for_successor_node.updates );
-                    this.xml_to_uppaal_converter.convert_xml_condition_for_assignments_to_list_of_variable_and_values( -1, probability_for_successor_node.updates, update_variables_id, update_values );
-                } catch (VerificationException exception) {
-                    throw new VerificationException("Control node \"" + this.control_node.get_node_name() + "\", invalid assignment.\n" +
-                            exception.get_message() + "\n" +
-                            "Note: New variables should be defined in configuration file." );
-                }
+                    UppaalLocation loc_chosen_path = new UppaalLocation(location_label_chosen_path, UppaalBuilder.Side.middle_left,
+                            new Point(UppaalBuilder.direction_right(UppaalBuilder.squares_length(current_x_offset)), UppaalBuilder.direction_down(UppaalBuilder.squares_length(level_base_current + (level_squares * level_chosen_path)))),
+                            "", UppaalBuilder.Side.none,
+                            "", UppaalBuilder.Side.none,
+                            true);
+                    String locations_id_current_choose_path = control_graph_pta.get_new_location_id();
+                    loc_chosen_path.location_id = locations_id_current_choose_path;
+                    sub_graph_container.locations.add(loc_chosen_path);
 
 
-                String successor_transition_notify  = "";
-                String successor_synchronization    = "";
+                    List<Integer> update_variables_id = new LinkedList<>();
+                    List<String> update_values = new LinkedList<>();
 
-                if ( false == probability_for_successor_node.node_name.isEmpty() ) {
-                    int transition_id_to_next_node = this.control_graph.get_transition_id(this.control_node.get_node_name(), probability_for_successor_node.node_name );
-                    String variable_to_next_node = this.uppaal_variable_can_run_by_id(transition_id_to_next_node);
-                    successor_transition_notify = UppaalBuilder.binary_expression( variable_to_next_node, UppaalBuilder.STR_ASSIGNMENT, "1" );
-
-                    int next_node_id = this.control_graph.node_name_get_id( probability_for_successor_node.node_name );
-                    successor_synchronization = UppaalSystem.uppaal_sync_signal_send( uppaal_channel_notify_by_id(next_node_id) );
-                }
-
-                StringBuffer update_for_successor = new StringBuffer();
-                UppaalBuilder.add_to_cumulative_assignment( update_for_successor,
-                        successor_transition_notify );
-
-
-                if ( 0 < update_variables_id.size() ) {
-                    ConcurrentCommandCollector concurrent_commands_collector = new ConcurrentCommandCollector(String.format("_%d", node_index));
-                    for (int i = 0; i < update_variables_id.size(); i++) {
-                        concurrent_commands_collector.commands.add((new ConcurrentCommand()).make_write(update_variables_id.get(i), update_values.get(i)));
+                    try {
+                        //this.xml_to_uppaal_converter.convert_xml_conditions_to_uppaal_assignment( -1, update_for_successor, probability_for_successor_node.updates );
+                        this.xml_to_uppaal_converter.convert_xml_condition_for_assignments_to_list_of_variable_and_values(-1, probability_for_successor_node.updates, update_variables_id, update_values);
+                    } catch (VerificationException exception) {
+                        throw new VerificationException("Control node \"" + this.control_node.get_node_name() + "\", invalid assignment.\n" +
+                                exception.get_message() + "\n" +
+                                "Note: New variables should be defined in configuration file.");
                     }
 
-                    concurrent_commands_collector.generate_requests(this.control_graph_pta,
-                            location_branchpoint_id, locations_id_current_choose_path,
-                            new Point(UppaalBuilder.direction_right(UppaalBuilder.squares_length(current_x_offset)),
-                                    UppaalBuilder.direction_down(UppaalBuilder.squares_length(level_base_current + (level_squares * level_concurrent)))),
-                            false,
-                            "concurrent_process_id",
-                            null,
-                            null,
-                            null,
-                            null,
-                            String.valueOf(probability_for_successor_node.probability),
-                            update_for_successor.toString(),
-                            null );
-                }
-                else
-                {
-                    List<Point> nails = new LinkedList<>();
-                    nails.add( new Point( UppaalBuilder.direction_right( UppaalBuilder.squares_length( current_x_offset ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_nail ) ) ) ) );
+
+                    String successor_transition_notify = "";
+                    String successor_synchronization = "";
+
+                    if (false == probability_for_successor_node.node_name.isEmpty()) {
+                        int transition_id_to_next_node = this.control_graph.get_transition_id(this.control_node.get_node_name(), probability_for_successor_node.node_name);
+                        String variable_to_next_node = this.uppaal_variable_can_run_by_id(transition_id_to_next_node);
+                        successor_transition_notify = UppaalBuilder.binary_expression(variable_to_next_node, UppaalBuilder.STR_ASSIGNMENT, "1");
+
+                        int next_node_id = this.control_graph.node_name_get_id(probability_for_successor_node.node_name);
+                        successor_synchronization = UppaalSystem.uppaal_sync_signal_send(uppaal_channel_notify_by_id(next_node_id));
+                    }
+
+                    StringBuffer update_for_successor = new StringBuffer();
+                    UppaalBuilder.add_to_cumulative_assignment(update_for_successor,
+                            successor_transition_notify);
 
 
-                    UppaalTransition to_chosen_path = new UppaalTransition( location_branchpoint_id, location_label_chosen_path,
-                            new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( current_x_offset ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_nail ) ))),
+                    if (0 < update_variables_id.size()) {
+                        ConcurrentCommandCollector concurrent_commands_collector = new ConcurrentCommandCollector(String.format("_%d", node_index));
+                        for (int i = 0; i < update_variables_id.size(); i++) {
+                            concurrent_commands_collector.commands.add((new ConcurrentCommand()).make_write(update_variables_id.get(i), update_values.get(i)));
+                        }
+
+                        concurrent_commands_collector.generate_requests(this.control_graph_pta,
+                                location_branchpoint_id, locations_id_current_choose_path,
+                                new Point(UppaalBuilder.direction_right(UppaalBuilder.squares_length(current_x_offset)),
+                                        UppaalBuilder.direction_down(UppaalBuilder.squares_length(level_base_current + (level_squares * level_concurrent)))),
+                                false,
+                                "concurrent_process_id",
+                                null,
+                                null,
+                                null,
+                                null,
+                                String.valueOf(probability_for_successor_node.probability),
+                                update_for_successor.toString(),
+                                null);
+                    } else {
+                        List<Point> nails = new LinkedList<>();
+                        nails.add(new Point(UppaalBuilder.direction_right(UppaalBuilder.squares_length(current_x_offset)), UppaalBuilder.direction_down(UppaalBuilder.squares_length(level_base_current + (level_squares * level_nail)))));
+
+
+                        UppaalTransition to_chosen_path = new UppaalTransition(location_branchpoint_id, location_label_chosen_path,
+                                new Point(UppaalBuilder.direction_right(UppaalBuilder.squares_length(current_x_offset)), UppaalBuilder.direction_down(UppaalBuilder.squares_length(level_base_current + (level_squares * level_nail)))),
+                                transition_label_side,
+                                "",
+                                "",
+                                update_for_successor.toString(),
+                                String.valueOf(probability_for_successor_node.probability), nails);
+                        sub_graph_container.transitions.add(to_chosen_path);
+                    }
+
+                    Point place_loc_done = new Point(UppaalBuilder.direction_right(UppaalBuilder.squares_length(current_x_offset)), UppaalBuilder.direction_down(UppaalBuilder.squares_length(level_base_current + (level_squares * level_done))));
+                    UppaalLocation loc_done = new UppaalLocation(location_label_done, UppaalBuilder.Side.middle_left,
+                            place_loc_done,
+                            "", UppaalBuilder.Side.none,
+                            "", UppaalBuilder.Side.none,
+                            0 != node_preconditions.length());
+                    sub_graph_container.locations.add(loc_done);
+
+                    create_transitions_for_loop(sub_graph_container, location_label_done,
+                            place_loc_done, node_preconditions, node_condition_can_not_start);
+
+                    int next_node_id = this.control_graph.node_name_get_id(probability_for_successor_node.node_name);
+
+                    UppaalTransition to_done = new UppaalTransition(location_label_chosen_path, location_label_done,
+                            new Point(UppaalBuilder.direction_right(UppaalBuilder.squares_length(current_x_offset)), UppaalBuilder.direction_down(UppaalBuilder.squares_length(level_base_current + (level_squares * level_done) - (0.5 * level_squares)))),
                             transition_label_side,
                             "",
-                            "",
-                            update_for_successor.toString(),
-                            String.valueOf( probability_for_successor_node.probability ), nails );
-                    sub_graph_container.transitions.add( to_chosen_path );
+                            successor_synchronization,
+                            "", "", null);
+                    sub_graph_container.transitions.add(to_done);
+
+                    node_index++;
                 }
-
-                Point place_loc_done    = new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( current_x_offset ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_done ) )));
-                UppaalLocation loc_done = new UppaalLocation( location_label_done, UppaalBuilder.Side.middle_left,
-                        place_loc_done,
-                        "", UppaalBuilder.Side.none,
-                        "", UppaalBuilder.Side.none,
-                        0 != node_preconditions.length() );
-                sub_graph_container.locations.add( loc_done );
-
-                create_transitions_for_loop( sub_graph_container, location_label_done,
-                        place_loc_done, node_preconditions, node_condition_can_not_start );
-
-                int next_node_id = this.control_graph.node_name_get_id( probability_for_successor_node.node_name );
-
-                UppaalTransition to_done = new UppaalTransition( location_label_chosen_path, location_label_done,
-                        new Point(UppaalBuilder.direction_right( UppaalBuilder.squares_length( current_x_offset ) ), UppaalBuilder.direction_down(UppaalBuilder.squares_length( level_base_current + ( level_squares * level_done ) - ( 0.5 * level_squares ) ))),
-                        transition_label_side,
-                        "",
-                        successor_synchronization,
-                        "", "", null );
-                sub_graph_container.transitions.add( to_done );
-
-                node_index++;
             }
         } else if (ControlNodeInterface.ControlNodeType.node_concurrent == this.control_node.get_node_kind()) {
             ControlNodeConcurrent node_concurrent = (ControlNodeConcurrent) this.control_node;

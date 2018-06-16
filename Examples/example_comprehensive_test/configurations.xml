@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<configurations
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="configurations.xsd">
+
+<setting   name="precision_multiplier_for_numbers_and_time"          value="10"/>
+<setting   name="observe_variable_samples"                           value="10"/>
+<setting   name="run_time_amount_of_intervals_for_discretization"    value="5"/>
+
+<variable name="maintain_termination_success_00000004"    min_value="FALSE"   max_value="TRUE"  value="FALSE"   />
+<variable name="maintain_termination_failure_00000004"    min_value="FALSE"   max_value="TRUE"  value="FALSE"   />
+<variable name="maintaining_00000004"                     min_value="FALSE"   max_value="TRUE"  value="FALSE"   />
+<variable name="maintain_termination_success_00000013"    min_value="FALSE"   max_value="TRUE"  value="FALSE"   />
+<variable name="maintain_termination_failure_00000013"    min_value="FALSE"   max_value="TRUE"  value="FALSE"   />
+<variable name="maintaining_00000013"                     min_value="FALSE"   max_value="TRUE"  value="FALSE"   />
+<variable name="direction"        value="0"   />
+<variable name="collision_alert" min_value="FALSE"   max_value="TRUE"  value="FALSE"   />
+<parameter plp_name="observe_00000006" name="observe_goal_00000006" min_value="FALSE"   max_value="TRUE"  />
+<parameter plp_name="observe_00000015" name="observe_goal_00000015" min_value="FALSE"   max_value="TRUE"  />
+</configurations>

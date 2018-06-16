@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<control_graph
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="control_graph.xsd">
+
+<root root_name="node_concurrent_"/>
+<node_concurrent   node_name="node_concurrent_" start_policy="any_predecessor_done">
+    <run_node node_name="node_sequential_maintain_"/>
+    <run_node node_name="node_sequential_observe_"/>
+</node_concurrent><node_sequential   node_name="node_sequential_maintain_" start_policy="any_predecessor_done" next_node_name="">
+    <run_plp plp_name="maintain_" wait_time="0"></run_plp>
+</node_sequential>
+<node_sequential   node_name="node_sequential_observe_" start_policy="any_predecessor_done" next_node_name="node_condition_">
+    <run_plp plp_name="observe_" wait_time="0"></run_plp>
+</node_sequential>
+<node_condition   node_name="node_condition_" start_policy="any_predecessor_done">
+    <run_node node_name="node_sequential_achieve_true_">
+        <preconditions>
+            <formula_condition key_description="true == observe_goal_">
+              <expression value="_observe__observe_goal_" />
+              <operator type="="/>
+              <expression value="TRUE" />
+            </formula_condition>
+        </preconditions>
+    </run_node>
+    <run_node node_name="node_sequential_achieve_false_">
+        <preconditions>
+            <formula_condition key_description="false == observe_goal_">
+              <expression value="_observe__observe_goal_" />
+              <operator type="="/>
+              <expression value="FALSE" />
+            </formula_condition>
+        </preconditions>
+    </run_node>
+</node_condition>
+<node_sequential   node_name="node_sequential_achieve_true_" start_policy="any_predecessor_done" next_node_name="">
+    <run_plp plp_name="achieve_true_" wait_time="0"></run_plp>
+</node_sequential>
+<node_sequential   node_name="node_sequential_achieve_false_" start_policy="any_predecessor_done" next_node_name="">
+    <run_plp plp_name="achieve_false_" wait_time="0"></run_plp>
+</node_sequential>
+</control_graph>

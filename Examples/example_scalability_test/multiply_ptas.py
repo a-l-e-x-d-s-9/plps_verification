@@ -31,7 +31,7 @@ def get_args():
     else:
         raise ImportError( "file_source_plp_input_path file does not exists: " + file_source_plp_input_path )
 
-    plp_name = re.search("(.*/)([^/]*)\.xml",
+    plp_name = re.search("(.*/)([^/]*)\_xml",
                           file_source_plp_input_path, re.DOTALL)
                           
     if ( None != plp_name ):
@@ -114,7 +114,7 @@ def main( single_node = True ):
     print("Done")
     
     
-main()
+main(True)
 
 # Run example:
-# ./multiply_ptas.py control_graph.xml plps/move_forward.xml 10
+# ./multiply_ptas.py control_graph.xml plps/move_forward_xml 10

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<control_graph
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="control_graph.xsd">
+
+<root root_name="node_probability_"/>
+<node_probability   node_name="node_probability_" start_policy="any_predecessor_done" wait_time="0">
+    <probability_for_successor_node probability="0.5" node_name="node_probability_l_"/>
+    <probability_for_successor_node probability="0.5" node_name="node_probability_r_"/>
+</node_probability>
+<node_probability   node_name="node_probability_l_" start_policy="any_predecessor_done" wait_time="0"></node_probability>
+<node_probability   node_name="node_probability_r_" start_policy="any_predecessor_done" wait_time="0"></node_probability>
+</control_graph>
