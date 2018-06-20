@@ -42,7 +42,6 @@ After running the previous line, fill in the problem.pddl file with the goal and
 ### Monitoring code generation
 
 > java -jar CodeGenerator.jar -monitor [plp-folder-path]
-ccc
 
 ## Verification
 
