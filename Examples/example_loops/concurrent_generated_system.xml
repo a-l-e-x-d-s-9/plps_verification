@@ -2275,44 +2275,66 @@ concurrent_write( 20, 1 )</label>
 clock local_time;
 		</declaration>
 		<location id="id2" x="0" y="0">
-			<name x="-57" y="-8">start</name>
+			<name x="-85" y="-8">init_node</name>
 		</location>
-		<location id="id0" x="0" y="136">
-			<name x="-57" y="128">ready</name>
+		<location id="id3" x="0" y="136">
+			<name x="-57" y="128">start</name>
 			<urgent/>
 		</location>
-		<location id="id1" x="0" y="272">
-			<name x="-99" y="264">all_can_run</name>
-			<label kind="invariant" x="22" y="294">( local_time &lt;= 0 )</label>
-		</location>
-		<location id="id3" x="0" y="408">
-			<name x="-57" y="400">run_0</name>
+		<location id="id0" x="0" y="272">
+			<name x="-57" y="264">ready</name>
 			<urgent/>
+		</location>
+		<location id="id1" x="0" y="408">
+			<name x="-99" y="400">all_can_run</name>
+			<label kind="invariant" x="22" y="430">( local_time &lt;= 0 )</label>
 		</location>
 		<location id="id4" x="0" y="544">
-			<name x="-50" y="536">done</name>
+			<name x="-57" y="536">run_0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="0" y="680">
+			<name x="-50" y="672">done</name>
+			<urgent/>
 		</location>
 		<init ref="id2"/>
 		<transition>
 			<source ref="id2"/>
-			<target ref="id0"/>
+			<target ref="id3"/>
 			<label kind="guard" x="-238" y="68">( control_node_can_run[0] &gt; 0 )</label>
 			<label kind="synchronisation" x="-203" y="85">control_node_notify[node_id]?</label>
-			<label kind="assignment" x="-98" y="102">local_time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-231" y="204">( control_node_can_run[0] = 0 ) ,
+( local_time = 0 )</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
-			<label kind="assignment" x="-189" y="204">control_node_can_run[0] = 1</label>
+			<label kind="assignment" x="-189" y="340">control_node_can_run[0] = 1</label>
 		</transition>
 		<transition>
 			<source ref="id1"/>
-			<target ref="id3"/>
-			<label kind="synchronisation" x="-161" y="340">control_node_notify[0]!</label>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-161" y="476">control_node_notify[0]!</label>
 		</transition>
 		<transition>
-			<source ref="id3"/>
-			<target ref="id4"/>
+			<source ref="id5"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-442" y="578">( control_node_can_run[0] &gt; 0 )</label>
+			<nail x="-204" y="595"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-632" y="510">( control_node_can_run[0] == 0 )</label>
+			<nail x="-408" y="527"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
 		</transition>
 	</template>
 
@@ -2529,25 +2551,25 @@ system concurrent_process, control_graph_init_process, achieve_door_unlock_proce
 </system>
 	<queries>
 		<query>
-			<formula>E&lt;&gt; node_condition_2_process.main
+			<formula>E&lt;&gt; node_sequential_00001_process.done
 			</formula>
 			<comment>
 			</comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=10000] ( &lt;&gt; node_condition_2_process.main  )
+			<formula>Pr[&lt;=10000000] ( &lt;&gt; node_sequential_00001_process.done  )
 			</formula>
 			<comment>
 			</comment>
 		</query>
 		<query>
-			<formula>E&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
+			<formula>E&lt;&gt; node_sequential_00001_process.done
 			</formula>
 			<comment>
 			</comment>
 		</query>
 		<query>
-			<formula>A&lt;&gt; concurrent_info.concurrent_data[ 0 ].value == 500
+			<formula>A&lt;&gt; node_sequential_00001_process.done
 			</formula>
 			<comment>
 			</comment>
